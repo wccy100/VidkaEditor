@@ -36,7 +36,7 @@ namespace Vidka.Core.Ops {
 			// Configure the process using the StartInfo properties.
 			process.StartInfo.FileName = FfmpegExecutable;
 			//process.StartInfo.Arguments = String.Format("-i \"{0}\" -y -ac 1 -filter:a aresample={1} -map 0:a -c:a pcm_s16le -f data {2}", filename, SampleRate, outFilename);
-			process.StartInfo.Arguments = String.Format("-i \"{0}\" -y -ac 1 -filter:a aresample={1} -map 0:a -c:a pcm_s8 -f data {2}", filename, SampleRate, outFilename);
+			process.StartInfo.Arguments = String.Format("-i \"{0}\" -y -ac 1 -filter:a aresample={1} -map 0:a -c:a pcm_s8 -f data \"{2}\"", filename, SampleRate, outFilename);
 			process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 			process.StartInfo.CreateNoWindow = true;
 			runProcessRememberError(process);			

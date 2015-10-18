@@ -5,11 +5,13 @@ using System.Text;
 using System.Windows.Forms;
 using Vidka.Core.Error;
 using Vidka.Core.Model;
+using Vidka.Core.Ops;
 
 namespace Vidka.Core
 {
 	class EditOperationMoveVideo : EditOperationAbstract
 	{
+		private MetaGeneratorInOtherThread metaGenerator;
 		private bool copyMode;
 		private bool keyboardMode;
 		private int clipX;
@@ -20,10 +22,12 @@ namespace Vidka.Core
 		public EditOperationMoveVideo(ISomeCommonEditorOperations iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
-			IVideoEditor editor,
-			IVideoPlayer videoPlayer)
+			IVideoShitbox editor,
+			IVideoPlayer videoPlayer,
+			MetaGeneratorInOtherThread metaGenerator)
 			: base(iEditor, uiObjects, dimdim, editor, videoPlayer)
 		{
+			this.metaGenerator = metaGenerator;
 			copyMode = false;
 			keyboardMode = false;
 		}
@@ -46,7 +50,7 @@ namespace Vidka.Core
 			// I assume its not null, otherwise how do u have CurrentAudioClipTrimHover?
 			var clip = uiObjects.CurrentVideoClipHover;
 			oldIndex = proj.ClipsVideo.IndexOf(clip);
-			clipX = dimdim.getScreenX1(clip);
+			clipX = dimdim.getScreenX1_video(clip);
 			clipW = dimdim.convert_FrameToAbsX(clip.LengthFrameCalc);
 			uiObjects.SetActiveVideo(clip, proj);
 			uiObjects.SetDraggyCoordinates(
@@ -92,6 +96,11 @@ namespace Vidka.Core
 						iEditor.UpdateCanvasWidthFromProjAndDimdim();
 						long frameMarker = proj.GetVideoClipAbsFramePositionLeft(newClip);
 						iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
+						if (clip is VidkaClipTextSimple)
+						{
+							clip.FileName = VidkaIO.GetAuxillaryProjFile(iEditor.CurFileName, VidkaIO.MakeUniqueFilename_AuxSimpleText());
+							VidkaIO.RebuildAuxillaryFile_SimpleText((VidkaClipTextSimple)clip, proj, metaGenerator);
+						}
 					},
 					Undo = () =>
 					{

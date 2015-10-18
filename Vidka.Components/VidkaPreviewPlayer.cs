@@ -27,6 +27,7 @@ namespace Vidka.Components
 		private string curUrl;
 		private double stillPositionSec;
 		private double curClipSecEnd;
+		private bool previousOneWasInFullScreen;
 
 		public VidkaPreviewPlayer()
 		{
@@ -47,6 +48,8 @@ namespace Vidka.Components
 
 		public void StopWhateverYouArePlaying() {
 			Ctlcontrols2.pause();
+			CurMode = VidkaPreviewPlayerMode.StillFrame;
+			previousOneWasInFullScreen = false;
 		}
 		public void SetStillFrameNone() {
 			MediaPlayer.URL = curUrl = null;			
@@ -69,12 +72,15 @@ namespace Vidka.Components
 			}
 		}
 
-		public void PlayVideoClip(string filename, double clipSecStart, double clipSecEnd) {
+        public void PlayVideoClip(string filename, double clipSecStart, double clipSecEnd, bool mute)
+        {
+			previousOneWasInFullScreen = MediaPlayer.fullScreen;
 			Ctlcontrols2.pause();
 			CurMode = VidkaPreviewPlayerMode.SequentialPlayback;
 			curClipSecEnd = clipSecEnd;
 			MediaPlayer.URL = null;
 			MediaPlayer.URL = curUrl = filename;
+            MediaPlayer.settings.mute = mute;
 			Ctlcontrols2.currentPosition = clipSecStart;
 			Ctlcontrols2.play();
 		}
@@ -85,6 +91,7 @@ namespace Vidka.Components
 		public bool IsStopped() {
 			return MediaPlayer.playState == WMPPlayState.wmppsStopped;
 		}
+		public void PleaseUnlockThisFile(string filename) {}
 
 		#endregion
 
@@ -104,6 +111,7 @@ namespace Vidka.Components
 				}
 				else if (CurMode == VidkaPreviewPlayerMode.SequentialPlayback)
 				{
+					MediaPlayer.fullScreen = previousOneWasInFullScreen;
 					if (Ctlcontrols2.currentPosition >= curClipSecEnd)
 					{
 						Ctlcontrols2.pause();

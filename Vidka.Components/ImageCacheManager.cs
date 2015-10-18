@@ -40,9 +40,9 @@ namespace Vidka.Components
 			requests_thumb = new Dictionary<string, List<int>>();
 			requests_other = new Dictionary<string, bool>();
 			taskThread = new TaskQueueInOtherThread();
-			nullThumb = makeSolidColorBitmap(ThumbnailTest.ThumbW, ThumbnailTest.ThumbH, Color.Gray);
+			nullThumb = makeSolidColorBitmap(ThumbnailExtraction.ThumbW, ThumbnailExtraction.ThumbH, Color.Gray);
 			nullWave = makeSolidColorBitmap(5, 1, Color.White);
-			rectThumb = new Rectangle(0, 0, ThumbnailTest.ThumbW, ThumbnailTest.ThumbH);
+			rectThumb = new Rectangle(0, 0, ThumbnailExtraction.ThumbW, ThumbnailExtraction.ThumbH);
 			rectCrop = new Rectangle();
 			removeUnusedOnNextRepaint = false;
 
@@ -101,8 +101,8 @@ namespace Vidka.Components
 			foreach (var notUsed in imgNotUsed)
 			{
 				cxzxc("removing " + debug_url_thumb(notUsed));
-				//if (!thumbsCache.ContainsKey(notUsed))
-				//	continue;
+                if (!imgCache.ContainsKey(notUsed))
+                    continue;
 				var img = imgCache[notUsed];
 				imgCache.Remove(notUsed);
 				img.Dispose();
@@ -117,29 +117,32 @@ namespace Vidka.Components
 				{
 					if (!File.Exists(filename))
 						return;
-					Bitmap thumbsAll = System.Drawing.Image.FromFile(filename, true) as Bitmap;
-					var nRow = thumbsAll.Width / ThumbnailTest.ThumbW;
-					var nCol = thumbsAll.Height / ThumbnailTest.ThumbH;
-					foreach (var index in indices)
+					using (Bitmap thumbsAll = (Bitmap)Image.FromFile(filename, true))
 					{
-						var url = getUrl_thumb(filename, index);
-						if (imgCache.ContainsKey(url))
-							continue;
-						Bitmap target = new Bitmap(ThumbnailTest.ThumbW, ThumbnailTest.ThumbH);
-						rectCrop.X = ThumbnailTest.ThumbW * (index % nCol);
-						rectCrop.Y = ThumbnailTest.ThumbH * (index / nRow);
-						rectCrop.Width = ThumbnailTest.ThumbW;
-						rectCrop.Height = ThumbnailTest.ThumbH;
-						using (Graphics g = Graphics.FromImage(target))
-							g.DrawImage(thumbsAll, rectThumb, rectCrop, GraphicsUnit.Pixel);
-						cxzxc("adding " + debug_url_thumb(url));
-						imgCache.Add(url, target);
-						if (imgCache.Count > MAX_ThumbsBeforeCleanseUnused)
-							removeUnusedOnNextRepaint = true;
-						// remove from requests
-						//requests[filename].Remove(index);
-						//if (requests[filename].Count == 0)
-						//	requests.Remove(filename);
+						//Bitmap thumbsAll = System.Drawing.Image.FromFile(filename, true) as Bitmap;
+						var nRow = thumbsAll.Width / ThumbnailExtraction.ThumbW;
+						var nCol = thumbsAll.Height / ThumbnailExtraction.ThumbH;
+						foreach (var index in indices)
+						{
+							var url = getUrl_thumb(filename, index);
+							if (imgCache.ContainsKey(url))
+								continue;
+							Bitmap target = new Bitmap(ThumbnailExtraction.ThumbW, ThumbnailExtraction.ThumbH);
+							rectCrop.X = ThumbnailExtraction.ThumbW * (index % nCol);
+							rectCrop.Y = ThumbnailExtraction.ThumbH * (index / nRow);
+							rectCrop.Width = ThumbnailExtraction.ThumbW;
+							rectCrop.Height = ThumbnailExtraction.ThumbH;
+							using (Graphics g = Graphics.FromImage(target))
+								g.DrawImage(thumbsAll, rectThumb, rectCrop, GraphicsUnit.Pixel);
+							cxzxc("adding " + debug_url_thumb(url));
+							imgCache.Add(url, target);
+							if (imgCache.Count > MAX_ThumbsBeforeCleanseUnused)
+								removeUnusedOnNextRepaint = true;
+							// remove from requests
+							//requests[filename].Remove(index);
+							//if (requests[filename].Count == 0)
+							//	requests.Remove(filename);
+						}
 					}
 				});
 			}
@@ -161,6 +164,17 @@ namespace Vidka.Components
 				});
 			}
 			requests_other.Clear();
+		}
+
+		internal void UnlockFileIfInUse(string filename)
+		{
+			var affectedKeys = imgCache.Keys.Where(x => x.StartsWith(filename)).ToList();
+			foreach (var key in affectedKeys)
+			{
+				var bmp = imgCache[key];
+				imgCache.Remove(key);
+				bmp.Dispose();
+			}
 		}
 
 		//#region ----------------------- concurrent ops --------------------------

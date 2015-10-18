@@ -11,7 +11,10 @@ namespace Vidka.Core
 		private const float PIXEL_PER_FRAME = 1f; // a nice default zoom
 		private const float ZOOM_CHANGE_FACTOR = 2.0f;
 
+		// environment
 		private VidkaProj proj;
+		private int ScrollbarWidth;
+		private int FloatPlayerWidth;
 
 		// vertical subdivisions
 		private ProjectDimensionsTimeline[] timelines;
@@ -40,6 +43,11 @@ namespace Vidka.Core
 
 		public void setProj(VidkaProj proj) {
 			this.proj = proj;
+		}
+
+		public void setNewDimensions(int floatPlayerWidth, int scrollbarWidth) {
+			this.ScrollbarWidth = scrollbarWidth;
+			this.FloatPlayerWidth = floatPlayerWidth;
 		}
 
 		#region ============================== frame of view =============================================
@@ -86,7 +94,7 @@ namespace Vidka.Core
 			var totalFrameAudio = proj.GetTotalLengthOfAudioClipsFrame();
 			//var totalSec = totalSecVideo; // can we just return video?
 			var totalFrame = Math.Max(totalFrameVideo, totalFrameAudio);
-			return convert_FrameToAbsX(totalFrame) + 100;
+			return convert_FrameToAbsX(totalFrame) + 1000;
 		}
 
 		public int getTotalWidthPixels() {
@@ -121,7 +129,7 @@ namespace Vidka.Core
 			return answer.Type;
 		}
 
-		public VidkaClipVideo collision_main(int x)
+		public VidkaClipVideoAbstract collision_main(int x)
 		{
 			lastCollision_succeeded = false;
 			long frameTotal = 0;
@@ -137,24 +145,54 @@ namespace Vidka.Core
 		public VidkaClipAudio collision_audio(int x)
 		{
 			lastCollision_succeeded = false;
+            VidkaClipAudio lastAudioClipCollision = null;
 			foreach (var ccc in proj.ClipsAudio)
 			{
-				if (lastCollision_succeeded = calculateCollision_proj(x, ccc.FrameStart, ccc.FrameEnd - ccc.FrameStart))
-					return ccc;
+                if (lastCollision_succeeded = calculateCollision_proj(x, ccc.FrameOffset, ccc.LengthFrameCalc))
+                    lastAudioClipCollision = ccc;
 			}
-			return null;
+            return lastAudioClipCollision;
 		}
 
 		/// <summary>
-		/// this returns nothing because the collision choise is the one clip
+		/// this returns just the bool because the collision choice is the one clip
 		/// But calling this prepares the lastCollision_? variables
 		/// </summary>
-		public void collision_original(int x, int w, double totalLength, double start, double end)
+		public bool collision_original_one(int x, int w, long totalLengthFrames, long start, long end)
 		{
-			lastCollision_x1 = (int)(w * start / totalLength);
-			lastCollision_x2 = (int)(w * end / totalLength);
-			lastCollision_succeeded = (x >= lastCollision_x1) && (x <= lastCollision_x2);
+			lastCollision_x1 = convert_Frame2ScreenX_OriginalTimeline(start, totalLengthFrames, w);
+			lastCollision_x2 = convert_Frame2ScreenX_OriginalTimeline(end, totalLengthFrames, w);
+			//lastCollision_succeeded = (x >= lastCollision_x1) && (x <= lastCollision_x2);
+			var frameX = convert_ScreenX2Frame_OriginalTimeline(x, totalLengthFrames, w);
+			lastCollision_succeeded = (frameX >= start) && (frameX < end);
+			return lastCollision_succeeded;
 		}
+
+		public VidkaClip collision_original_all(int x, int w, IEnumerable<VidkaClip> clips)
+		{
+			var allResults = clips.Where(clip => collision_original_one(x, w, clip.FileLengthFrames, clip.FrameStart, clip.FrameEnd));
+			if (allResults.Count() <= 1)
+				return allResults.FirstOrDefault();
+			var sampleClip = allResults.FirstOrDefault(); // should never be null!
+			var maxStart = allResults.Select(clip => clip.FrameStart).Max();
+			var minEnd = allResults.Select(clip => clip.FrameEnd).Min();
+			var frameX = convert_ScreenX2Frame_OriginalTimeline(x, sampleClip.FileLengthFrames, w);
+			var index = (int)(allResults.Count() * (frameX - maxStart) / (minEnd - maxStart));
+			var finalChoice = allResults.Skip(index).FirstOrDefault();
+			//var finalChoice = allResults
+			//	.OrderBy(clip => collision_original_all_choiceWeight(clip, frameX, maxStart, minEnd))
+			//	.FirstOrDefault();
+			lastCollision_x1 = convert_Frame2ScreenX_OriginalTimeline(finalChoice.FrameStart, finalChoice.FileLengthFrames, w);
+			lastCollision_x2 = convert_Frame2ScreenX_OriginalTimeline(finalChoice.FrameEnd, finalChoice.FileLengthFrames, w);
+			lastCollision_succeeded = true;
+			return finalChoice;
+		}
+
+		//private double collision_original_all_choiceWeight(VidkaClip clip, long frameX, long maxStart, long minEnd)
+		//{
+		//	double lenRange = minEnd - maxStart;
+		//	return clip.LengthFrameCalc / lenRange + (minEnd - frameX) / lenRange;
+		//}
 
 		/// <summary>
 		/// Common collision helper.
@@ -196,7 +234,8 @@ namespace Vidka.Core
 			return (int)(sec * proj.FrameRate);
 		}
 
-		public int getScreenX1(VidkaClipVideo vclip) {
+		public int getScreenX1_video(VidkaClipVideoAbstract vclip)
+		{
 			long frameTotal = 0;
 			foreach (var ccc in proj.ClipsVideo) {
 				if (ccc == vclip)
@@ -205,6 +244,12 @@ namespace Vidka.Core
 			}
 			return convert_Frame2ScreenX(frameTotal);
 		}
+
+		//public int getScreenX1(VidkaClip clip) {
+		//	return proj.ClipsAudio.Contains(clip)//todo
+		//			? (IEnumerable<VidkaClip>)proj.ClipsAudio
+		//			: (IEnumerable<VidkaClip>)proj.ClipsVideo;
+		//}
 
 		/// <summary>
 		/// just for one point
@@ -300,6 +345,13 @@ namespace Vidka.Core
 			return (int)((float)screenW * frame / lengthFile);
 		}
 
+        /// <summary>
+        /// Converts sec to x-coordinate (on screen!!!) on the original timeline
+        /// </summary>
+        public int convert_Sec2ScreenX_OriginalTimeline(double sec, long lengthFile, int screenW) {
+            return convert_Frame2ScreenX_OriginalTimeline(SecToFrame(sec), lengthFile, screenW);
+        }
+
 		/// <summary>
 		/// Converts x-coordinate (absolute) to frame.
 		/// Used in deltaX --> nFrames conversion
@@ -307,6 +359,10 @@ namespace Vidka.Core
 		public long convert_AbsX2Frame(int x)
 		{
 			return (long)((x) / PIXEL_PER_FRAME / zoom);
+		}
+
+		public float convert_AbsX2Seconds(int x) {
+			return (float)((x) / PIXEL_PER_FRAME / zoom / proj.FrameRate);
 		}
 
 		/// <summary>
@@ -357,6 +413,8 @@ namespace Vidka.Core
 
 		#endregion
 
-		
+
+
+
 	}
 }

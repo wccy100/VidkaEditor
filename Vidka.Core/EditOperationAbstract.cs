@@ -13,7 +13,7 @@ namespace Vidka.Core
 		protected ISomeCommonEditorOperations iEditor;
 		protected VidkaUiStateObjects uiObjects;
 		protected ProjectDimensions dimdim;
-		protected IVideoEditor editor;
+		protected IVideoShitbox editor;
 		protected IVideoPlayer videoPlayer;
 		protected VidkaProj proj;
 
@@ -21,7 +21,7 @@ namespace Vidka.Core
 			ISomeCommonEditorOperations iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
-			IVideoEditor editor,
+			IVideoShitbox editor,
 			IVideoPlayer videoPlayer)
 		{
 			this.iEditor = iEditor;

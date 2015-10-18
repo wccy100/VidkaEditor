@@ -59,8 +59,8 @@ namespace Vidka.Components
 				var filenameThumbs = fileMapping.AddGetThumbnailFilename(filename);
 				if (File.Exists(filenameThumbs)) {
 					bmpThumbs = System.Drawing.Image.FromFile(filenameThumbs, true) as Bitmap;
-					bmpThumbs_nRow = bmpThumbs.Width / ThumbnailTest.ThumbW;
-					bmpThumbs_nCol = bmpThumbs.Height / ThumbnailTest.ThumbH;
+					bmpThumbs_nRow = bmpThumbs.Width / ThumbnailExtraction.ThumbW;
+					bmpThumbs_nCol = bmpThumbs.Height / ThumbnailExtraction.ThumbH;
 				}
 			}
 			this.offsetSeconds = offsetSeconds;
@@ -79,20 +79,28 @@ namespace Vidka.Components
 		{
 			var g = e.Graphics;
 			if (bmpThumbs != null) {
-				var imageIndex = (int)(offsetSeconds / ThumbnailTest.ThumbIntervalSec);
+				var imageIndex = (int)(offsetSeconds / ThumbnailExtraction.ThumbIntervalSec);
+				if (bmpThumbs.Width == ThumbnailExtraction.ThumbW && bmpThumbs.Height == ThumbnailExtraction.ThumbH)
+					imageIndex = 0; // index will overflow on clips from images or text
 				rectMe.Width = Width;
 				rectMe.Height = Height;
-				rectCrop.X = ThumbnailTest.ThumbW * (imageIndex % bmpThumbs_nCol);
-				rectCrop.Y = ThumbnailTest.ThumbH * (imageIndex / bmpThumbs_nRow);
-				rectCrop.Width = ThumbnailTest.ThumbW;
-				rectCrop.Height = ThumbnailTest.ThumbH;
+				rectCrop.X = ThumbnailExtraction.ThumbW * (imageIndex % bmpThumbs_nCol);
+				rectCrop.Y = ThumbnailExtraction.ThumbH * (imageIndex / bmpThumbs_nRow);
+				rectCrop.Width = ThumbnailExtraction.ThumbW;
+				rectCrop.Height = ThumbnailExtraction.ThumbH;
 				g.DrawImage(bmpThumbs, rectMe, rectCrop, GraphicsUnit.Pixel);
 				var strFilename = Path.GetFileName(filenameVideo);
 				var sizeF = g.MeasureString(strFilename, fontDefault);
-				g.FillRectangle(brushWhite, 0, 0, sizeF.Width, sizeF.Height);
-				g.DrawString(strFilename, fontDefault, brushDefault, 0, 0);
+				var strX = Width - sizeF.Width;
+				var strY = Height - sizeF.Height;
+				g.FillRectangle(brushWhite, strX, strY, sizeF.Width, sizeF.Height);
+				g.DrawString(strFilename, fontDefault, brushDefault, strX, strY);
 			}
 		}
 
+		public void PleaseUnlockThisFile(string filename)
+		{
+			disposeOfOldBmpThumbs();
+		}
 	}
 }

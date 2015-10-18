@@ -36,9 +36,9 @@ namespace Vidka.Components
 			setWmpEnabled(false);
 			playerFast.SetStillFrame(filename, offsetSeconds);
 		}
-		public void PlayVideoClip(string filename, double clipSecStart, double clipSecEnd) {
+		public void PlayVideoClip(string filename, double clipSecStart, double clipSecEnd, bool mute) {
 			setWmpEnabled(true);
-			playerWmp.PlayVideoClip(filename, clipSecStart, clipSecEnd);
+            playerWmp.PlayVideoClip(filename, clipSecStart, clipSecEnd, mute);
 		}
 		public void StopWhateverYouArePlaying() {
 			setWmpEnabled(false);
@@ -49,6 +49,9 @@ namespace Vidka.Components
 		}
 		public bool IsStopped() {
 			return playerWmp.IsStopped();
+		}
+		public void PleaseUnlockThisFile(string filename) {
+			playerFast.PleaseUnlockThisFile(filename);
 		}
 
 		private void setWmpEnabled(bool enabled)

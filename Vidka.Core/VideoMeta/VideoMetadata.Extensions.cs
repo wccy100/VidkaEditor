@@ -74,6 +74,12 @@ namespace Vidka.Core.VideoMeta
 				return (format == null) ? "" : format.filename;
 			}
 		}
+
+		public bool HasAudio {
+			get {
+				return audioStream != null;
+			}
+		}
 	}
 
 

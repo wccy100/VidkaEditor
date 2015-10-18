@@ -16,7 +16,7 @@ namespace Vidka.Core
 		public delegate void MetaReadyForDraggyH(string filename, VideoMetadataUseful meta);
 		public event MetaReadyForDraggyH MetaReadyForDraggy;
 
-		public delegate void MetaReadyForOutstandingVideoH(VidkaClipVideo vclip, VideoMetadataUseful meta);
+		public delegate void MetaReadyForOutstandingVideoH(VidkaClipVideoAbstract vclip, VideoMetadataUseful meta);
 		public event MetaReadyForOutstandingVideoH MetaReadyForOutstandingVideo;
 
 		public delegate void MetaReadyForOutstandingAudioH(VidkaClipAudio aclip, VideoMetadataUseful meta);
@@ -24,30 +24,50 @@ namespace Vidka.Core
 
 		public delegate void ThumbOrWaveReadyH();
 		public event ThumbOrWaveReadyH ThumbOrWaveReady;
+
+		public delegate void PleaseUnlockThisFileH(string filename);
+		public event PleaseUnlockThisFileH PleaseUnlockThisFile;
 		#endregion
 
-		private IVideoEditor editor;
-		private readonly string[] EXT_video, EXT_audio;
+		private IVideoShitbox editor;
+		private static string[] EXT_video, EXT_audio, EXT_image;
 		private MetaGeneratorInOtherThread metaGenerator;
 		private List<DragAndDropMediaFile> _draggies;
-		private List<VidkaClipVideo> outstandingVideo;
+		private List<VidkaClipVideoAbstract> outstandingVideo;
 		private List<VidkaClipAudio> outstandingAudio;
 
 		// public
 		public VidkaProj Proj { get; private set; }
 		public DragAndDropManagerMode Mode { get; private set; }
+		public string OriginalFile { get; private set; }
+		public string[] OriginalFiles { get; private set; }
+		public string DraggyText { get; private set; }
 		public IEnumerable<DragAndDropMediaFile> Draggies { get { return _draggies; } }
+		public MetaGeneratorInOtherThread MetaGenerator { get { return metaGenerator; } }
 
-		public DragAndDropManager(IVideoEditor editor, VidkaProj proj, VidkaFileMapping fileMapping)
+		//helpers
+		public EditorDraggyMode ModeForUiDraggy { get {
+			if (Mode == DragAndDropManagerMode.Video ||
+				Mode == DragAndDropManagerMode.Image)
+				return EditorDraggyMode.VideoTimeline;
+			if (Mode == DragAndDropManagerMode.Audio)
+				return EditorDraggyMode.AudioTimeline;
+			if (Mode == DragAndDropManagerMode.Folder)
+				return EditorDraggyMode.DraggingFolder;
+			return EditorDraggyMode.None;
+		} }
+
+		public DragAndDropManager(IVideoShitbox editor, VidkaProj proj, VidkaFileMapping fileMapping)
 		{
 			this.editor = editor;
 			Proj = proj;
 			Mode = DragAndDropManagerMode.None;
 			_draggies = new List<DragAndDropMediaFile>();
-			outstandingVideo = new List<VidkaClipVideo>();
+			outstandingVideo = new List<VidkaClipVideoAbstract>();
 			outstandingAudio = new List<VidkaClipAudio>();
 			EXT_video = Settings.Default.FileExtensionsVideo.Split('|');
 			EXT_audio = Settings.Default.FileExtensionsAudio.Split('|');
+			EXT_image = Settings.Default.FileExtensionsImage.Split('|');
 			metaGenerator = new MetaGeneratorInOtherThread(fileMapping);
 			//metaGenerator.OneItemFinished += metaGenerator_OneItemFinished;
 			//metaGenerator.MetaGeneratorDone += metaGenerator_MetaGeneratorDone;
@@ -55,6 +75,7 @@ namespace Vidka.Core
 			metaGenerator.MetaReady += metaGenerator_MetaReady;
 			metaGenerator.ThumbnailsReady += metaGenerator_ThumbReady;
 			metaGenerator.WaveformReady += metaGenerator_WaveReady;
+			metaGenerator.PleaseUnlockThisFile += metaGenerator_PleaseUnlockThisFile;
 		}
 
 		public void SetProj(VidkaProj proj) {
@@ -65,15 +86,17 @@ namespace Vidka.Core
 		{
 			var relevantFiles = GetRelevantFilenames(filenames);
 			var sampleFirst = relevantFiles.FirstOrDefault();
+			OriginalFiles = relevantFiles;
+			OriginalFile = sampleFirst;
 			if (IsFilenameVideo(sampleFirst))
 			{
-				Mode = DragAndDropManagerMode.DraggingVideo;
+				Mode = DragAndDropManagerMode.Video;
+				DraggyText = "Analyzing...";
 				foreach (var filename in relevantFiles)
 				{
 					_draggies.Add(new DragAndDropMediaFile(Proj) {
 						Filename = filename,
 						NFakeFrames = nFakeFrames,
-						Mode = Mode,
 					});
 					metaGenerator.RequestMeta(filename);
 					metaGenerator.RequestThumbsAndWave(filename);
@@ -81,43 +104,91 @@ namespace Vidka.Core
 			}
 			else if (IsFilenameAudio(sampleFirst))
 			{
-				Mode = DragAndDropManagerMode.DraggingAudio;
-				// TODO: Q audio...
+				Mode = DragAndDropManagerMode.Audio;
+				DraggyText = "Analyzing...";
+                foreach (var filename in relevantFiles)
+                {
+                    _draggies.Add(new DragAndDropMediaFile(Proj)
+                    {
+                        Filename = filename,
+                        NFakeFrames = (long)(Proj.FrameRate * Settings.Default.ImageClipLengthSeconds),
+                        HasAudio = true,
+                    });
+                    metaGenerator.RequestMeta(filename);
+                    metaGenerator.RequestWaveOnly(filename);
+                }
 			}
-			else
+			else if (IsFilenameImage(sampleFirst))
 			{
-				
+				Mode = DragAndDropManagerMode.Image;
+				DraggyText = "Analyzing...";
+				foreach (var filename in relevantFiles)
+				{
+					_draggies.Add(new DragAndDropMediaFile(Proj)
+					{
+						Filename = filename,
+						NFakeFrames = (long)(Proj.FrameRate * Settings.Default.ImageClipLengthSeconds),
+						HasAudio = false,
+					});
+					//metaGenerator.RequestMeta(filename);
+					metaGenerator.RequestThumbsOnly(filename);
+				}
 			}
-			// TODO: the mapped filenames (xml, thumbs, etc) should be done inside metaGenerator
-			//var filenameXml = metaGenerator. Proj.Mapping.AddGetMetaFilename(filename);
-			// runs the XML generations
-			//new Ops.MetadataExtraction(filename, filenameXml);
+			else if (Directory.Exists(sampleFirst))
+			{
+				Mode = DragAndDropManagerMode.Folder;
+				DraggyText = Path.GetFileName(sampleFirst);
+				_draggies.Add(new DragAndDropMediaFile(Proj)
+				{
+					Filename = sampleFirst,
+				});
+			}
+			foreach (var ddd in _draggies) {
+				ddd.Mode = Mode;
+			}
 		}
 
-		public VidkaClipVideo[] FinalizeDragAndMakeVideoClips()
+		public VidkaClipVideoAbstract[] FinalizeDragAndMakeVideoClips()
 		{
-			if (Mode != DragAndDropManagerMode.DraggingVideo)
-				return null;
 			lock (this)
 			{
-				//TODO: Take(1) is to be removed when we support multiple draggies
-				var clips = _draggies.Take(1).Select(x => new VidkaClipVideo
+				IEnumerable<VidkaClipVideoAbstract> clips = null;
+				if (Mode == DragAndDropManagerMode.Video)
 				{
-					FileName = x.Filename,
-					FileLengthSec = Proj.FrameToSec(x.LengthInFrames),
-					FrameStart = 0,
-					FrameEnd = x.LengthInFrames, //Proj.SecToFrame(dragMeta.VideoDurationSec) // its ok because SecToFrame floors it
-					IsNotYetAnalyzed = (x.Meta == null)
-				}).ToList();
-				outstandingVideo.AddRange(clips.Where(x => x.IsNotYetAnalyzed));
+					//TODO: asdqdscqwwq Take(1) is to be removed when we support multiple draggies
+					clips = _draggies.Take(1).Select(x => new VidkaClipVideo
+					{
+						FileName = x.Filename,
+						FileLengthSec = Proj.FrameToSec(x.LengthInFrames),
+						FrameStart = 0,
+						FrameEnd = x.LengthInFrames, //Proj.SecToFrame(dragMeta.VideoDurationSec) // its ok because SecToFrame floors it
+						IsNotYetAnalyzed = (x.Meta == null),
+						HasAudioXml = (x.Meta != null) ? x.Meta.HasAudio : false,
+					}).ToList();
+					outstandingVideo.AddRange(clips.Where(x => x.IsNotYetAnalyzed));
+				}
+				else if (Mode == DragAndDropManagerMode.Image)
+				{
+					clips = _draggies.Take(1).Select(x => new VidkaClipImage
+					{
+						FileName = x.Filename,
+						FileLengthSec = Proj.FrameToSec(x.LengthInFrames),
+						//HasAudioXml = false,
+						FrameStart = 0,
+						FrameEnd = x.LengthInFrames,
+						IsNotYetAnalyzed = false
+					}).ToList();
+				}
 				_draggies.Clear();
 				Mode = DragAndDropManagerMode.None;
-				return clips.ToArray();
+				return (clips == null)
+					? null
+					: clips.ToArray();
 			}
 		}
-		public VidkaClipAudio[] FinalizeDragAndMakeAudioClips()
+		public VidkaClipAudio[] FinalizeDragAndMakeAudioClips(long firstFrameFromDraggy)
 		{
-			if (Mode != DragAndDropManagerMode.DraggingAudio)
+			if (Mode != DragAndDropManagerMode.Audio)
 				return null;
 			lock (this)
 			{
@@ -127,12 +198,17 @@ namespace Vidka.Core
 					FileLengthSec = Proj.FrameToSec(x.LengthInFrames),
 					FrameStart = 0,
 					FrameEnd = x.LengthInFrames, //Proj.SecToFrame(dragMeta.VideoDurationSec) // its ok because SecToFrame floors it
-					IsNotYetAnalyzed = (x.Meta == null)
+					IsNotYetAnalyzed = (x.Meta == null),
 				}).ToList();
+                var curFrame = firstFrameFromDraggy;
+                foreach (var clip in clips)
+                {
+                    clip.FrameOffset = curFrame;
+                    curFrame += clip.LengthFrameCalc;
+                }
 				outstandingAudio.AddRange(clips.Where(x => x.IsNotYetAnalyzed));
 				_draggies.Clear();
 				Mode = DragAndDropManagerMode.None;
-				throw new NotImplementedException();
 				return clips.ToArray();
 			}
 		}
@@ -172,6 +248,11 @@ namespace Vidka.Core
 					var projFramesThisOne = Proj.SecToFrame(outstandingMaybeVid.FileLengthSec ?? 0); 
 					outstandingMaybeVid.FileLengthFrames = projFramesThisOne;
 					outstandingMaybeVid.FrameEnd = projFramesThisOne;
+					if (outstandingMaybeVid is VidkaClipVideo)
+					{
+						var outstandingMaybeVidVVV = (VidkaClipVideo)outstandingMaybeVid;
+						outstandingMaybeVidVVV.HasAudioXml = meta.HasAudio;
+					}
 					outstandingMaybeVid.IsNotYetAnalyzed = false;
 					outstandingVideo.Remove(outstandingMaybeVid);
 					if (MetaReadyForOutstandingVideo != null)
@@ -203,6 +284,12 @@ namespace Vidka.Core
 				ThumbOrWaveReady();
 		}
 
+		private void metaGenerator_PleaseUnlockThisFile(string filename)
+		{
+			if (PleaseUnlockThisFile != null)
+				PleaseUnlockThisFile(filename);
+		}
+
 		//private void metaGenerator_OneItemFinished(MetaGeneratorInOtherThread_QueueRequest item)
 		//{
 		//	// just repaint the damn thing
@@ -219,20 +306,22 @@ namespace Vidka.Core
 		
 		#region helpers
 
-		private bool IsFilenameVideo(string filename)
-		{
-			if (String.IsNullOrEmpty(filename))
-				return false;
-			var ext = Path.GetExtension(filename).ToLower();
-			return EXT_video.Any(e => String.Equals(e, ext));
+		public static bool IsFilenameVideo(string filename) {
+			return IsFilenameOneOfThese(filename, EXT_video);
+		}
+		public static bool IsFilenameAudio(string filename) {
+			return IsFilenameOneOfThese(filename, EXT_audio);
+		}
+		public static bool IsFilenameImage(string filename) {
+			return IsFilenameOneOfThese(filename, EXT_image);
 		}
 
-		private bool IsFilenameAudio(string filename)
+		private static bool IsFilenameOneOfThese(string filename, string[] extensions)
 		{
 			if (String.IsNullOrEmpty(filename))
 				return false;
 			var ext = Path.GetExtension(filename).ToLower();
-			return EXT_audio.Any(e => String.Equals(e, ext));
+			return extensions.Any(e => String.Equals(e, ext, StringComparison.OrdinalIgnoreCase));
 		}
 
 		/// <summary>
@@ -247,14 +336,39 @@ namespace Vidka.Core
 
 		#endregion
 
+
+		public void QueueUpTheWholeFolder(string folder)
+		{
+			foreach (var filename in Directory.GetFiles(folder))
+			{
+				if (String.Equals(Path.GetFileName(filename), "Thumbs.db", StringComparison.OrdinalIgnoreCase))
+					continue;
+				if (IsFilenameVideo(filename) ||
+					IsFilenameImage(filename) ||
+					IsFilenameAudio(filename)) //TODO: audio
+				{
+					metaGenerator.RequestMeta(filename);
+					metaGenerator.RequestThumbsAndWave(filename);
+				}
+			}
+			foreach (var dirname in Directory.GetDirectories(folder))
+			{
+				if (Path.GetFileName(dirname) == VidkaFileMapping_resource.DATA_FOLDER)
+					continue;
+				// recurse, bitch
+				QueueUpTheWholeFolder(dirname);
+			}
+		}
 	}
 
-	public enum DragAndDropManagerMode
-	{
+	public enum DragAndDropManagerMode {
 		None = 0,
-		DraggingVideo = 1,
-		DraggingAudio = 2,
+		Video = 1,
+		Audio = 2,
+		Image = 3,
+		Folder = 10,
 	}
+
 	public class DragAndDropMediaFile
 	{
 		private VidkaProj proj;
@@ -265,18 +379,24 @@ namespace Vidka.Core
 		public string Filename { get; set; }
 		public DragAndDropManagerMode Mode { get; set; }
 		public long NFakeFrames { get; set; }
+		public bool HasAudio { get; set; }
 		public VideoMetadataUseful Meta { get; set; }
 		public long LengthInFrames { get {
 			if (Meta == null)
 				return NFakeFrames;
-			double durationSec = (Mode == DragAndDropManagerMode.DraggingVideo)
-				? Meta.GetVideoDurationSec(proj.FrameRate)
-				: Meta.AudioDurationSec;
+			double durationSec = 0;
+			if (Mode == DragAndDropManagerMode.Video)
+				durationSec = Meta.GetVideoDurationSec(proj.FrameRate);
+			else if (Mode == DragAndDropManagerMode.Audio)
+				durationSec = Meta.AudioDurationSec;
+			else if (Mode == DragAndDropManagerMode.Image)
+				durationSec = Settings.Default.ImageClipLengthSeconds;
 			return proj.SecToFrame(durationSec);
 		} }
 		//public double LengthInSec { get {
 		//	return (Meta != null) ? Meta.VideoDurationSec : proj.FrameToSec(NFakeFrames);
 		//} }
+
 	}
 
 }

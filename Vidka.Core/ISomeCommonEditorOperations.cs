@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Vidka.Core.Model;
 
 namespace Vidka.Core
 {
@@ -11,10 +12,10 @@ namespace Vidka.Core
 		void ShowFrameInVideoPlayer(long frame);
 		long SetFrameMarker_ShowFrameInPlayer(long frame);
 		void SetFrameMarker_ForceRepaint(long frame);
-		void SetCurrentVideoClip_ForceRepaint(Model.VidkaClipVideo clip);
+		void SetCurrentVideoClip_ForceRepaint(VidkaClipVideoAbstract clip);
 		void UpdateCanvasWidthFromProjAndDimdim();
 		void AppendToConsole(VidkaConsoleLogLevel vidkaConsoleLogLevel, string p);
 		void cxzxc(string text);
-
-	}
+		string CurFileName { get; }
+    }
 }

@@ -25,10 +25,12 @@ namespace Vidka.Core.Ops
 		//protected const string FfmpegExecutable = ffmpegPath + @"\bin\ffmpeg.exe";
 		//protected const string FfprobeExecutable = ffmpegPath + @"\bin\ffprobe.exe";
 
-		protected const string FfmpegExecutable = "ffmpeg";
-		protected const string FfprobeExecutable = "ffprobe";
-		protected const string MencoderExecutable = "mencoder";
-		protected const string MplayerExecutable = "mplayer";
+		public const string FfmpegExecutable = "ffmpeg";
+        public const string FfprobeExecutable = "ffprobe";
+        public const string MencoderExecutable = "mencoder";
+        public const string MplayerExecutable = "mplayer";
+        public const string VirtualDubExecutable = "VirtualDub";
+		protected const string TmpFolderName = "tmp";
 
 		public OpBaseClass()
 		{
@@ -36,15 +38,11 @@ namespace Vidka.Core.Ops
 			ErrorMessage2 = null;
 		}
 
-		//TODO: Move to base class
-		private string _tmpFolder = "tmp";
-		protected String TmpFolder {
-			get { return _tmpFolder; }
-		}
+		protected string TempFolder { get { return VidkaIO.GetFileFromThisAppDirectory(TmpFolderName); } }
 
 		protected void MakeSureTmpFolderExists() {
-			if (!Directory.Exists(TmpFolder))
-				Directory.CreateDirectory(TmpFolder);
+			if (!Directory.Exists(TempFolder))
+				Directory.CreateDirectory(TempFolder);
 		}
 
 		protected void runProcessRememberError(Process process) {

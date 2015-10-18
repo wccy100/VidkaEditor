@@ -19,7 +19,7 @@ namespace Vidka.Core
 		BottomRight = 2,
 	}
 
-	public interface IVideoEditor : IVidkaConsole
+	public interface IVideoShitbox : IVidkaConsole
 	{
 		int Width { get; }
 		int Height { get; }
@@ -31,11 +31,9 @@ namespace Vidka.Core
 		string OpenProjectSaveDialog();
 		string OpenProjectOpenDialog();
 		void ShowErrorMessage(string title, string message);
+		bool ShowConfirmMessage(string title, string message);
 		void AskTo_PleaseSetPlayerAbsPosition(PreviewPlayerAbsoluteLocation location);
 		void AskTo_PleaseSetFormTitle(string title);
-		
-		//TODO: change
-		//void PlayTest(string filename);
-
+		void PleaseUnlockThisFile(string filename);
 	}
 }

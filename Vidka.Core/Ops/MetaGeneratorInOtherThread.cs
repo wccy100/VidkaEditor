@@ -24,6 +24,9 @@ namespace Vidka.Core.Ops
 
 		public delegate void WaveformReadyHandler(string filename, string fileWave, string fileWaveJpg);
 		public event WaveformReadyHandler WaveformReady;
+
+		public delegate void PleaseUnlockThisFileH(string filename);
+		public event PleaseUnlockThisFileH PleaseUnlockThisFile;
 		#endregion
 
 		private VidkaFileMapping fileMapping;
@@ -36,7 +39,9 @@ namespace Vidka.Core.Ops
 		}
 
 
-		internal void RequestMeta(string filename)
+		public void RequestMeta(
+			string filename,
+			Action<string, VideoMetadataUseful> customCallback = null)
 		{
 			taskThread.QueueThisUpPlease(() =>
 			{
@@ -51,18 +56,22 @@ namespace Vidka.Core.Ops
 					UiPushResult(op1);
 					if (MetaReady != null && op1.MetaXml != null)
 						MetaReady(filename, op1.MetaXml);
+                    if (customCallback != null)
+                        customCallback(filename, op1.MetaXml);
 				}
 				else
 				{
 					var metaXml = MetadataExtraction.LoadMetaFromXml(filenameMeta);
 					if (MetaReady != null)
 						MetaReady(filename, metaXml);
+					if (customCallback != null)
+						customCallback(filename, metaXml);
 				}
 				
 			});
 		}
 
-		internal void RequestThumbsAndWave(string filename)
+		public void RequestThumbsAndWave(string filename)
 		{
 			taskThread.QueueThisUpPlease(() =>
 			{
@@ -74,7 +83,9 @@ namespace Vidka.Core.Ops
 				if (!File.Exists(filenameThumb)) {
 					// generates the thumbnails
 					UiConsolePush(VidkaConsoleLogLevel.Info, "generating thumbs " + Path.GetFileName(filenameThumb));
-					var op2 = new ThumbnailTest(filename, filenameThumb);
+					var op2 = new ThumbnailExtraction(filename, filenameThumb);
+					op2.PleaseUnlockThisFile += dispatch_pleaseUnlockThisFile;
+					op2.run();
 					UiPushResult(op2);
 				}
 				if (ThumbnailsReady != null)
@@ -90,6 +101,54 @@ namespace Vidka.Core.Ops
 					WaveformReady(filename, filenameWave, filenameWaveJpg);
 			});
 			
+		}
+
+		public void RequestThumbsOnly(
+			string filename,
+			bool forceRegenerate = false)
+		{
+			taskThread.QueueThisUpPlease(() =>
+			{
+				var filenameThumb = fileMapping.AddGetThumbnailFilename(filename);
+				fileMapping.MakeSureDataFolderExists(filenameThumb);
+
+				if (!File.Exists(filenameThumb) || forceRegenerate)
+				{
+					// generates the thumbnails
+					UiConsolePush(VidkaConsoleLogLevel.Info, "generating thumbs " + Path.GetFileName(filenameThumb));
+					var op2 = new ThumbnailExtraction(filename, filenameThumb);
+					op2.PleaseUnlockThisFile += dispatch_pleaseUnlockThisFile;
+					op2.run();
+					UiPushResult(op2);
+				}
+				if (ThumbnailsReady != null)
+					ThumbnailsReady(filename, filenameThumb);
+			});
+		}
+
+		public void RequestWaveOnly(
+			string filename,
+			bool forceRegenerate = false,
+			Action<string, string, string> customCallback = null)
+		{
+			taskThread.QueueThisUpPlease(() =>
+			{
+				var filenameWave = fileMapping.AddGetWaveFilenameDat(filename);
+				var filenameWaveJpg = fileMapping.AddGetWaveFilenameJpg(filename);
+				fileMapping.MakeSureDataFolderExists(filenameWave);
+
+				if (!File.Exists(filenameWaveJpg))
+				{
+					// generates the waveform
+					UiConsolePush(VidkaConsoleLogLevel.Info, "generating wave " + Path.GetFileName(filenameWaveJpg));
+					var op3 = new WaveformExtraction(filename, filenameWave, filenameWaveJpg, true);
+					UiPushResult(op3);
+				}
+				if (WaveformReady != null)
+					WaveformReady(filename, filenameWave, filenameWaveJpg);
+				if (customCallback != null)
+					customCallback(filename, filenameWave, filenameWaveJpg);
+			});
 		}
 
 		#region event pushes
@@ -110,6 +169,12 @@ namespace Vidka.Core.Ops
 		{
 			if (HereIsSomeTextForConsole != null)
 				HereIsSomeTextForConsole(level, text);
+		}
+
+		private void dispatch_pleaseUnlockThisFile(string filename)
+		{
+			if (PleaseUnlockThisFile != null)
+				PleaseUnlockThisFile(filename);
 		}
 
 		#endregion

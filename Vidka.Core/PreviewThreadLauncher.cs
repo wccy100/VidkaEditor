@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NAudio.Wave;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,10 +17,11 @@ namespace Vidka.Core
 		public VidkaProj Proj { get; set; }
 		public int CurClipIndex { get; set; }
 		public long CurFrame { get; set; }
+		public double CurPlayerStartPositionSec { get; set; }
 		public double CurStopPositionSec { get; set; }
 		// both of these used for frame marker positioning
-		public long CurClipAbsFrameLeft { get; set; }
-		public long CurClipStartFrame { get; set; }
+		public long CurClipMarkerStartPos { get; set; }
+		//public long CurClipStartFrame { get; set; }
 
 		public bool OnlyLockedClips { get; set; }
 	}
@@ -30,6 +32,7 @@ namespace Vidka.Core
 		private const double SECONDS_PAUSE_MAX = 0.3;
 		private const double STOP_BEFORE_THRESH = 1/30.0;
 		private IVideoPlayer player;
+        private IAudioPlayer playerAudio;
 		private ISomeCommonEditorOperations editor;
 		private PreviewThreadMutex mutex;
 		private Timer ticker;
@@ -37,8 +40,9 @@ namespace Vidka.Core
 		//current state
 
 
-		public PreviewThreadLauncher(IVideoPlayer player, ISomeCommonEditorOperations editor) {
-			this.player = player;
+		public PreviewThreadLauncher(IVideoPlayer player, IAudioPlayer playerAudio, ISomeCommonEditorOperations editor) {
+            this.player = player;
+            this.playerAudio = playerAudio;
 			this.editor = editor;
 			mutex = new PreviewThreadMutex();
 			ticker = new Timer();
@@ -71,6 +75,9 @@ namespace Vidka.Core
 				mutex.IsPlaying = true;
 				mutex.CurClipIndex = curClipIndex;
 				mutex.CurFrame = frameStart;
+                // ... setup audio player with all possible clips that may come up
+                InitAudioData(proj);
+                // ... start playback now
 				StartPlaybackOfClip(clip, frameOffset);
 				// ... set up ticker
 				ticker.Interval = (int)(1000 * proj.FrameToSec(1)); // 1 tick per frame... its a hack but im too lazy
@@ -79,13 +86,39 @@ namespace Vidka.Core
 			}
 		}
 
+        private void InitAudioData(VidkaProj proj)
+        {
+            foreach (var clip in proj.ClipsAudio)
+            {
+                var secOffset = mutex.Proj.FrameToSec(clip.FrameOffset);
+                var secStart = mutex.Proj.FrameToSec(clip.FrameStart);
+                var secEnd = mutex.Proj.FrameToSec(clip.FrameEnd);
+                playerAudio.AddAudioClip(secOffset, secStart, secEnd, clip.FileName, clip);
+            }
+            long curFrame = 0;
+            foreach (var clip in proj.ClipsVideo)
+            {
+                var secOffset = mutex.Proj.FrameToSec(curFrame);
+                var secStart = mutex.Proj.FrameToSec(clip.FrameStart);
+                var secEnd = mutex.Proj.FrameToSec(clip.FrameEnd);
+                if (clip.HasCustomAudio)
+                    playerAudio.AddAudioClip(
+                        secOffset,
+                        clip.CustomAudioOffset + secStart,
+                        clip.CustomAudioOffset + secEnd,
+                        clip.CustomAudioFilename,
+                        clip);
+                curFrame += clip.LengthFrameCalc;
+            }
+        }
+
 		private void PlaybackTickerFunc(object sender, EventArgs e)
 		{
 			lock (mutex)
 			{
 				mutex.CurFrame++;
 				var secCurClip = player.GetPositionSec();
-				var frameMarkerPosition = mutex.CurClipAbsFrameLeft + mutex.Proj.SecToFrame(secCurClip) - mutex.CurClipStartFrame;
+				var frameMarkerPosition = mutex.CurClipMarkerStartPos + mutex.Proj.SecToFrame(secCurClip - mutex.CurPlayerStartPositionSec);
 				editor.SetFrameMarker_ForceRepaint(frameMarkerPosition);
 				if (secCurClip >= mutex.CurStopPositionSec - STOP_BEFORE_THRESH || player.IsStopped())
 				{
@@ -104,20 +137,41 @@ namespace Vidka.Core
 						editor.AppendToConsole(VidkaConsoleLogLevel.Debug, "Next clip: " + mutex.CurClipIndex);
 					}
 				}
-
+                // audio track
+                //var audios = mutex.Proj.ClipsAudio.Where(x => x.FrameOffset == frameMarkerPosition);
+                //editor.cxzxc(string.Format("froame: {0}/{1} => {2}", frameMarkerPosition, mutex.Proj.ClipsAudio.FirstOrDefault().FrameOffset, audios.Count()));
+                //foreach (var clip in audios)
+                //{
+                //    var secStart = mutex.Proj.FrameToSec(clip.FrameStart);
+                //    var secEnd = mutex.Proj.FrameToSec(clip.FrameEnd);
+                //    playerAudio.PlayAudioClip(clip.FileName, secStart, secEnd);
+                //    editor.cxzxc("playing audio: " + clip.FileName + " " + frameMarkerPosition);
+                //}
+                var curAbsSec = mutex.Proj.FrameToSec(frameMarkerPosition);
+                playerAudio.WeAreHereStartPlaying(curAbsSec);
 			}
 
 		}
 
-		private void StartPlaybackOfClip(VidkaClipVideo clip, long? frameOffsetCustom = null)
+		private void StartPlaybackOfClip(VidkaClipVideoAbstract clip, long? frameOffsetCustom = null)
 		{
-			mutex.CurClipAbsFrameLeft = mutex.Proj.GetVideoClipAbsFramePositionLeft(clip);
-			mutex.CurClipStartFrame = clip.FrameStart;
-			var clipSecStart = mutex.Proj.FrameToSec(frameOffsetCustom ?? clip.FrameStart); //hacky, i know
-			var clipSecEnd = mutex.Proj.FrameToSec(clip.FrameEnd); //hacky, i know
+			mutex.CurClipMarkerStartPos = mutex.Proj.GetVideoClipAbsFramePositionLeft(clip);
+			if (frameOffsetCustom.HasValue)
+				mutex.CurClipMarkerStartPos += frameOffsetCustom.Value - clip.FrameStart;
+			var curAbsSec = mutex.Proj.FrameToSec(mutex.CurClipMarkerStartPos);
+			var ppFrameStart = clip.GetPlaybackFrameStart(frameOffsetCustom);
+			var ppFrameEnd = clip.GetPlaybackFrameEnd(frameOffsetCustom);
+			var clipSecStart = mutex.Proj.FrameToSec(ppFrameStart);
+			var clipSecEnd = mutex.Proj.FrameToSec(ppFrameEnd);
+			mutex.CurPlayerStartPositionSec = clipSecStart;
 			mutex.CurStopPositionSec = clipSecEnd;
 			editor.SetCurrentVideoClip_ForceRepaint(clip);
-			player.PlayVideoClip(clip.FileName, clipSecStart, clipSecEnd);
+            var doMute = (clip.HasCustomAudio || clip.IsMuted);
+            //if (clip.HasCustomAudio)
+            //    playerAudio.PlayAudioClip(clip.CustomAudioFilename, clip.CustomAudioOffset + clipSecStart, clip.CustomAudioOffset + clipSecEnd);
+			player.PlayVideoClip(clip.FileName, clipSecStart, clipSecEnd, doMute);
+            playerAudio.PauseAll();
+            playerAudio.WeAreHereStartPlaying(curAbsSec);
 		}
 
 		public void StopPlayback()
@@ -127,6 +181,8 @@ namespace Vidka.Core
 				ticker.Stop();
 				mutex.IsPlaying = false;
 				player.StopWhateverYouArePlaying();
+                playerAudio.StopWhateverYouArePlaying();
+                playerAudio.Clear();
 				editor.AppendToConsole(VidkaConsoleLogLevel.Debug, "StopPlayback");
 			}
 
@@ -143,5 +199,7 @@ namespace Vidka.Core
 		}
 
 		public bool IsPlaying { get { return mutex.IsPlaying; } }
-	}
+
+
+    }
 }

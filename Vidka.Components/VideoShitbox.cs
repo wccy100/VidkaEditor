@@ -11,10 +11,13 @@ using System.Diagnostics;
 using Vidka.Core;
 using Vidka.Core.VideoMeta;
 using System.Runtime.InteropServices;
+using Vidka.Core.Model;
+using System.Windows;
+using Vidka.Components.Properties;
 
 namespace Vidka.Components {
 
-	public partial class VideoShitbox : UserControl, IVideoEditor
+	public partial class VideoShitbox : UserControl, IVideoShitbox
 	{
 		#region events
 		public delegate void TogglePreviewMode_Handler();
@@ -22,6 +25,10 @@ namespace Vidka.Components {
 
 		public delegate void PleaseToggleConsoleVisibility_Handler();
 		public event PleaseToggleConsoleVisibility_Handler PleaseToggleConsoleVisibility;
+
+
+		public delegate void PleaseShowClipUsages_Handler();
+		public event PleaseShowClipUsages_Handler PleaseShowClipUsages;
 
 		public delegate void PleaseSetPlayerAbsPosition_Handler(PreviewPlayerAbsoluteLocation location);
 		public event PleaseSetPlayerAbsPosition_Handler PleaseSetPlayerAbsPosition;
@@ -48,7 +55,7 @@ namespace Vidka.Components {
 			InitializeComponent();
 			imageMan = new ImageCacheManager();
 			imageMan.ImagesReady += imageMan_ImagesReady;
-			drawOps = new EditorDrawOps(imageMan);
+			drawOps = new EditorDrawOps();
 			mouseDown = false;
 			ConsoleSingleton = this;
 		}
@@ -154,28 +161,32 @@ namespace Vidka.Components {
 				Logic.ControlPressed();
 			if (e.Shift && e.KeyCode.IsLRShiftKey())
 				Logic.ShiftPressed();
+			//------- commented out because we have created menu shortcuts
 			//if (e.Control && e.KeyCode == Keys.S) // these are controlled from MainForm now
 			//	Logic.SaveTriggered();
 			//else if (e.Control && e.KeyCode == Keys.O)
 			//	Logic.OpenTriggered();
 			//else if (e.Control && e.Shift && e.KeyCode == Keys.E)
 			//	Logic.ExportToAvs();
-			else if (e.Control && e.KeyCode == Keys.Left)
-				Logic.LeftRightArrowKeys(Keys.Control | Keys.Left);
-			else if (e.Control && e.KeyCode == Keys.Right)
-				Logic.LeftRightArrowKeys(Keys.Control | Keys.Right);
 			else if (e.Control && e.KeyCode == Keys.Oemplus)
 				Logic.ZoomIn(Width);
 			else if (e.Control && e.KeyCode == Keys.OemMinus)
 				Logic.ZoomOut(Width);
+			//else if (e.Alt && e.KeyCode == Keys.Enter)
+			else if (e.KeyCode == Keys.F4)
+				OpenClipProperties(Logic.UiObjects.CurrentClip);
 			else if (e.Control && e.KeyCode == Keys.Space)
 				Logic.PlayPause(onlyLockedClips: true);
 			else if (e.KeyCode == Keys.Space)
 				Logic.PlayPause(false);
 			else if (e.Control && e.Shift && e.KeyCode == Keys.B)
-				Logic.PreviewAvsSegmentInMplayer(true);
+				Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview, true);
 			else if (e.Control && e.KeyCode == Keys.B)
-				Logic.PreviewAvsSegmentInMplayer(false);
+                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview, false);
+            else if (e.Control && e.Shift && e.KeyCode == Keys.G)
+                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, true);
+            else if (e.Control && e.KeyCode == Keys.G)
+                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, false);
 			else if (e.KeyCode == Keys.Home)
 				Logic.SetFrameMarker_0_ForceRepaint();
 			else if (e.KeyCode == Keys.End)
@@ -188,6 +199,14 @@ namespace Vidka.Components {
 				Logic.Undo();
 			else if (e.Control && e.KeyCode == Keys.Y)
 				Logic.Redo();
+			else if (e.Control && e.KeyCode == Keys.C)
+				Logic.CopyCurClipToClipboard();
+			else if (e.Control && e.KeyCode == Keys.X)
+				Logic.CutCurClipToClipboard();
+			else if (e.Control && e.KeyCode == Keys.V)
+				Logic.PasteClipFromClipboard();
+			else if (e.Control && e.Shift && e.KeyCode == Keys.D)
+				Logic.DuplicateCurClip();
 			else if (e.KeyCode == Keys.S)
 				Logic.SplitCurClipVideo(false);
 			else if (e.KeyCode == Keys.L)
@@ -210,6 +229,54 @@ namespace Vidka.Components {
 				if (PleaseToggleConsoleVisibility != null)
 					PleaseToggleConsoleVisibility();
 			}
+			else if (e.KeyCode == Keys.W) {
+				if (PleaseShowClipUsages != null)
+					PleaseShowClipUsages();
+			}
+		}
+
+		private void OpenClipProperties(VidkaClip clip)
+		{
+			if (clip == null)
+				return;
+			VidkaClip newClip = null;
+			var window = new VideoClipPropertiesWindow {
+				Text = "Advanced clip properties",
+			};
+			if (clip is VidkaClipVideo)
+			{
+				var vclip = (VidkaClipVideo)clip;
+				var vclip2 = vclip.MakeCopy();
+				newClip = vclip2;
+				window.CommonPropertiesControl.SetParticulars(vclip2);
+                window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+			}
+			else if (clip is VidkaClipImage)
+			{
+				var vclip = (VidkaClipImage)clip;
+				var vclip2 = vclip.MakeCopy();
+				newClip = vclip2;
+				window.CommonPropertiesControl.SetParticulars(vclip2);
+                window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+				//window.AddImportantTab("");
+			}
+			else if (clip is VidkaClipTextSimple)
+			{
+				var vclip = (VidkaClipTextSimple)clip;
+				var vclip2 = (VidkaClipTextSimple)vclip.MakeCopy();
+				newClip = vclip2;
+				window.CommonPropertiesControl.SetParticulars(vclip2);
+                window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+				var textCreationControl = new SimpleTextSettings();
+				textCreationControl.SetVideoClip(vclip2);
+				window.AddImportantTab("Text", textCreationControl);
+			}
+			if (newClip != null)
+			{
+				var result = window.ShowDialog();
+				if (result == System.Windows.Forms.DialogResult.OK)
+					Logic.ReplaceClip(clip, newClip);
+			}
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -217,8 +284,10 @@ namespace Vidka.Components {
 			switch (keyData) {
 				case Keys.Left:
 				case Keys.Right:
-				case Keys.Alt | Keys.Left:
-				case Keys.Alt | Keys.Right:
+				case Keys.Control | Keys.Left:
+				case Keys.Control | Keys.Right:
+				case Keys.Shift | Keys.Left:
+				case Keys.Shift | Keys.Right:
 					Logic.LeftRightArrowKeys(keyData);
 					break;
 			}
@@ -340,6 +409,16 @@ namespace Vidka.Components {
 			MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
 		}
 
+		public bool ShowConfirmMessage(string title, string message)
+		{
+			var result = MessageBox.Show(message, title, MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
+			return result == DialogResult.OK;
+		}
+
+		public void PleaseUnlockThisFile(string filename)
+		{
+			imageMan.UnlockFileIfInUse(filename);
+		}
 
 		#endregion
 
@@ -372,88 +451,39 @@ namespace Vidka.Components {
 			repaintCount++;
 			//cxzxc("y repaint 2x:" + repaintCount);
 
-			//prepare canvas: paint strips for timelines, etc
-			drawOps.PrepareCanvas(e.Graphics, Logic.Dimdim, Width, Height, Logic.UiObjects.TimelineHover);
+			drawOps.setParameters(e.Graphics, Logic, imageMan, Width, Height);
 
-			drawOps.DrawTimeAxis(e.Graphics, Logic.Dimdim, Width, Height, Logic.Proj);
+			//prepare canvas: paint strips for timelines, etc
+			drawOps.PrepareCanvas();
+
+			drawOps.DrawTimeAxis();
 
 			// TODO: buffer an off-screen image of the entire project
-			drawOps.DrawProjectVideoTimeline(
-				e.Graphics,
-				Width, Height,
-				Logic.Proj,
-				Logic.FileMapping,
-				Logic.Dimdim,
-				Logic.UiObjects.CurrentVideoClip,
-				Logic.UiObjects.Draggy);
+			drawOps.DrawProjectVideoTimeline();
 
-			drawOps.DrawProjectAudioTimeline(
-				e.Graphics,
-				Width, Height,
-				Logic.Proj,
-				Logic.Dimdim,
-				Logic.UiObjects.CurrentAudioClip,
-				Logic.UiObjects.Draggy);
+			drawOps.DrawProjectAudioTimeline();
 
 			// draw hover clip outline
 			if (Logic.UiObjects.CurrentVideoClipHover != null)
-				drawOps.OutlineClipVideoHover(
-					e.Graphics,
-					Logic.UiObjects.CurrentVideoClipHover,
-					Logic.Dimdim,
-					Height,
-					Logic.UiObjects.TrimHover,
-					Logic.UiObjects.TrimThreshPixels,
-					Logic.UiObjects.MouseDragFrameDelta);
-			//if (Logic.UiObjects.CurrentAudioClipHover != null)
-			//	drawOps.OutlineClipAudioHover(
-			//		e.Graphics,
-			//		Logic.UiObjects.CurrentAudioClipHover,
-			//		Logic.Dimdim,
-			//		Height,
-			//		OutlineClipType.Hover);
+				drawOps.OutlineClipVideoHover();
+			if (Logic.UiObjects.CurrentAudioClipHover != null)
+				drawOps.OutlineClipAudioHover();
 
 			if (Logic.UiObjects.OriginalTimelinePlaybackMode) {
-				drawOps.DrawCurtainForOriginalPlayback(
-					e.Graphics,
-					Width,
-					Height,
-					Logic.Dimdim);
+				drawOps.DrawCurtainForOriginalPlayback();
 			}
 			else {
-				drawOps.DrawCurrentFrameMarker(
-					e.Graphics,
-					Logic.UiObjects.CurrentMarkerFrame,
-					Height,
-					Logic.Dimdim);
+				drawOps.DrawCurrentFrameMarker();
 			}
 
 			if (Logic.UiObjects.CurrentVideoClip != null) {
-				drawOps.DrawCurrentClipVideo(
-					e.Graphics,
-					Logic.UiObjects.CurrentVideoClip,
-					Logic.Dimdim,
-					Logic.Proj,
-					Logic.FileMapping,
-					Width, Height,
-					(Logic.UiObjects.CurrentVideoClip == Logic.UiObjects.CurrentVideoClipHover)
-						? OutlineClipType.Hover
-						: OutlineClipType.Active,
-					Logic.UiObjects.OriginalTimelinePlaybackMode,
-					Logic.UiObjects.TrimHover,
-					Logic.UiObjects.TrimThreshPixels,
-					Logic.UiObjects.CurrentMarkerFrame,
-					Logic.UiObjects.CurrentClipFrameAbsPos ?? 0,
-					Logic.UiObjects.MouseDragFrameDelta);
+				drawOps.DrawOriginalTimelineAndItsClipOrClips();
 			}
 			if (Logic.UiObjects.CurrentAudioClip != null) {
-				drawOps.DrawCurrentClipAudio(
-					e.Graphics,
-					Logic.UiObjects.CurrentAudioClip,
-					Width,
-					Height,
-					Logic.Dimdim);
+				drawOps.DrawCurrentClipAudioOnOriginalTimeline();
 			}
+
+			drawOps.DrawDraggySeparately();
 			imageMan.___paintEnd();
 		}
 

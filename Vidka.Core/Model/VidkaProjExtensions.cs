@@ -49,7 +49,7 @@ namespace Vidka.Core.Model
 		/// <summary>
 		/// returns null if index is out of bounds
 		/// </summary>
-		public static VidkaClipVideo GetVideoClipAtIndex(this VidkaProj proj, int index)
+		public static VidkaClipVideoAbstract GetVideoClipAtIndex(this VidkaProj proj, int index)
 		{
 			if (index < 0 || index >= proj.ClipsVideo.Count)
 				return null;
@@ -60,7 +60,7 @@ namespace Vidka.Core.Model
 		/// returns clip at index, if it is locked, and, if not, looks for the next clip
 		/// returns null if index is out of bounds
 		/// </summary>
-		public static VidkaClipVideo GetNextLockedVideoClipStartingAtIndex(this VidkaProj proj, int index, out int newIndex)
+		public static VidkaClipVideoAbstract GetNextLockedVideoClipStartingAtIndex(this VidkaProj proj, int index, out int newIndex)
 		{
 			newIndex = -1;
 			if (index < 0 || index >= proj.ClipsVideo.Count)
@@ -75,7 +75,7 @@ namespace Vidka.Core.Model
 		/// returns either the first or last clip if index is out of bounds respectively.
 		/// If there are no clips at all, returns null
 		/// </summary>
-		public static VidkaClipVideo GetVideoClipAtIndexForce(this VidkaProj proj, int index)
+		public static VidkaClipVideoAbstract GetVideoClipAtIndexForce(this VidkaProj proj, int index)
 		{
 			if (proj.ClipsVideo.Count == 0)
 				return null;
@@ -133,7 +133,7 @@ namespace Vidka.Core.Model
 		/// Instead returns the frame of the clip (left side) within project absolute frame space.
 		/// Returns -1 if the clip is not even in the project
 		/// </summary>
-		public static long GetVideoClipAbsFramePositionLeft(this VidkaProj proj, VidkaClipVideo clip)
+		public static long GetVideoClipAbsFramePositionLeft(this VidkaProj proj, VidkaClipVideoAbstract clip)
 		{
 			long totalFrames = 0;
 			foreach (var ccc in proj.ClipsVideo)
@@ -145,7 +145,7 @@ namespace Vidka.Core.Model
 			return -1;
 		}
 
-		public static VidkaProj Crop(this VidkaProj proj, long frameStart, long framesLength, int? newW=null, int? newH=null)
+		public static VidkaProj Crop(this VidkaProj proj, long frameStart, long framesLength, int? newW = null, int? newH = null, bool onlyLockedClips = false)
 		{
 			var newProj = new VidkaProj() {
 				FrameRate = proj.FrameRate,
@@ -164,8 +164,15 @@ namespace Vidka.Core.Model
 				// outside: too late
 				if (curFrame > frameEnd)
 					break;
+				if (onlyLockedClips && !vclip.IsLocked) {
+					// we are on a the first non-locked clip of our subsequence...
+					// but we skip it to the first locked clip, thus, we don't need asd1d21w to be called
+					if (!newProj.ClipsVideo.Any())
+						curFrame = frameStart;
+					continue;
+				}
 				var newVClip = vclip.MakeCopy();
-				// trim start, if neccessary
+				// trim start, if neccessary (asd1d21w)
 				if (curFrame < frameStart)
 					newVClip.FrameStart += (frameStart - curFrame);
 				// trim end, if neccessary
@@ -174,6 +181,21 @@ namespace Vidka.Core.Model
 				newProj.ClipsVideo.Add(newVClip);
 				curFrame += vclip.LengthFrameCalc;
 			}
+            foreach (var aclip in proj.ClipsAudio)
+            {
+                var newAClip = aclip.MakeCopy();
+                newAClip.FrameOffset = aclip.FrameOffset - frameStart;
+                if (newAClip.FrameOffset + newAClip.LengthFrameCalc < 0)
+                    continue;
+                if (newAClip.FrameOffset > frameStart + framesLength)
+                    continue;
+                if (newAClip.FrameOffset < 0)
+                {
+                    newAClip.FrameStart = newAClip.FrameStart - newAClip.FrameOffset;
+                    newAClip.FrameOffset = 0;
+                }
+                newProj.ClipsAudio.Add(newAClip);
+            }
 			return newProj;
 		}
 
@@ -184,7 +206,7 @@ namespace Vidka.Core.Model
 		/// <summary>
 		/// Returns what the delta should be not to violate the trimming of this clip
 		/// </summary>
-		public static long HowMuchCanBeTrimmed(this VidkaClipVideo clip, TrimDirection side, long delta)
+		public static long HowMuchCanBeTrimmed(this VidkaClip clip, TrimDirection side, long delta)
 		{
 			if (clip == null)
 				return 0;
@@ -212,7 +234,7 @@ namespace Vidka.Core.Model
 		/// <summary>
 		/// Debug description
 		/// </summary>
-		public static string cxzxc(this VidkaClipVideo clip) {
+		public static string cxzxc(this VidkaClipVideoAbstract clip) {
 			if (clip == null)
 				return "null";
 			return Path.GetFileName(clip.FileName);

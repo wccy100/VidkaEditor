@@ -32,6 +32,16 @@ namespace Vidka.Core
 			return !oneDifferent;
 		}
 
+		public static bool ReplaceElement<T>(this List<T> list, T objOld, T objNew)
+		{
+			if (!list.Contains(objOld))
+				return false;
+			var index = list.IndexOf(objOld);
+			list.Remove(objOld);
+			list.Insert(index, objNew);
+			return true;
+		}
+
 		public static string ToString_MinuteOrHour(this TimeSpan ts) {
 			return ts.ToString((ts.TotalHours >= 1) ? @"hh\:mm\:ss" : @"mm\:ss");
 		}
@@ -40,13 +50,13 @@ namespace Vidka.Core
 
 		#region =============== editing helpers ===================
 
-		public static void SetFrameMarker_LeftOfVClip(this ISomeCommonEditorOperations iEditor, VidkaClipVideo vclip, VidkaProj proj)
+		public static void SetFrameMarker_LeftOfVClip(this ISomeCommonEditorOperations iEditor, VidkaClipVideoAbstract vclip, VidkaProj proj)
 		{
 			long frameMarker = proj.GetVideoClipAbsFramePositionLeft(vclip);
 			iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
 		}
 
-		public static void SetFrameMarker_RightOfVClipJustBefore(this ISomeCommonEditorOperations iEditor, VidkaClipVideo vclip, VidkaProj proj)
+		public static void SetFrameMarker_RightOfVClipJustBefore(this ISomeCommonEditorOperations iEditor, VidkaClipVideoAbstract vclip, VidkaProj proj)
 		{
 			long frameMarker = proj.GetVideoClipAbsFramePositionLeft(vclip);
 			var rightThreshFrames = proj.SecToFrame(Settings.Default.RightTrimMarkerOffsetSeconds);
@@ -55,6 +65,21 @@ namespace Vidka.Core
 				frameMarker += vclip.LengthFrameCalc - rightThreshFrames;
 			iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
 		}
+
+        public static void SetFrameMarker_LeftOfAClip(this ISomeCommonEditorOperations iEditor, VidkaClipAudio clip)
+        {
+            iEditor.SetFrameMarker_ShowFrameInPlayer(clip.FrameOffset);
+        }
+
+        public static void SetFrameMarker_RightOfAClipJustBefore(this ISomeCommonEditorOperations iEditor, VidkaClipAudio clip, VidkaProj proj)
+        {
+            long frameMarker = clip.FrameOffset; // start
+            var rightThreshFrames = proj.SecToFrame(Settings.Default.RightTrimMarkerOffsetSeconds);
+            // if clip is longer than RightTrimMarkerOffsetSeconds, we can skip to end-RightTrimMarkerOffsetSeconds
+            if (clip.LengthFrameCalc > rightThreshFrames)
+                frameMarker += clip.LengthFrameCalc - rightThreshFrames;
+            iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
+        }
 
 		#endregion
 	}

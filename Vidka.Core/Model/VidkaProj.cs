@@ -10,11 +10,12 @@ using System.Xml.Serialization;
 
 namespace Vidka.Core.Model
 {
+	[Serializable]
 	public class VidkaProj
 	{
 		public VidkaProj()
 		{
-			ClipsVideo = new List<VidkaClipVideo>();
+			ClipsVideo = new List<VidkaClipVideoAbstract>();
 			ClipsAudio = new List<VidkaClipAudio>();
 			FrameRate = 30;
 			Width = 1280;
@@ -25,7 +26,13 @@ namespace Vidka.Core.Model
 		public double FrameRate { get; set; }
 		public int Width { get; set; }
 		public int Height { get; set; }
-		public List<VidkaClipVideo> ClipsVideo { get; set; }
+
+		[XmlArray("ClipsVideo")]
+		[XmlArrayItem("VidkaClipVideo", typeof(VidkaClipVideo))]
+		[XmlArrayItem("VidkaClipImage", typeof(VidkaClipImage))]
+		[XmlArrayItem("VidkaClipTextSimple", typeof(VidkaClipTextSimple))]
+		public List<VidkaClipVideoAbstract> ClipsVideo { get; set; }
+		
 		public List<VidkaClipAudio> ClipsAudio { get; set; }
 		
 		/// <summary>
@@ -35,11 +42,15 @@ namespace Vidka.Core.Model
 		public void Compile()
 		{
 			foreach (var vclip in ClipsVideo) {
-				vclip.FileLengthFrames = this.SecToFrame(vclip.FileLengthSec ?? 0); //TODO qwe
+				vclip.FileLengthFrames = this.SecToFrame(vclip.FileLengthSec ?? 0);
+			}
+            foreach (var vclip in ClipsAudio) {
+                vclip.FileLengthFrames = this.SecToFrame(vclip.FileLengthSec ?? 0); 
 			}
 		}
 	}
 
+	[Serializable]
 	public class VidkaClip
 	{
 		public string FileName { get; set; }
@@ -77,24 +88,92 @@ namespace Vidka.Core.Model
 		public bool IsNotYetAnalyzed { get; set; }
 	}
 
-	public class VidkaClipVideo : VidkaClip
+	[Serializable]
+	public abstract class VidkaClipVideoAbstract : VidkaClip
 	{
-		public VidkaClipVideo() {
+		public VidkaClipVideoAbstract()
+		{
 			Subtitles = new List<VidkaSubtitle>();
 		}
 
 		public List<VidkaSubtitle> Subtitles { get; private set; }
-
 		public bool IsMuted { get; set; }
+		public string PostOp { get; set; }
+		public bool HasCustomAudio { get; set; }
+		public string CustomAudioFilename { get; set; }
+        public double? CustomAudioLengthSec { get; set; }
+		public float CustomAudioOffset { get; set; }
+        [XmlIgnore]
+		public virtual bool HasAudio { get { return false; } }
 
-		public VidkaClipVideo MakeCopy()
+		public virtual VidkaClipVideoAbstract MakeCopy()
 		{
-			var clip = (VidkaClipVideo)this.MemberwiseClone();
+			var clip = (VidkaClipVideoAbstract)this.MemberwiseClone();
+			// TODO: copy over non-shallow values (subtitles, etc)
+			return clip;
+		}
+		public virtual long GetPlaybackFrameStart(long? curstomFrameOffset) {
+			return curstomFrameOffset ?? FrameStart;
+		}
+		public virtual long GetPlaybackFrameEnd(long? curstomFrameOffset) {
+			return FrameEnd;
+		}
+    }
+
+	[Serializable]
+	public class VidkaClipVideo : VidkaClipVideoAbstract
+	{
+		public VidkaClipVideo() {}
+
+		public bool? HasAudioXml { get; set; }
+
+		[XmlIgnore]
+		public override bool HasAudio { get { return HasAudioXml ?? true; } }
+
+		public override VidkaClipVideoAbstract MakeCopy()
+		{
+			var clip = (VidkaClipVideoAbstract)this.MemberwiseClone();
 			// TODO: copy over non-shallow values (subtitles, etc)
 			return clip;
 		}
 	}
 
+	[Serializable]
+	public class VidkaClipImage : VidkaClipVideoAbstract
+	{
+		public double FileLengthSecOverride { get; set; }
+
+		public override long GetPlaybackFrameStart(long? curstomFrameOffset) {
+			return 0;
+		}
+		public override long GetPlaybackFrameEnd(long? curstomFrameOffset) {
+			return curstomFrameOffset.HasValue
+				? FrameEnd - curstomFrameOffset.Value
+				: LengthFrameCalc;
+		}
+	}
+
+	[Serializable]
+	public class VidkaClipTextSimple : VidkaClipVideoAbstract
+	{
+		public override long GetPlaybackFrameStart(long? curstomFrameOffset)
+		{
+			return 0;
+		}
+		public override long GetPlaybackFrameEnd(long? curstomFrameOffset)
+		{
+			return curstomFrameOffset.HasValue
+				? FrameEnd - curstomFrameOffset.Value
+				: LengthFrameCalc;
+		}
+
+		public string Text { get; set; }
+		public int ArgbBackgroundColor { get; set; }
+		public int ArgbFontColor { get; set; }
+		public float FontSize { get; set; }
+	}
+
+	[Serializable]
 	public class VidkaClipAudio : VidkaClip
 	{
 		public VidkaClipAudio() { }
@@ -102,7 +181,7 @@ namespace Vidka.Core.Model
 		/// <summary>
 		/// position (frames) wrt project's beginning of the start of this audio clip
 		/// </summary>
-		public int FrameOffset { get; set; }
+		public long FrameOffset { get; set; }
 
 		public VidkaClipAudio MakeCopy()
 		{
@@ -111,17 +190,19 @@ namespace Vidka.Core.Model
 		}
 	}
 
-	public class VidkaSubtitle {
+	[Serializable]
+	public class VidkaSubtitle
+	{
 		public VidkaSubtitle() {
 		}
 
 		public string Text { get; set; }
 		/// <summary>
-		/// relative to Frame 0 of video this subtitle pertains to
+		/// relative to start of video file
 		/// </summary>
 		public int FrameStart { get; set; }
 		/// <summary>
-		/// relative to Frame 0 of video this subtitle pertains to
+		/// relative to start of video file
 		/// </summary>
 		public int FrameEnd { get; set; }
 	}

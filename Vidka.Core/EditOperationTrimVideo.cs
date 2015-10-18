@@ -18,7 +18,7 @@ namespace Vidka.Core
 		public EditOperationTrimVideo(ISomeCommonEditorOperations iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
-			IVideoEditor editor,
+			IVideoShitbox editor,
 			IVideoPlayer videoPlayer,
 			TrimDirection side,
 			ProjectDimensionsTimelineType timeline)

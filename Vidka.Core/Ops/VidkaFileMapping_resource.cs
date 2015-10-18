@@ -13,7 +13,7 @@ namespace Vidka.Core.Ops
 	/// </summary>
 	public class VidkaFileMapping_resource : VidkaFileMapping
 	{
-		private const string DATA_FOLDER = ".vidkadata";
+		public const string DATA_FOLDER = ".vidkadata";
 
 		public VidkaFileMapping_resource()
 		{
@@ -21,12 +21,16 @@ namespace Vidka.Core.Ops
 
 		public override string AddGetMetaFilename(string filename)
 		{
+            if (filename == null)
+                return null;
 			var justName = Path.GetFileNameWithoutExtension(filename);
 			var dirname = Path.GetDirectoryName(filename);
 			return Path.Combine(dirname, DATA_FOLDER, justName + ".xml");
 		}
 		public override string AddGetThumbnailFilename(string filename)
 		{
+            if (filename == null)
+                return null;
 			var justName = Path.GetFileNameWithoutExtension(filename);
 			var dirname = Path.GetDirectoryName(filename);
 			return Path.Combine(dirname, DATA_FOLDER, justName + "_thumbs.jpg");
@@ -34,17 +38,22 @@ namespace Vidka.Core.Ops
 
 		public override string AddGetWaveFilenameDat(string filename)
 		{
+            if (filename == null)
+                return null;
 			var justName = Path.GetFileNameWithoutExtension(filename);
 			var dirname = Path.GetDirectoryName(filename);
 			return Path.Combine(dirname, DATA_FOLDER, justName + "_wave.dat");
 		}
 		public override string AddGetWaveFilenameJpg(string filename)
 		{
+            if (filename == null)
+                return null;
 			var justName = Path.GetFileNameWithoutExtension(filename);
 			var dirname = Path.GetDirectoryName(filename);
 			return Path.Combine(dirname, DATA_FOLDER, justName + "_wave.jpg");
 		}
-		public override void MakeSureDataFolderExists(string filename) {
+		public override void MakeSureDataFolderExists(string filename)
+        {
 			var dataFolder = Path.GetDirectoryName(filename);
 			if (!Directory.Exists(dataFolder))
 				Directory.CreateDirectory(dataFolder);

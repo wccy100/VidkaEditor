@@ -33,7 +33,7 @@ namespace Vidka.Core.Ops
 			var justName = Path.GetFileNameWithoutExtension(filename);
 			//return Path.Combine(projDataFolder, justName + "_thumbs.jpg");
 			var dirname = Path.GetDirectoryName(filename);
-			return Path.Combine(dirname, ".vidkadata", justName + "_thumbs.jpg");
+			return Path.Combine(dirname, VidkaFileMapping_resource.DATA_FOLDER, justName + "_thumbs.jpg");
 		}
 
 		public override string AddGetWaveFilenameDat(string filename) {

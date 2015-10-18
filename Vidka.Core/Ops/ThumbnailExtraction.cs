@@ -12,19 +12,31 @@ using System.ComponentModel;
 
 namespace Vidka.Core.Ops
 {
-	public class ThumbnailTest : OpBaseClass
+	public class ThumbnailExtraction : OpBaseClass
 	{
 		public const int ThumbW = 64;
 		public const int ThumbH = 36;
 		public const double ThumbIntervalSec = 0.5;
 
-		public ThumbnailTest(string filename, string outFilename)
+		private string filename;
+		private string outFilename;
+		
+		public ThumbnailExtraction(string filename, string outFilename)
 			: base()
+		{
+			this.filename = filename;
+			this.outFilename = outFilename;
+		}
+
+		public void run()
 		{
 			MakeSureTmpFolderExists();
 			RunFfMpegThumbnail(filename);
-			StitchIntoOneBmp(TmpFolder, outFilename);
+			StitchIntoOneBmp(TempFolder, outFilename);
 		}
+
+		public delegate void PleaseUnlockThisFileH(string filename);
+		public event PleaseUnlockThisFileH PleaseUnlockThisFile;
 
 		private void StitchIntoOneBmp(string TmpFolder, string outFilename)
 		{
@@ -63,6 +75,11 @@ namespace Vidka.Core.Ops
 			ggg.Flush();
 
 			// save all to one jpg file
+			if (File.Exists(outFilename)) {
+				if (PleaseUnlockThisFile != null)
+					PleaseUnlockThisFile(outFilename);
+				File.Delete(outFilename);
+			}
 			allThumbs.Save(outFilename, ImageFormat.Jpeg);
 			allThumbs.Dispose();
 
@@ -79,7 +96,7 @@ namespace Vidka.Core.Ops
 			process.StartInfo.FileName = FfmpegExecutable;
 			// make img 64x36 every 0.5 sec
 			// source: https://trac.ffmpeg.org/wiki/Create%20a%20thumbnail%20image%20every%20X%20seconds%20of%20the%20video
-			process.StartInfo.Arguments = String.Format("-i \"{0}\" -y -f image2 -vf \"scale={2},fps=fps=1/{3}\" {1}/out%d.jpg", filename, TmpFolder, ThumbW + ":" + ThumbH, ThumbIntervalSec);
+			process.StartInfo.Arguments = String.Format("-i \"{0}\" -y -f image2 -vf \"scale={2},fps=fps=1/{3}\" {1}/out%d.jpg", filename, TempFolder, ThumbW + ":" + ThumbH, ThumbIntervalSec);
 			process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 			process.StartInfo.CreateNoWindow = true;
 

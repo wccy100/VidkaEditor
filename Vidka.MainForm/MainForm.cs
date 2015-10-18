@@ -8,12 +8,15 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Forms;
 using Vidka.Components;
 using Vidka.Core;
+using Vidka.Core.Model;
 using Vidka.MainForm.Properties;
 
-namespace Vidka.MainForm {
+namespace Vidka.MainForm
+{
 	public partial class MainForm : Form, IVidkaMainForm
 	{
 		private const float RATIO_sidebarW_of_screenW = 500f / 3200;
@@ -39,7 +42,8 @@ namespace Vidka.MainForm {
 			InitializeComponent();
 			CustomLayout();
 
-			logic = new EditorLogic(videoShitbox, vidkaPreviewPlayer);
+            var nAudioPlayer = new AudioPlayerNAudio();
+			logic = new EditorLogic(videoShitbox, vidkaPreviewPlayer, nAudioPlayer);
 			fastPlayerWrapper = new VidkaFastPreviewPlayerWrapper(vidkaFastPreviewPlayer, vidkaPreviewPlayer, this);
 			videoShitbox.setLogic(logic);
 			videoShitbox.GuessWhoIsConsole(txtConsole);
@@ -52,6 +56,7 @@ namespace Vidka.MainForm {
 		{
 			videoShitbox.PleaseTogglePreviewMode += videoShitbox_PleaseTogglePreviewMode;
 			videoShitbox.PleaseToggleConsoleVisibility += videoShitbox_PleaseToggleConsoleVisibility;
+			videoShitbox.PleaseShowClipUsages += videoShitbox_PleaseShowClipUsages;
 			videoShitbox.PleaseSetPlayerAbsPosition += videoShitbox_PleaseSetPlayerAbsPosition;
 			videoShitbox.PleaseSetFormTitle += videoShitbox_PleaseSetFormTitle;
 			
@@ -60,7 +65,7 @@ namespace Vidka.MainForm {
 			//setConsoleVisible(true);
 			//setPlayerAbsoluteLocation(PreviewPlayerAbsoluteLocation.TopRight);
 			setPreviewPlayer(VidkaPreviewMode.Fast);
-			setConsoleVisible(false);
+            setConsoleVisible(Settings.Default.IsConsoleVisible);
 			setPlayerAbsoluteLocation(PreviewPlayerAbsoluteLocation.TopRight);
 
 			//==================================================================================== debug
@@ -69,7 +74,7 @@ namespace Vidka.MainForm {
 				logic.LoadProjFromFile(openFirstFile);
 #if DEBUG
 			else
-				logic.LoadProjFromFile(@"C:\Users\Mikhail\Desktop\asd2");
+				logic.LoadProjFromFile(@"C:\Users\Mikhail\Desktop\asd.vidka");
 #endif
 		}
 
@@ -86,6 +91,10 @@ namespace Vidka.MainForm {
 			setPreviewPlayer((previewMode == VidkaPreviewMode.Fast)
 					? VidkaPreviewMode.Normal
 					: VidkaPreviewMode.Fast);
+		}
+		private void videoShitbox_PleaseShowClipUsages()
+		{
+			logic.ShowWhereTheClipIsUsed();
 		}
 		private void videoShitbox_PleaseSetPlayerAbsPosition(PreviewPlayerAbsoluteLocation location)
 		{
@@ -115,6 +124,7 @@ namespace Vidka.MainForm {
 			var proceed = ShouldIProceedIfProjectChanged();
 			if (!proceed)
 				e.Cancel = true;
+            logic.StopAllPlayback();
 		}
 
 		#region ----------- menu ----------------
@@ -148,7 +158,7 @@ namespace Vidka.MainForm {
 
 		private void exportToVideoToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			logic.ExportToAvs();
+			logic.ExportToAvsAndVideo();
 		}
 
 		private void quitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -170,9 +180,33 @@ namespace Vidka.MainForm {
 			videoShitbox_PleaseTogglePreviewMode();
 		}
 
+		private void whereIsThisClipUsedToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			videoShitbox_PleaseShowClipUsages();
+		}
+
+		#endregion
+
+		#region ...Insert...
+
+		private void simpleTextClipToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			logic.InsertSimpleTextClip();
+		}
+
+        private void currentFrameStillToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            logic.InsertCurrentFrameStill();
+        }
+
 		#endregion
 
 		#region ...Ops...
+
+		private void rebuildAuxillaryFilesToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+			logic.RebuildProject();
+		}
 
 		private void deleteAllNonlockedClipsToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -183,6 +217,11 @@ namespace Vidka.MainForm {
 		{
 			logic.linearShuffleByFilename();
 		}
+
+        private void checkForErrorsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            logic.checkForErrors();
+        }
 
 		#endregion
 		
@@ -203,6 +242,14 @@ namespace Vidka.MainForm {
 			}
 
 			var folder = Path.GetDirectoryName(logic.CurFileName);
+			Process.Start(folder);
+		}
+
+		private void whereIsTheCurrentFileToolStripMenuItem1_Click(object sender, EventArgs e)
+		{
+			if (logic.CurVideoFileName == null)
+				return;
+			var folder = Path.GetDirectoryName(logic.CurVideoFileName);
 			Process.Start(folder);
 		}
 
@@ -383,6 +430,7 @@ namespace Vidka.MainForm {
 		}
 
 		#endregion
+
 
 	}
 }

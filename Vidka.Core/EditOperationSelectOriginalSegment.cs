@@ -20,7 +20,7 @@ namespace Vidka.Core
 		public EditOperationSelectOriginalSegment(ISomeCommonEditorOperations iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
-			IVideoEditor editor,
+			IVideoShitbox editor,
 			IVideoPlayer videoPlayer)
 			: base(iEditor, uiObjects, dimdim, editor, videoPlayer)
 		{
@@ -36,27 +36,37 @@ namespace Vidka.Core
 		{
 			return (button == MouseButtons.Right)
 				&& (uiObjects.TimelineHover == ProjectDimensionsTimelineType.Original)
-				&& (uiObjects.CurrentVideoClip != null);
+				&& (uiObjects.CurrentClip != null);
 		}
 
 		public override void MouseDragStart(int x, int y, int w, int h)
 		{
 			IsDone = false;
 			keyboardMode = false;
-			var clip = uiObjects.CurrentVideoClip;
+            var clip = uiObjects.CurrentClip;
 			prevStart = clip.FrameStart;
 			prevEnd = clip.FrameEnd;
 			origFrame1 = origFrame2 = dimdim.convert_ScreenX2Frame_OriginalTimeline(x, clip.FileLengthFrames, w);
-			var clipAbsLeftFrame = proj.GetVideoClipAbsFramePositionLeft(clip);
-			uiObjects.SetActiveVideo(clip, proj);
-			uiObjects.SetCurrentMarkerFrame(clipAbsLeftFrame);
-			uiObjects.SetOriginalTimelinePlaybackMode(false);
-			updateVideoPlayerFromFrame2();
-		}
+            uiObjects.SetOriginalTimelinePlaybackMode(false);
+            if (uiObjects.CurrentClipIsVideo)
+            {
+                var vclip = uiObjects.CurrentVideoClip;
+                var clipAbsLeftFrame = proj.GetVideoClipAbsFramePositionLeft(vclip);
+                uiObjects.SetActiveVideo(vclip, proj);
+                uiObjects.SetCurrentMarkerFrame(clipAbsLeftFrame);
+                updateVideoPlayerFromFrame2();
+            }
+            else
+            {
+                var aclip = uiObjects.CurrentAudioClip;
+                uiObjects.SetActiveAudio(aclip);
+                iEditor.SetFrameMarker_ShowFrameInPlayer(aclip.FrameOffset);
+            }
+        }
 
 		public override void MouseDragged(int x, int y, int deltaX, int deltaY, int w, int h)
 		{
-			var clip = uiObjects.CurrentVideoClip;
+            var clip = uiObjects.CurrentClip;
 			origFrame2 = dimdim.convert_ScreenX2Frame_OriginalTimeline(x, clip.FileLengthFrames, w);
 			if (origFrame1 != origFrame2) {
 				clip.FrameStart = Math.Min(origFrame1, origFrame2);
@@ -70,7 +80,7 @@ namespace Vidka.Core
 		{
 			if (origFrame1 != origFrame2)
 			{
-				var clip = uiObjects.CurrentVideoClip;
+                var clip = uiObjects.CurrentClip;
 				var newStart = Math.Min(origFrame1, origFrame2);
 				var newEnd = Math.Max(origFrame1, origFrame2);
 				var oldStart = prevStart;
@@ -92,8 +102,12 @@ namespace Vidka.Core
 					PostAction = () =>
 					{
 						iEditor.UpdateCanvasWidthFromProjAndDimdim();
-						long frameMarker = proj.GetVideoClipAbsFramePositionLeft(clip);
-						iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
+                        if (uiObjects.CurrentClipIsVideo)
+                        {
+                            var vclip = uiObjects.CurrentVideoClip;
+                            long frameMarker = proj.GetVideoClipAbsFramePositionLeft(vclip);
+                            iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
+                        }
 					}
 				});
 				uiObjects.UiStateChanged();
@@ -126,7 +140,10 @@ namespace Vidka.Core
 
 		//-------------------- helpers ------------------------------
 
-		private void updateVideoPlayerFromFrame2() {
+		private void updateVideoPlayerFromFrame2()
+        {
+            if (uiObjects.CurrentVideoClip == null)
+                return;
 			var second = proj.FrameToSec(origFrame2);
 			videoPlayer.SetStillFrame(uiObjects.CurrentVideoClip.FileName, second);
 		}

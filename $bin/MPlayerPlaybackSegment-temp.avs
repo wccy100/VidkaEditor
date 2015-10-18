@@ -1,6 +1,6 @@
 global proj_frameRate = 30
-global proj_width = 320
-global proj_height = 180
+global proj_width = 1280
+global proj_height = 720
 global proj_audiorate = 44100
 global proj_audiochannels = 2
 audiorate = proj_audiorate
@@ -20,8 +20,10 @@ global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
 #################### determine the most frequently used pixel type ############################
-collectpixeltypestat("C:\Users\Mikhail\Videos\poetry\kipling-if\20150719_184654.mp4", 16)
-collectpixeltypestat("C:\Users\Mikhail\Videos\poetry\kipling-if\20150716_104926.mp4", 134)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4630.AVI", 106)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4631.AVI", 50)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4636.AVI", 239)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4635.AVI", 55)
 
 
 global mostFrequentPixelType = "RGB32"
@@ -48,9 +50,13 @@ curStatMax = Max(curStatMax, stat_nRGB)
 #################### render ###########################
 
 UnalignedSplice( \
-	NeutralClip("C:\Users\Mikhail\Videos\poetry\kipling-if\20150719_184654.mp4", 1304, 1320), \
-	NeutralClip("C:\Users\Mikhail\Videos\poetry\kipling-if\20150716_104926.mp4", 1094, 1228) \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4630.AVI", 383, 488), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4631.AVI", 33, 82), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4636.AVI", 48, 286), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4635.AVI", 60, 114).MuteThisClip() \
 )
+
+
 
 #All these things we can chain outside on the NeutralClip function...
 # - FadeIn2 adds 2 frames, FadeIn adds 1 frame, FadeIn0 adds no frames (so use that one I guess).
@@ -76,19 +82,8 @@ function NeutralClip(string filename, int fstart, int fend,\
 	vclip = DirectShowSource(filename, audio=True) # fps=proj_frameRate, convertfps=true)
 	# if need be convert to color space of the most frequent one
 
-	vclip = (mostFrequentPixelType == "RGB" && !vclip.IsRGB()) ? vclip.ConvertToRGB() : vclip
-	vclip = (mostFrequentPixelType == "RGB24" && !vclip.IsRGB24()) ? vclip.ConvertToRGB24() : vclip
-	vclip = (mostFrequentPixelType == "RGB32" && !vclip.IsRGB32()) ? vclip.ConvertToRGB32() : vclip
-	vclip = (mostFrequentPixelType == "Y8" && !vclip.IsY8()) ? vclip.ConvertToY8() : vclip
-	###### vclip = (mostFrequentPixelType == "YUV" && !vclip.IsYUV()) ? vclip.ConvertToYV12(matrix="Rec601", interlaced=false) : vclip
-	vclip = (mostFrequentPixelType == "YUY2" && !vclip.IsYUY2()) ? vclip.ConvertToYUY2(matrix="Rec601", interlaced=false) : vclip
-	vclip = (mostFrequentPixelType == "YV12" && !vclip.IsYV12()) ? vclip.ConvertToYV12(matrix="Rec601", interlaced=false) : vclip
-	vclip = (mostFrequentPixelType == "YV16" && !vclip.IsYV16()) ? vclip.ConvertToYV16(interlaced=false) : vclip
-	vclip = (mostFrequentPixelType == "YV24" && !vclip.IsYV24()) ? vclip.ConvertToYV24(interlaced=false) : vclip
-	vclip = (mostFrequentPixelType == "YV411" && !vclip.IsYV411()) ? vclip.ConvertToYV411(interlaced=false) : vclip
-	
-	vclip = vclip.ConvertToYV12(matrix="Rec601", interlaced=false)
-	
+	vclip = toProperPixelType(vclip)
+		
 	# convert clip so that they are all same video size, fps, audio format, etc...
 	vclip = (vclip.framerate != proj_frameRate) ? vclip.ChangeFPS(proj_frameRate) : vclip
 	vclip = (vclip.width != proj_width || vclip.height != proj_height) ? vclip.BilinearResize(proj_width, proj_height) : vclip
@@ -111,6 +106,53 @@ function NeutralClip(string filename, int fstart, int fend,\
 	#~ vclip = vclip.subtitle("pixType:" + mostFrequentPixelType)
 	#~ vclip = vclip.subtitle("stats:" + String(stat_nRGB) + "," + String(stat_nRGB24) + "," + String(stat_nRGB32) + "," + String(stat_nY8) + "," + String(stat_nYUV) + "," + String(stat_nYUY2) + "," + String(stat_nYV12) + "," + String(stat_nYV16) + "," + String(stat_nYV24) + "," + String(stat_nYV411))
 	#vclip = vclip.Subtitle(String(vclip.framerate), align=2) #DEBUG
+	return vclip
+}
+
+function NeutralClipImage(string filename, int frames)
+{
+	vclip = ImageSource(filename, start=0, end=frames, fps=proj_frameRate)
+	vclip = (vclip.width != proj_width || vclip.height != proj_height) ? vclip.BilinearResize(proj_width, proj_height) : vclip
+	audioSilence = Tone(length=(vclip.FrameCount/vclip.FrameRate), samplerate=proj_audiorate, channels=proj_audiochannels, type="silence", level=0.0)
+	vclip = !vclip.HasAudio ? AudioDub(vclip, audioSilence) : vclip
+	vclip = toProperPixelType(vclip)
+	return vclip
+}
+
+# fstart and fend are optional trimmings (in frames) used on vclip, to synch audio with it
+function AddCustomAudio(Clip vclip, string filenameAudio, float audioOffset, int "fstart", int "fend")
+{
+	fstart = Default(fstart, 0)
+	fend = Default(fend, -1)
+	audio = DirectShowSource(filenameAudio)
+	audio = (audio.AudioRate != proj_audiorate) ? audio.ResampleAudio(proj_audiorate) : audio
+	audioTrimStart = audioOffset + fstart / float(proj_frameRate)
+	audioTrimEnd = (fend == -1) ? audio.audioduration-1 : audioOffset + fend / float(proj_frameRate)
+	audio = audio.AudioTrim(audioTrimStart, audioTrimEnd)
+	vclip = AudioDub(vclip, audio)
+	return vclip
+}
+
+function MuteThisClip(Clip vclip)
+{
+	audioSilence = Tone(length=(vclip.FrameCount/vclip.FrameRate), samplerate=proj_audiorate, channels=proj_audiochannels, type="silence", level=0.0)
+	vclip = AudioDub(vclip, audioSilence)
+	return vclip
+}
+
+function toProperPixelType(vclip)
+{
+	vclip = (mostFrequentPixelType == "RGB" && !vclip.IsRGB()) ? vclip.ConvertToRGB() : vclip
+	vclip = (mostFrequentPixelType == "RGB24" && !vclip.IsRGB24()) ? vclip.ConvertToRGB24() : vclip
+	vclip = (mostFrequentPixelType == "RGB32" && !vclip.IsRGB32()) ? vclip.ConvertToRGB32() : vclip
+	vclip = (mostFrequentPixelType == "Y8" && !vclip.IsY8()) ? vclip.ConvertToY8() : vclip
+	###### vclip = (mostFrequentPixelType == "YUV" && !vclip.IsYUV()) ? vclip.ConvertToYV12(matrix="Rec601", interlaced=false) : vclip
+	vclip = (mostFrequentPixelType == "YUY2" && !vclip.IsYUY2()) ? vclip.ConvertToYUY2(matrix="Rec601", interlaced=false) : vclip
+	vclip = (mostFrequentPixelType == "YV12" && !vclip.IsYV12()) ? vclip.ConvertToYV12(matrix="Rec601", interlaced=false) : vclip
+	vclip = (mostFrequentPixelType == "YV16" && !vclip.IsYV16()) ? vclip.ConvertToYV16(interlaced=false) : vclip
+	vclip = (mostFrequentPixelType == "YV24" && !vclip.IsYV24()) ? vclip.ConvertToYV24(interlaced=false) : vclip
+	vclip = (mostFrequentPixelType == "YV411" && !vclip.IsYV411()) ? vclip.ConvertToYV411(interlaced=false) : vclip
+	#vclip = vclip.ConvertToYV12(matrix="Rec601", interlaced=false)
 	return vclip
 }
 

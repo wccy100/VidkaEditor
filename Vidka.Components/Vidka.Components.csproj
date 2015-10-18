@@ -31,7 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="PresentationFramework" />
+    <Reference Include="NAudio">
+      <HintPath>..\packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
@@ -44,6 +46,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AudioPlayerNAudio.cs" />
+    <Compile Include="CommonVideoClipCustomAudio.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CommonVideoClipCustomAudio.Designer.cs">
+      <DependentUpon>CommonVideoClipCustomAudio.cs</DependentUpon>
+    </Compile>
+    <Compile Include="CommonVideoClipProperties.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CommonVideoClipProperties.Designer.cs">
+      <DependentUpon>CommonVideoClipProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="EditorDrawOps.cs" />
     <Compile Include="ImageCacheManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -52,8 +67,26 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
+    <Compile Include="ShitboxAlignVideoAudio.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ShitboxAlignVideoAudio.Designer.cs">
+      <DependentUpon>ShitboxAlignVideoAudio.cs</DependentUpon>
+    </Compile>
     <Compile Include="ShitboxState.cs" />
+    <Compile Include="SimpleTextSettings.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="SimpleTextSettings.Designer.cs">
+      <DependentUpon>SimpleTextSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Utils.cs" />
+    <Compile Include="VideoClipPropertiesWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VideoClipPropertiesWindow.Designer.cs">
+      <DependentUpon>VideoClipPropertiesWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="VideoShitbox.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -75,6 +108,21 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="CommonVideoClipCustomAudio.resx">
+      <DependentUpon>CommonVideoClipCustomAudio.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="CommonVideoClipProperties.resx">
+      <DependentUpon>CommonVideoClipProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ShitboxAlignVideoAudio.resx">
+      <DependentUpon>ShitboxAlignVideoAudio.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SimpleTextSettings.resx">
+      <DependentUpon>SimpleTextSettings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VideoClipPropertiesWindow.resx">
+      <DependentUpon>VideoClipPropertiesWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="VideoShitbox.resx">
       <DependentUpon>VideoShitbox.cs</DependentUpon>
     </EmbeddedResource>
@@ -121,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

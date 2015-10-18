@@ -12,10 +12,11 @@ namespace Vidka.Core
 		void SetStillFrameNone();
 		void SetStillFrame(string filename, double offsetSeconds);
 		// ... playback
-		void PlayVideoClip(string filename, double clipSecStart, double clipSecEnd);
+		void PlayVideoClip(string filename, double clipSecStart, double clipSecEnd, bool mute);
 		void StopWhateverYouArePlaying();
 		// ... misc
 		double GetPositionSec();
 		bool IsStopped();
+		void PleaseUnlockThisFile(string filename);
 	}
 }

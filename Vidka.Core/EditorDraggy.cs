@@ -21,7 +21,8 @@ namespace Vidka.Core
 		/// <summary>
 		/// Only set this value in UiObjects's setDraggyVideo()
 		/// </summary>
-		public VidkaClipVideo VideoClip { get; set; }
+		public VidkaClipVideoAbstract VideoClip { get; set; }
+		public bool HasAudio { get; set; }
 		/// <summary>
 		/// Only set this value in UiObjects's setDraggyAudio()
 		/// </summary>
@@ -39,7 +40,8 @@ namespace Vidka.Core
 			long? frameLength = null,
 			string text = null,
 			int? mouseX = null,
-			int? mouseXOffset = null)
+			int? mouseXOffset = null,
+			bool? hasAudio = null)
 		{
 			if (mode.HasValue && mode.Value == EditorDraggyMode.None)
 				throw new HowTheFuckDidThisHappenException(null, "Trying to set draggy mode to None in setCoordinates! Should do it in clear!");
@@ -53,6 +55,7 @@ namespace Vidka.Core
 				MouseX = mouseX.Value;
 			if (mouseXOffset.HasValue)
 				MouseXOffset = mouseXOffset.Value;
+			HasAudio = hasAudio ?? true;
 		}
 
 		internal void Clear()
@@ -71,5 +74,6 @@ namespace Vidka.Core
 		None = 0,
 		VideoTimeline = 1,
 		AudioTimeline = 2,
+		DraggingFolder = 3,
 	}
 }

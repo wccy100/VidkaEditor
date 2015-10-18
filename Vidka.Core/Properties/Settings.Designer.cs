@@ -70,8 +70,7 @@ namespace Vidka.Core.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("-ovc x264 -x264encopts preset=slow:tune=film:crf=22 -of lavf -o \"{file-video}\" -f" +
-            "orcedsubsonly -oac mp3lame \"{file-avs}\" -vf scale,format=i420")]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"-ovc xvid -xvidencopts bitrate=16000:me_quality=1:rc_reaction_delay_factor=100:rc_averaging_period=16:rc_buffer=100:quant_type=h263:min_iquant=1:max_iquant=31:min_pquant=1:max_pquant=31:min_bquant=1:max_bquant=31:max_key_interval=250:quant_type=h263:max_bframes=2:bquant_ratio=150:bquant_offset=100:bf_threshold=0:vhq=2:bvhq=1:curve_compression_high=0:curve_compression_low=0:overflow_control_strength=10:max_overflow_improvement=10:max_overflow_degradation=10:trellis:noqpel:nogmc:nocartoon:chroma_opt:chroma_me:nointerlacing:par=ext:par_width=1:par_height=1:closed_gop:nopacked:threads=8 -vf scale,format=i420 -forcedsubsonly -nosub -oac mp3lame -mc 0 ""{file-avs}"" -of avi -o ""{file-video}""")]
         public string mencoderArguments {
             get {
                 return ((string)(this["mencoderArguments"]));
@@ -80,7 +79,7 @@ namespace Vidka.Core.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".mp4")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".avi")]
         public string ExportVideoExtension {
             get {
                 return ((string)(this["ExportVideoExtension"]));
@@ -93,6 +92,33 @@ namespace Vidka.Core.Properties {
         public double RightTrimMarkerOffsetSeconds {
             get {
                 return ((double)(this["RightTrimMarkerOffsetSeconds"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int ImageClipLengthSeconds {
+            get {
+                return ((int)(this["ImageClipLengthSeconds"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(".jpg|.jpeg|.gif|.bmp|.tiff")]
+        public string FileExtensionsImage {
+            get {
+                return ((string)(this["FileExtensionsImage"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0.75")]
+        public float TextClipInitialLengthSeconds {
+            get {
+                return ((float)(this["TextClipInitialLengthSeconds"]));
             }
         }
     }
