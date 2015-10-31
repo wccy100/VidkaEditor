@@ -36,7 +36,9 @@ namespace Vidka.Core
 		public long CurrentMarkerFrame { get; private set; }
 		public bool OriginalTimelinePlaybackMode { get; private set; }
 		public long MouseDragFrameDelta { get; private set; }
-		public EditorDraggy Draggy { get; private set; }
+        public bool MouseDragFrameDeltaMTO { get; private set; } // MTO = Main Timeline Only
+        public bool ShowEasingHandles { get; set; }
+        public EditorDraggy Draggy { get; private set; }
 		
 		// additional helpers
 		public VidkaClip CurrentClip { get {
@@ -52,7 +54,8 @@ namespace Vidka.Core
 		} }
 		
 
-		public VidkaUiStateObjects() {
+		public VidkaUiStateObjects()
+        {
 			EmptyCollection_ClipsVideo = new VidkaClipVideoAbstract[] { };
 			EmptyCollection_ClipsAudio = new VidkaClipAudio[] { };
 			ArrayOfOne_ClipsVideo = new VidkaClipVideoAbstract[] { null };
@@ -65,8 +68,10 @@ namespace Vidka.Core
 			CurrentVideoClipHover = null;
 			CurrentAudioClipHover = null;
 			TrimHover = TrimDirection.None;
+            ShowEasingHandles = false;
 			CurrentMarkerFrame = 0;
 			MouseDragFrameDelta = 0;
+            MouseDragFrameDeltaMTO = false;
 			Draggy = new EditorDraggy();
 		}
 
@@ -217,6 +222,13 @@ namespace Vidka.Core
 			TrimHover = trimHover;
 		}
 
+        public void SetShowEasingHandles(bool flag)
+        {
+            if (ShowEasingHandles != flag)
+                stateChanged = true;
+            ShowEasingHandles = flag;
+        }
+
 		public void PleaseShowAllUsages(VidkaProj proj)
 		{
 			stateChanged = true;
@@ -237,6 +249,13 @@ namespace Vidka.Core
 				stateChanged = true;
 			MouseDragFrameDelta = frameDelta;
 		}
+
+        public void setMouseDragFrameDeltaMainTimelineOnly(bool p)
+        {
+            if (MouseDragFrameDeltaMTO != p)
+                stateChanged = true;
+            MouseDragFrameDeltaMTO = p;
+        }
 
 		public void SetDraggyCoordinates(
 			EditorDraggyMode? mode = null,
@@ -298,6 +317,7 @@ namespace Vidka.Core
 			CurrentAudioClipHover = null;
 			resetCurrentClipUsages();
 			TrimHover = TrimDirection.None;
+            ShowEasingHandles = false;
 			SetCurrentMarkerFrame(0);
 			stateChanged = true;
 		}
@@ -309,7 +329,7 @@ namespace Vidka.Core
 		}
 
 		#endregion
-	}
+    }
 
 	public enum TrimDirection {
 		None = 0,

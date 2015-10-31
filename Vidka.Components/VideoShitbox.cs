@@ -233,6 +233,7 @@ namespace Vidka.Components {
 				if (PleaseShowClipUsages != null)
 					PleaseShowClipUsages();
 			}
+            Logic.KeyPressed(e.KeyCode);
 		}
 
 		private void OpenClipProperties(VidkaClip clip)
@@ -240,40 +241,58 @@ namespace Vidka.Components {
 			if (clip == null)
 				return;
 			VidkaClip newClip = null;
-			var window = new VideoClipPropertiesWindow {
-				Text = "Advanced clip properties",
-			};
-			if (clip is VidkaClipVideo)
+            Form windowDialog = null;
+            if (clip is VidkaClipVideoAbstract)
+            {
+                var window = new ClipPropertiesWindowVideo {
+                    Text = "Advanced clip properties",
+                };
+                windowDialog = window;
+                if (clip is VidkaClipVideo)
+                {
+                    var vclip = (VidkaClipVideo)clip;
+                    var vclip2 = vclip.MakeCopy();
+                    newClip = vclip2;
+                    window.CommonPropertiesControl.SetParticulars(vclip2);
+                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+                }
+                else if (clip is VidkaClipImage)
+                {
+                    var vclip = (VidkaClipImage)clip;
+                    var vclip2 = vclip.MakeCopy();
+                    newClip = vclip2;
+                    window.CommonPropertiesControl.SetParticulars(vclip2);
+                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+                    //window.AddImportantTab("");
+                }
+                else if (clip is VidkaClipTextSimple)
+                {
+                    var vclip = (VidkaClipTextSimple)clip;
+                    var vclip2 = (VidkaClipTextSimple)vclip.MakeCopy();
+                    newClip = vclip2;
+                    window.CommonPropertiesControl.SetParticulars(vclip2);
+                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+                    var textCreationControl = new SimpleTextSettings();
+                    textCreationControl.SetVideoClip(vclip2);
+                    window.AddImportantTab("Text", textCreationControl);
+                }
+            }
+            else if (clip is VidkaClipAudio)
+            {
+                var window = new ClipPropertiesWindowAudio {
+                    Text = "Advanced clip properties",
+                };
+                windowDialog = window;
+                var aclip = (VidkaClipAudio)clip;
+                var aclip2 = aclip.MakeCopy();
+                newClip = aclip2;
+                window.CommonPropertiesControl.SetParticulars(aclip2);
+            }
+
+            // use this dialog window to edit this clip
+            if (newClip != null && windowDialog != null)
 			{
-				var vclip = (VidkaClipVideo)clip;
-				var vclip2 = vclip.MakeCopy();
-				newClip = vclip2;
-				window.CommonPropertiesControl.SetParticulars(vclip2);
-                window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
-			}
-			else if (clip is VidkaClipImage)
-			{
-				var vclip = (VidkaClipImage)clip;
-				var vclip2 = vclip.MakeCopy();
-				newClip = vclip2;
-				window.CommonPropertiesControl.SetParticulars(vclip2);
-                window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
-				//window.AddImportantTab("");
-			}
-			else if (clip is VidkaClipTextSimple)
-			{
-				var vclip = (VidkaClipTextSimple)clip;
-				var vclip2 = (VidkaClipTextSimple)vclip.MakeCopy();
-				newClip = vclip2;
-				window.CommonPropertiesControl.SetParticulars(vclip2);
-                window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
-				var textCreationControl = new SimpleTextSettings();
-				textCreationControl.SetVideoClip(vclip2);
-				window.AddImportantTab("Text", textCreationControl);
-			}
-			if (newClip != null)
-			{
-				var result = window.ShowDialog();
+                var result = windowDialog.ShowDialog();
 				if (result == System.Windows.Forms.DialogResult.OK)
 					Logic.ReplaceClip(clip, newClip);
 			}
@@ -477,7 +496,7 @@ namespace Vidka.Components {
 			}
 
 			if (Logic.UiObjects.CurrentVideoClip != null) {
-				drawOps.DrawOriginalTimelineAndItsClipOrClips();
+				drawOps.DrawCurrentClipVideoOnOriginalTimeline();
 			}
 			if (Logic.UiObjects.CurrentAudioClip != null) {
 				drawOps.DrawCurrentClipAudioOnOriginalTimeline();

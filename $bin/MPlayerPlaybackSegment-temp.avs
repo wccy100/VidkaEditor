@@ -20,10 +20,14 @@ global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
 #################### determine the most frequently used pixel type ############################
-collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4630.AVI", 106)
-collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4631.AVI", 50)
-collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4636.AVI", 239)
-collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4635.AVI", 55)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_08_15_kaz\101_0822\IMGP5756.AVI", 45)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_08_15_kaz\102_0824\IMGP5808.AVI", 42)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_08_15_kaz\101_0822\IMGP5770.AVI", 32)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_08_15_kaz\102_0824\IMGP5806.AVI", 84)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 44)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 111)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_08_15_kaz\103_0825\IMGP5814.AVI", 65)
+collectpixeltypestat("C:\Users\Mikhail\Pictures\2015_08_15_kaz\103_0825\IMGP5817.AVI", 27)
 
 
 global mostFrequentPixelType = "RGB32"
@@ -50,10 +54,14 @@ curStatMax = Max(curStatMax, stat_nRGB)
 #################### render ###########################
 
 UnalignedSplice( \
-	NeutralClip("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4630.AVI", 383, 488), \
-	NeutralClip("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4631.AVI", 33, 82), \
-	NeutralClip("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4636.AVI", 48, 286), \
-	NeutralClip("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\102_0425-vesuvio\IMGP4635.AVI", 60, 114).MuteThisClip() \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_08_15_kaz\101_0822\IMGP5756.AVI", 232, 276).MixAudioFromVideo("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 243, 275, 13), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_08_15_kaz\102_0824\IMGP5808.AVI", 18, 59).MuteThisClip().MixAudioFromVideo("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 275, 317, 0), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_08_15_kaz\101_0822\IMGP5770.AVI", 93, 124).MuteThisClip().MixAudioFromVideo("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 317, 349, 0), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_08_15_kaz\102_0824\IMGP5806.AVI", 67, 150).MuteThisClip().MixAudioFromVideo("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 349, 433, 0), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 372, 415).MuteThisClip().MixAudioFromVideo("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 433, 477, 0), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_08_15_kaz\phone\20150821_224022.mp4", 477, 587), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_08_15_kaz\103_0825\IMGP5814.AVI", 120, 184), \
+	NeutralClip("C:\Users\Mikhail\Pictures\2015_08_15_kaz\103_0825\IMGP5817.AVI", 122, 148) \
 )
 
 
@@ -79,13 +87,13 @@ function NeutralClip(string filename, int fstart, int fend,\
 	#~ vclip = (filename.RightStr(4).lcase() == ".avi") \
 		#~ ? AviSource(filename) \
 		#~ : FFmpegSource2(filename) # fps=proj_frameRate, convertfps=true)
-	vclip = DirectShowSource(filename, audio=True) # fps=proj_frameRate, convertfps=true)
+	vclip = DirectShowSource(filename, audio=True, fps=proj_frameRate, convertfps=true)
 	# if need be convert to color space of the most frequent one
 
 	vclip = toProperPixelType(vclip)
 		
 	# convert clip so that they are all same video size, fps, audio format, etc...
-	vclip = (vclip.framerate != proj_frameRate) ? vclip.ChangeFPS(proj_frameRate) : vclip
+	#~ vclip = (vclip.framerate != proj_frameRate) ? vclip.ChangeFPS(proj_frameRate) : vclip
 	vclip = (vclip.width != proj_width || vclip.height != proj_height) ? vclip.BilinearResize(proj_width, proj_height) : vclip
 	audioSilence = Tone(length=(vclip.FrameCount/vclip.FrameRate), samplerate=proj_audiorate, channels=proj_audiochannels, type="silence", level=0.0)
 	vclip = !vclip.HasAudio ? AudioDub(vclip, audioSilence) : vclip
@@ -95,6 +103,9 @@ function NeutralClip(string filename, int fstart, int fend,\
 	vclip = (vclip.AudioRate != proj_audiorate) ? vclip.ResampleAudio(proj_audiorate) : vclip
 	# trim, of course!
 	vclip = vclip.Trim(fstart, fend, true)
+	# pad audio. see http://avisynth.nl/index.php/Trim (...when last_frame=0 => till end)
+	vclip = vclip.Trim(0, 0, pad=true)
+	
 	# misc manipulations
 	#vclip = Defined(slowmo) ? ConvertFPS(slowmo * proj_frameRate).AssumeFPS(proj_frameRate, sync_audio=true).ResampleAudio(44100) : vclip
 	
@@ -130,6 +141,7 @@ function AddCustomAudio(Clip vclip, string filenameAudio, float audioOffset, int
 	audioTrimEnd = (fend == -1) ? audio.audioduration-1 : audioOffset + fend / float(proj_frameRate)
 	audio = audio.AudioTrim(audioTrimStart, audioTrimEnd)
 	vclip = AudioDub(vclip, audio)
+	vclip = vclip.Trim(0, 0, pad=true) # pad audio. see http://avisynth.nl/index.php/Trim (...when last_frame=0 => till end)
 	return vclip
 }
 
@@ -137,6 +149,26 @@ function MuteThisClip(Clip vclip)
 {
 	audioSilence = Tone(length=(vclip.FrameCount/vclip.FrameRate), samplerate=proj_audiorate, channels=proj_audiochannels, type="silence", level=0.0)
 	vclip = AudioDub(vclip, audioSilence)
+	return vclip
+}
+
+function MixAudioFromVideo(Clip vclip, string filename, int fstart, int fend,\
+		int "fOffset")
+{
+	fOffset = Default(fOffset, 0)
+	aclip = NeutralClip(filename, fstart, fend)
+	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
+	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
+	return vclip
+}
+
+function MixAudioFromAudio(Clip vclip, string filename, int fstart, int fend,\
+		int "fOffset")
+{
+	fOffset = Default(fOffset, 0)
+	aclip = BlankClip(vclip, fend).AudioDub(DirectShowSource(filename).ResampleAudio(44100)).Trim(fstart, fend)
+	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
+	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
 	return vclip
 }
 

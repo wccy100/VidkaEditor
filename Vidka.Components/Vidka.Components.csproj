@@ -53,6 +53,12 @@
     <Compile Include="CommonVideoClipCustomAudio.Designer.cs">
       <DependentUpon>CommonVideoClipCustomAudio.cs</DependentUpon>
     </Compile>
+    <Compile Include="CommonAudioClipProperties.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="CommonAudioClipProperties.Designer.cs">
+      <DependentUpon>CommonAudioClipProperties.cs</DependentUpon>
+    </Compile>
     <Compile Include="CommonVideoClipProperties.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -81,11 +87,17 @@
       <DependentUpon>SimpleTextSettings.cs</DependentUpon>
     </Compile>
     <Compile Include="Utils.cs" />
-    <Compile Include="VideoClipPropertiesWindow.cs">
+    <Compile Include="ClipPropertiesWindowVideo.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="VideoClipPropertiesWindow.Designer.cs">
-      <DependentUpon>VideoClipPropertiesWindow.cs</DependentUpon>
+    <Compile Include="ClipPropertiesWindowVideo.Designer.cs">
+      <DependentUpon>ClipPropertiesWindowVideo.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ClipPropertiesWindowAudio.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ClipPropertiesWindowAudio.Designer.cs">
+      <DependentUpon>ClipPropertiesWindowAudio.cs</DependentUpon>
     </Compile>
     <Compile Include="VideoShitbox.cs">
       <SubType>UserControl</SubType>
@@ -111,6 +123,9 @@
     <EmbeddedResource Include="CommonVideoClipCustomAudio.resx">
       <DependentUpon>CommonVideoClipCustomAudio.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="CommonAudioClipProperties.resx">
+      <DependentUpon>CommonAudioClipProperties.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="CommonVideoClipProperties.resx">
       <DependentUpon>CommonVideoClipProperties.cs</DependentUpon>
     </EmbeddedResource>
@@ -120,8 +135,11 @@
     <EmbeddedResource Include="SimpleTextSettings.resx">
       <DependentUpon>SimpleTextSettings.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="VideoClipPropertiesWindow.resx">
-      <DependentUpon>VideoClipPropertiesWindow.cs</DependentUpon>
+    <EmbeddedResource Include="ClipPropertiesWindowVideo.resx">
+      <DependentUpon>ClipPropertiesWindowVideo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ClipPropertiesWindowAudio.resx">
+      <DependentUpon>ClipPropertiesWindowAudio.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="VideoShitbox.resx">
       <DependentUpon>VideoShitbox.cs</DependentUpon>

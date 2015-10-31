@@ -31,7 +31,8 @@ namespace Vidka.Core
 	public enum ProjectDimensionsTimelineType {
 		None = 0,
 		Original = 1,
-		Main = 2,
-		Audios = 3,
+        Main = 2,
+        MainEases = 3,
+		Audios = 4,
 	}
 }

@@ -1,6 +1,6 @@
 ﻿namespace Vidka.Components
 {
-	partial class VideoClipPropertiesWindow
+    partial class ClipPropertiesWindowVideo
 	{
 		/// <summary>
 		/// Required designer variable.

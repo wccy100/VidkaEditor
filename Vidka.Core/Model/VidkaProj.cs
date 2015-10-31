@@ -78,7 +78,11 @@ namespace Vidka.Core.Model
 		/// (FrameEnd - FrameStart) of this clip
 		/// </summary>
 		[XmlIgnore]
-		public long LengthFrameCalc { get { return FrameEnd - FrameStart; } }
+		public virtual long LengthFrameCalc { get { return FrameEnd - FrameStart; } }
+        [XmlIgnore]
+        public virtual long FrameStartNoEase { get { return FrameStart; } }
+        [XmlIgnore]
+        public virtual long FrameEndNoEase { get { return FrameEnd; } }
 		/// <summary>
 		/// Needs to be set by multiplying FileLengthSec by proj-fps
 		/// </summary>
@@ -103,8 +107,19 @@ namespace Vidka.Core.Model
 		public string CustomAudioFilename { get; set; }
         public double? CustomAudioLengthSec { get; set; }
 		public float CustomAudioOffset { get; set; }
+        public long EasingLeft { get; set; }
+        public long EasingRight { get; set; }
+
         [XmlIgnore]
 		public virtual bool HasAudio { get { return false; } }
+        [XmlIgnore]
+        public override long LengthFrameCalc { get { return FrameEnd - FrameStart - EasingLeft - EasingRight; } }
+        [XmlIgnore]
+        public long LengthFrameCalcNoEase { get { return FrameEnd - FrameStart; } }
+        [XmlIgnore]
+        public override long FrameStartNoEase { get { return FrameStart + EasingLeft; } }
+        [XmlIgnore]
+        public override long FrameEndNoEase { get { return FrameEnd - EasingRight; } }
 
 		public virtual VidkaClipVideoAbstract MakeCopy()
 		{
@@ -113,10 +128,10 @@ namespace Vidka.Core.Model
 			return clip;
 		}
 		public virtual long GetPlaybackFrameStart(long? curstomFrameOffset) {
-			return curstomFrameOffset ?? FrameStart;
+            return curstomFrameOffset ?? FrameStart + EasingLeft;
 		}
 		public virtual long GetPlaybackFrameEnd(long? curstomFrameOffset) {
-			return FrameEnd;
+            return FrameEnd - EasingRight;
 		}
     }
 
@@ -182,13 +197,14 @@ namespace Vidka.Core.Model
 		/// position (frames) wrt project's beginning of the start of this audio clip
 		/// </summary>
 		public long FrameOffset { get; set; }
+        public string PostOp { get; set; }
 
 		public VidkaClipAudio MakeCopy()
 		{
 			var clip = (VidkaClipAudio)this.MemberwiseClone();
 			return clip;
 		}
-	}
+    }
 
 	[Serializable]
 	public class VidkaSubtitle

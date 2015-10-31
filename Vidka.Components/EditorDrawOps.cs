@@ -26,22 +26,28 @@ namespace Vidka.Components
 		// constants
 		private const int THUMB_MARGIN = 20;
 		private const int THUMB_MARGIN_Y = 50;
+        private const int EASING_BEZIER_MAX_WIDTH = 60;
+        
 		private Pen penDefault = new Pen(Color.Black, 1); // new Pen(Color.FromArgb(255, 30, 30, 30), 1);
 		private Pen penBorder = new Pen(Color.Black, 1);
 		private Pen penMarker = new Pen(Color.Black, 2);
 		private Pen penBorderDrag = new Pen(Color.Blue, 5);
-		private Pen penHover = new Pen(Color.Blue, 4);
+        private Pen penHover = new Pen(Color.Blue, 4);
+        private Pen penHoverThin = new Pen(Color.Blue, 2);
 		private Pen penActiveClip = new Pen(Color.LightBlue, 6);
 		private Pen penActiveBoundary = new Pen(Color.Red, 6);
 		private Pen penActiveBoundaryPrev = new Pen(Color.Purple, 6);
-		private Pen penActiveSealed = new Pen(Color.LawnGreen, 6);
+        private Pen penActiveBoundaryEasing = new Pen(Color.LawnGreen, 12);
+        private Pen penActiveSealed = new Pen(Color.LawnGreen, 6);
 		private Pen penSealed = new Pen(Color.LawnGreen, 4); // marks the split line when prev.frameEnd == cur.frameStart
-		private Pen penGray = new Pen(Color.Gray, 1);
-		private Brush brushDefault = new SolidBrush(Color.Black);
+        private Pen penGray = new Pen(Color.Gray, 1);
+        private Pen penWhite = new Pen(Color.White, 1);
+        private Brush brushDefault = new SolidBrush(Color.Black);
 		private Brush brushLightGray = new SolidBrush(Color.FromArgb(unchecked((int)0xFFfbfbfb)));
 		private Brush brushLightGray2 = new SolidBrush(Color.FromArgb(unchecked((int)0xFFf5f5f5)));
 		private Brush brushLightGray3 = new SolidBrush(Color.FromArgb(unchecked((int)0xFFeeeeee)));
-		private Brush brushActive = new SolidBrush(Color.LightBlue);
+        private Brush brushActive = new SolidBrush(Color.LightBlue);
+        private Brush brushActiveEased = new SolidBrush(Color.FromArgb(90, 0xAD, 0xD8, 0xE6));
 		private Brush brushLockedClip = new SolidBrush(Color.Beige);
 		private Brush brushLockedActiveClip = new SolidBrush(Color.DarkKhaki);
 		private Brush brushWhite = new SolidBrush(Color.White);
@@ -63,12 +69,17 @@ namespace Vidka.Components
 		
 		// helpers
 		private Rectangle destRect, srcRect;
+        private Point bzP1, bzP1c, bzP2, bzP2c;
 
 		public EditorDrawOps()
 		{
 			// init
 			destRect = new Rectangle();
 			srcRect = new Rectangle();
+            bzP1 = new Point();
+            bzP1c = new Point();
+            bzP2 = new Point();
+            bzP2c = new Point();
 		}
 
 		public void setParameters(
@@ -182,7 +193,8 @@ namespace Vidka.Components
 			int y1 = dimdim.getY_main1(Height);
 			int y2 = dimdim.getY_main2(Height);
 			int yaudio = dimdim.getY_main_half(Height);
-			int cliph = y2 - y1; // clip height (video and audio)
+            int yEase = dimdim.getY_main_easing2(Height);
+            int cliph = y2 - y1; // clip height (video and audio)
 			int clipvh = yaudio - y1; // clip (only video) height (just the video part, no audio!)
 			int index = 0;
 			int draggyVideoShoveIndex = dimdim.GetVideoClipDraggyShoveIndex(draggy);
@@ -209,7 +221,7 @@ namespace Vidka.Components
 							brush = brushLockedClip;
 						drawVideoClip(vclip, vclipPrev,
 							curFrame,
-							y1, cliph, clipvh,
+							y1, cliph, clipvh, yEase,
 							brush);
 					}
 				}
@@ -228,14 +240,18 @@ namespace Vidka.Components
 			VidkaClipVideoAbstract vclip,
 			VidkaClipVideoAbstract vclipPrev,
 			long curFrame,
-			int y1, int cliph, int clipvh,
+			int y1, int cliph, int clipvh, int yEase,
 			Brush brushClip)
 		{
 			int x1 = dimdim.convert_Frame2ScreenX(curFrame);
 			int x2 = dimdim.convert_Frame2ScreenX(curFrame + vclip.LengthFrameCalc);
+            var yEase1 = y1 + cliph;
+            var yEase2 = yEase;
 			int clipw = x2 - x1;
+            var xEaseLeft = dimdim.convert_FrameToAbsX(vclip.EasingLeft);
+            var xEaseRight = dimdim.convert_FrameToAbsX(vclip.EasingRight);
 
-			// active video clip deserves a special outline, fill white otherwise to hide gray background
+			// .... active video clip deserves a special outline, fill white otherwise to hide gray background
 			g.FillRectangle(brushClip, x1, y1, clipw, clipvh);
 			DrawClipBitmaps(
 				vclip: vclip,
@@ -243,7 +259,7 @@ namespace Vidka.Components
 				y1: y1,
 				clipw: clipw,
 				clipvh: clipvh,
-				secStart: proj.FrameToSec(vclip.FrameStart),
+				secStart: proj.FrameToSec(vclip.FrameStartNoEase),
 				len: proj.FrameToSec(vclip.LengthFrameCalc));
             if (vclip.HasAudio || vclip.HasCustomAudio)
             {
@@ -251,24 +267,49 @@ namespace Vidka.Components
                 var waveOffset = vclip.HasCustomAudio ? vclip.CustomAudioOffset : 0;
                 var waveLength = vclip.HasCustomAudio ? vclip.CustomAudioLengthSec : vclip.FileLengthSec;
                 DrawWaveform(waveFile, waveLength ?? 0, vclip.FileLengthSec ?? 0, waveOffset, x1, y1 + clipvh, clipw, cliph - clipvh,
-					proj.FrameToSec(vclip.FrameStart), proj.FrameToSec(vclip.FrameEnd));
-				if (vclip.IsMuted)
-					g.FillRectangle(brushHazyMute, x1, y1 + clipvh, x2 - x1, cliph - clipvh);
-                if (vclip.HasCustomAudio)
-                    g.FillRectangle(brushHazyCustomAudio, x1, y1 + clipvh, x2 - x1, cliph - clipvh);
+                    proj.FrameToSec(vclip.FrameStart + vclip.EasingLeft), proj.FrameToSec(vclip.FrameEnd - vclip.EasingRight),
+                    vclip.IsMuted, vclip.HasCustomAudio);
 				// waveform separator
-                //g.DrawLine(penGray, x1, y1 + clipvh, x2, y1 + clipvh);
-                g.DrawRectangle(penGray, x1, y1 + clipvh, x2 - x1, cliph - clipvh);
+                g.DrawLine(penGray, x1, y1 + clipvh, x2, y1 + clipvh);
+                //g.DrawRectangle(penGray, x1, y1 + clipvh, x2 - x1, cliph - clipvh);
 			}
-			// outline rect
-            g.DrawRectangle(penDefault, x1, y1, clipw, vclip.HasAudio ? cliph : clipvh);
-			// if vclipPrev.end == vclip.start and they are same file, mark green indicator
-			if (vclipPrev != null && vclipPrev.FileName == vclip.FileName && vclipPrev.FrameEnd == vclip.FrameStart) {
-				g.DrawLine(penSealed, x1, y1 + 10, x1, y1 + clipvh);
-			}
-			// still analyzing...
+
+			// .... still analyzing...
 			if (vclip.IsNotYetAnalyzed)
 				g.DrawString("Still analyzing...", fontDefault, brushDefault, x1+5, y1+5);
+            // .... easings
+            if (vclip.HasAudio || vclip.HasCustomAudio)
+            {
+                var waveFile = vclip.HasCustomAudio ? vclip.CustomAudioFilename : vclip.FileName;
+                var waveOffset = vclip.HasCustomAudio ? vclip.CustomAudioOffset : 0;
+                var waveLength = vclip.HasCustomAudio ? vclip.CustomAudioLengthSec : vclip.FileLengthSec;
+                if (vclip.EasingLeft > 0)
+                {
+                    //g.FillRectangle(brushHazyCustomAudio, xEase1, yEase1, xEase2 - xEase1, yEase2 - yEase1);
+                    //g.DrawRectangle(penGray, xEase1, yEase1, xEase2 - xEase1, yEase2 - yEase1);
+                    DrawWaveform(waveFile, waveLength ?? 0, vclip.FileLengthSec ?? 0, waveOffset,
+                        x1 - xEaseLeft, yEase1, xEaseLeft, yEase2 - yEase1,
+                        proj.FrameToSec(vclip.FrameStart), proj.FrameToSec(vclip.FrameStart + vclip.EasingLeft),
+                        vclip.IsMuted, vclip.HasCustomAudio);
+                }
+                if (vclip.EasingRight > 0)
+                {
+                    //g.FillRectangle(brushHazyCustomAudio, xEase1, yEase1, xEase2 - xEase1, yEase2 - yEase1);
+                    //g.DrawRectangle(penGray, xEase1, yEase1, xEase2 - xEase1, yEase2 - yEase1);
+                    DrawWaveform(waveFile, waveLength ?? 0, vclip.FileLengthSec ?? 0, waveOffset,
+                        x2, yEase1, xEaseRight, yEase2 - yEase1,
+                        proj.FrameToSec(vclip.FrameEnd - vclip.EasingRight), proj.FrameToSec(vclip.FrameEnd),
+                        vclip.IsMuted, vclip.HasCustomAudio);
+                }
+            }
+
+            // .... outline this clip
+            DrawVideoClipBorder(penDefault, x1, x1 + clipw, y1, y1 + (vclip.HasAudio ? cliph : clipvh), yEase2, xEaseLeft, xEaseRight, vclip.EasingLeft, vclip.EasingRight);
+            //g.DrawRectangle(penDefault, x1, y1, clipw, vclip.HasAudio ? cliph : clipvh);
+
+            // if vclipPrev.end == vclip.start and they are same file, mark green indicator
+            if (vclipPrev != null && vclipPrev.FileName == vclip.FileName && vclipPrev.FrameEnd == vclip.FrameStart)
+                g.DrawLine(penSealed, x1, y1 + 10, x1, y1 + clipvh);
 		}
 
 		private void drawDraggyVideo(long curFrame, int y1, int cliph, int clipvh, EditorDraggy draggy)
@@ -307,7 +348,8 @@ namespace Vidka.Components
 					int clipw = x2 - x1;
 
                     DrawWaveform(aclip.FileName, aclip.FileLengthSec ?? 0, aclip.FileLengthSec ?? 0, 0, x1, y1, clipw, cliph,
-                        proj.FrameToSec(aclip.FrameStart), proj.FrameToSec(aclip.FrameEnd));
+                        proj.FrameToSec(aclip.FrameStart), proj.FrameToSec(aclip.FrameEnd),
+                        false, false);
 
 					//throw new NotImplementedException("DrawWaveform that takes Audio clip!!!");
 					//DrawWaveform(g, proj, aclip, x1, y1, clipw, cliph,
@@ -353,15 +395,48 @@ namespace Vidka.Components
 			var vclip = uiObjects.CurrentVideoClipHover;
 
 			int y1 = dimdim.getY_main1(Height);
-			int y2 = vclip.HasAudio
-				? dimdim.getY_main2(Height)
-				: dimdim.getY_main_half(Height);
+            //int y2 = vclip.HasAudio
+            //    ? dimdim.getY_main2(Height)
+            //    : dimdim.getY_main_half(Height);
+            int y2 = dimdim.getY_main2(Height); // I finally decided against 1/2 blue hover rect on no-audio clips, it confuses the easing collision -Oct 25, 2015
+            int yAudio = dimdim.getY_main_half(Height);
+            int yEase1 = dimdim.getY_main_easing1(Height);
+            int yEase2 = dimdim.getY_main_easing2(Height);
 			//int yaudio = dimdim.getY_main_half(Height);
 			int x1 = dimdim.getScreenX1_video(vclip);
 			int clipW = dimdim.convert_FrameToAbsX(vclip.LengthFrameCalc); // hacky, I know
-            DrawOutlineOfAnyClip(x1, y1, clipW, y2);
-            // draw seal when prev/next clip match
+            var xEaseLeft = dimdim.convert_FrameToAbsX(vclip.EasingLeft);
+            var xEaseRight = dimdim.convert_FrameToAbsX(vclip.EasingRight);
+            //DrawOutlineOfAnyClip(x1, y1, clipW, y2, yAudio, yEase);
+
+            DrawVideoClipBorder(penHover, x1, x1 + clipW, y1, y2, yEase2, xEaseLeft, xEaseRight, vclip.EasingLeft, vclip.EasingRight);
+            
+            // .... draw outline
             var mouseTrimPixels = dimdim.convert_FrameToAbsX(uiObjects.MouseDragFrameDelta);
+            //g.DrawRectangle(penHover, x1, y1, clipW, y2 - y1);
+            g.DrawLine(penHover, x1, y1, x1 + clipW, y1);
+            g.DrawLine(penHover, x1, y1, x1, y2);
+            g.DrawLine(penHover, x1 + clipW, y1, x1 + clipW, y2);
+            if (uiObjects.TrimHover == TrimDirection.Left)
+            {
+                if (uiObjects.ShowEasingHandles && vclip.EasingLeft > 0)
+                    drawTrimBracket(x1 - xEaseLeft, yEase1, yEase2, TrimDirection.Left, uiObjects.TrimThreshPixels, mouseTrimPixels);
+                else if (uiObjects.ShowEasingHandles)
+                    drawTrimBracket(x1, yAudio, yEase2, TrimDirection.Left, uiObjects.TrimThreshPixels, mouseTrimPixels);
+                else
+                    drawTrimBracket(x1, y1, y2, TrimDirection.Left, uiObjects.TrimThreshPixels, mouseTrimPixels);
+            }
+            if (uiObjects.TrimHover == TrimDirection.Right)
+            {
+                if (uiObjects.ShowEasingHandles && vclip.EasingRight > 0)
+                    drawTrimBracket(x1 + clipW + xEaseRight, yEase1, yEase2, TrimDirection.Right, uiObjects.TrimThreshPixels, mouseTrimPixels);
+                else if (uiObjects.ShowEasingHandles)
+                    drawTrimBracket(x1 + clipW, yAudio, yEase2, TrimDirection.Right, uiObjects.TrimThreshPixels, mouseTrimPixels);
+                else
+                    drawTrimBracket(x1 + clipW, y1, y2, TrimDirection.Right, uiObjects.TrimThreshPixels, mouseTrimPixels);
+            }
+
+            // .... draw seal when prev/next clip match
             if (uiObjects.TrimHover != TrimDirection.None)
             {
                 var index = proj.ClipsVideo.IndexOf(vclip);
@@ -380,26 +455,83 @@ namespace Vidka.Components
             }
 		}
 
-        private void DrawOutlineOfAnyClip(int x1, int y1, int clipW, int y2)
+        /// <summary>
+        /// This thing could be complex because we have
+        /// </summary>
+        private void DrawVideoClipBorder(Pen pen15,
+            int x1, int x2, int y1, int y2, int yEase2,
+            int xEaseL, int xEaseR, long easeL, long easeR)
         {
-            var mouseTrimPixels = dimdim.convert_FrameToAbsX(uiObjects.MouseDragFrameDelta);
-            g.DrawRectangle(penHover, x1, y1, clipW, y2 - y1);
-            if (uiObjects.TrimHover == TrimDirection.Left)
-                drawTrimBracket(x1, y1, y2, TrimDirection.Left, uiObjects.TrimThreshPixels, mouseTrimPixels);
-            if (uiObjects.TrimHover == TrimDirection.Right)
-                drawTrimBracket(x1 + clipW, y1, y2, TrimDirection.Right, uiObjects.TrimThreshPixels, mouseTrimPixels);
+            //g.DrawRectangle(pen15, x1, y1, clipW, y2 - y1);
+            g.DrawLine(pen15, x1, y1, x2, y1);
+            g.DrawLine(pen15, x1, y1, x1, y2);
+            g.DrawLine(pen15, x2, y1, x2, y2);
+            var yEase1 = y2;
+            var bzXMainL = Math.Min(x1 + EASING_BEZIER_MAX_WIDTH, x2);
+            var bzXMainR = Math.Max(x2 - EASING_BEZIER_MAX_WIDTH, x1);
+            if (bzXMainL > bzXMainR)
+                bzXMainL = bzXMainR = (bzXMainL + bzXMainR) / 2;
+            if (easeL > 0)
+            {
+                var xEase1 = x1 - xEaseL;
+                var xEase2 = x1;
+                g.DrawLine(pen15, xEase1, yEase1, xEase2, yEase1);
+                g.DrawLine(pen15, xEase1, yEase2, xEase2, yEase2);
+                g.DrawLine(pen15, xEase1, yEase1, xEase1, yEase2);
+                var bzXMainHalf = (xEase2 + bzXMainL) / 2;
+                bzP1.X = xEase2;
+                bzP1.Y = yEase2;
+                bzP1c.X = bzXMainHalf;
+                bzP1c.Y = yEase2;
+                bzP2.X = bzXMainL;
+                bzP2.Y = yEase1;
+                bzP2c.X = bzXMainHalf;
+                bzP2c.Y = yEase1;
+                drawBesierFromMyBzPoints(pen15);
+            }
+            else
+                g.DrawLine(pen15, x1, yEase1, bzXMainL, yEase1);
+            if (easeR > 0)
+            {
+                var xEase1 = x2;
+                var xEase2 = x2 + xEaseR;
+                g.DrawLine(pen15, xEase1, yEase1, xEase2, yEase1);
+                g.DrawLine(pen15, xEase1, yEase2, xEase2, yEase2);
+                g.DrawLine(pen15, xEase2, yEase1, xEase2, yEase2);
+                var bzXMainHalf = (xEase1 + bzXMainR) / 2;
+                bzP1.X = xEase1;
+                bzP1.Y = yEase2;
+                bzP1c.X = bzXMainHalf;
+                bzP1c.Y = yEase2;
+                bzP2.X = bzXMainR;
+                bzP2.Y = yEase1;
+                bzP2c.X = bzXMainHalf;
+                bzP2c.Y = yEase1;
+                drawBesierFromMyBzPoints(pen15);
+            }
+            else
+                g.DrawLine(pen15, x2, yEase1, bzXMainR, yEase1);
+            g.DrawLine(pen15, bzXMainL, yEase1, bzXMainR, yEase1);
         }
 
 		public void OutlineClipAudioHover()
 		{
 			var aclip = uiObjects.CurrentAudioClipHover;
 			int y1 = dimdim.getY_audio1(Height);
-			int y2 = dimdim.getY_audio2(Height);
+            int y2 = dimdim.getY_audio2(Height);
 			//var secStart = dimdim.FrameToSec(aclip.FrameStart);
 			//var secEnd = dimdim.FrameToSec(aclip.FrameEnd);
 			int x1 = dimdim.convert_Frame2ScreenX(aclip.FrameOffset);
 			int x2 = dimdim.convert_Frame2ScreenX(aclip.FrameOffset + aclip.LengthFrameCalc);
-            DrawOutlineOfAnyClip(x1, y1, x2-x1, y2);
+            
+            //DrawOutlineOfAnyClip(x1, y1, x2 - x1, y2, y2, y2);
+            // .... draw outline
+            var mouseTrimPixels = dimdim.convert_FrameToAbsX(uiObjects.MouseDragFrameDelta);
+            g.DrawRectangle(penHover, x1, y1, x2 - x1, y2 - y1);
+            if (uiObjects.TrimHover == TrimDirection.Left)
+                drawTrimBracket(x1, y1, y2, TrimDirection.Left, uiObjects.TrimThreshPixels, mouseTrimPixels);
+            if (uiObjects.TrimHover == TrimDirection.Right)
+                drawTrimBracket(x2, y1, y2, TrimDirection.Right, uiObjects.TrimThreshPixels, mouseTrimPixels);
 		}
 
 		internal void DrawCurrentFrameMarker()
@@ -417,7 +549,7 @@ namespace Vidka.Components
 			g.FillRectangle(brushHazyCurtain, 0, y1, Width, y2-y1);
 		}
 
-		public void DrawOriginalTimelineAndItsClipOrClips()
+		public void DrawCurrentClipVideoOnOriginalTimeline()
 		{
 			var currentClip = uiObjects.CurrentVideoClip;
             if (currentClip == null)
@@ -429,12 +561,15 @@ namespace Vidka.Components
 				y2 = yaudio;
 
 			// calculations for current (selected) clip to fill in the rect
-			int xOrig1 = dimdim.convert_Frame2ScreenX_OriginalTimeline(currentClip.FrameStart, currentClip.FileLengthFrames, Width);
-			int xOrig2 = dimdim.convert_Frame2ScreenX_OriginalTimeline(currentClip.FrameEnd, currentClip.FileLengthFrames, Width);
+			int xOrigEaseL = dimdim.convert_Frame2ScreenX_OriginalTimeline(currentClip.FrameStart, currentClip.FileLengthFrames, Width);
+            int xOrigEaseR = dimdim.convert_Frame2ScreenX_OriginalTimeline(currentClip.FrameEnd, currentClip.FileLengthFrames, Width);
+            int xOrig1 = dimdim.convert_Frame2ScreenX_OriginalTimeline(currentClip.FrameStart + currentClip.EasingLeft, currentClip.FileLengthFrames, Width);
+            int xOrig2 = dimdim.convert_Frame2ScreenX_OriginalTimeline(currentClip.FrameEnd - currentClip.EasingRight, currentClip.FileLengthFrames, Width);
 
 			// draw entire original clip (0 .. vclip.FileLength)
 			g.FillRectangle(brushWhite, 0, y1, Width, y2 - y1);
-			g.FillRectangle(brushActive, xOrig1, y1, xOrig2 - xOrig1, y2 - y1);
+            g.FillRectangle(brushActiveEased, xOrigEaseL, y1, xOrigEaseR - xOrigEaseL, y2 - y1);
+            g.FillRectangle(brushActive, xOrig1, y1, xOrig2 - xOrig1, y2 - y1);
 			DrawClipBitmaps(
 				vclip: currentClip,
 				x1: 0,
@@ -448,43 +583,56 @@ namespace Vidka.Components
             var waveLength = currentClip.HasCustomAudio ? currentClip.CustomAudioLengthSec : currentClip.FileLengthSec;
             DrawWaveform(waveFile, waveLength ?? 0, currentClip.FileLengthSec ?? 0, waveOffset,
                 0, yaudio, Width, y2 - yaudio,
-                0, currentClip.FileLengthSec ?? 0);
-			if (currentClip.IsMuted)
-				g.FillRectangle(brushHazyMute, xOrig1, yaudio, xOrig2 - xOrig1, y2 - yaudio);
-            if (currentClip.HasCustomAudio)
-                g.FillRectangle(brushHazyCustomAudio, xOrig1, yaudio, xOrig2 - xOrig1, y2 - yaudio);
+                0, currentClip.FileLengthSec ?? 0,
+                currentClip.IsMuted, currentClip.HasCustomAudio);
 			g.DrawLine(penGray, 0, yaudio, Width, yaudio);
 			g.DrawRectangle(penDefault, 0, y1, Width, y2 - y1);
 
 			// draw clip bounds and diagonals (where they are)
 			foreach (var vclip in uiObjects.CurClipAllUsagesVideo)
 			{
-				xOrig1 = dimdim.convert_Frame2ScreenX_OriginalTimeline(vclip.FrameStart, vclip.FileLengthFrames, Width);
-				xOrig2 = dimdim.convert_Frame2ScreenX_OriginalTimeline(vclip.FrameEnd, vclip.FileLengthFrames, Width);
+                xOrigEaseL = dimdim.convert_Frame2ScreenX_OriginalTimeline(vclip.FrameStart, vclip.FileLengthFrames, Width);
+                xOrigEaseR = dimdim.convert_Frame2ScreenX_OriginalTimeline(vclip.FrameEnd, vclip.FileLengthFrames, Width);
+                xOrig1 = dimdim.convert_Frame2ScreenX_OriginalTimeline(vclip.FrameStart + vclip.EasingLeft, vclip.FileLengthFrames, Width);
+                xOrig2 = dimdim.convert_Frame2ScreenX_OriginalTimeline(vclip.FrameEnd - vclip.EasingRight, vclip.FileLengthFrames, Width);
 				var xMain1 = dimdim.getScreenX1_video(vclip);
 				var xMain2 = xMain1 + dimdim.convert_FrameToAbsX(vclip.LengthFrameCalc); //hacky, I know
 				int yMainTop = dimdim.getY_main1(Height);
 				int xMainDelta = dimdim.convert_FrameToAbsX(uiObjects.MouseDragFrameDelta); //hacky, I know
 				int xOrigDelta = dimdim.convert_Frame2ScreenX_OriginalTimeline(uiObjects.MouseDragFrameDelta, currentClip.FileLengthFrames, Width); // hacky, I know
+                var xEaseLeft = dimdim.convert_FrameToAbsX(vclip.EasingLeft);
+                var xEaseRight = dimdim.convert_FrameToAbsX(vclip.EasingRight);
 
 				var type = (vclip == uiObjects.CurrentVideoClipHover)
 					? OutlineClipType.Hover
 					: OutlineClipType.Active;
 				g.DrawLine((type == OutlineClipType.Hover) ? penHover : penGray, xMain1, yMainTop, xOrig1, y2);
 				g.DrawLine((type == OutlineClipType.Hover) ? penHover : penGray, xMain2, yMainTop, xOrig2, y2);
-				g.DrawLine((type == OutlineClipType.Hover) ? penHover : penGray, xOrig1, y1, xOrig1, y2);
-				g.DrawLine((type == OutlineClipType.Hover) ? penHover : penGray, xOrig2, y1, xOrig2, y2);
-				if (type == OutlineClipType.Hover)
+                g.DrawLine((type == OutlineClipType.Hover) ? penHover : penGray, xOrig1, y1, xOrig1, y2);
+                g.DrawLine((type == OutlineClipType.Hover) ? penHover : penGray, xOrig2, y1, xOrig2, y2);
+                g.DrawLine((type == OutlineClipType.Hover) ? penGray : penGray, xOrigEaseL, y1, xOrigEaseL, y2);
+                g.DrawLine((type == OutlineClipType.Hover) ? penGray : penGray, xOrigEaseR, y1, xOrigEaseR, y2);
+                if (type == OutlineClipType.Hover && !uiObjects.MouseDragFrameDeltaMTO)
 				{
 					if (uiObjects.TrimHover == TrimDirection.Left)
 					{
-						g.DrawLine(penActiveBoundary, xMain1 + xMainDelta, yMainTop, xOrig1 + xOrigDelta, y2);
-						drawTrimBracket(xOrig1, y1, y2, TrimDirection.Left, uiObjects.TrimThreshPixels, xOrigDelta);
+                        if (uiObjects.ShowEasingHandles)
+                            g.DrawLine(penActiveBoundary, xOrigEaseL, y1, xOrigEaseL, y2);
+                        else
+                        {
+                            g.DrawLine(penActiveBoundary, xMain1 + xMainDelta, yMainTop, xOrig1 + xOrigDelta, y2);
+                            drawTrimBracket(xOrig1, y1, y2, TrimDirection.Left, uiObjects.TrimThreshPixels, xOrigDelta);
+                        }
 					}
 					if (uiObjects.TrimHover == TrimDirection.Right)
 					{
-						g.DrawLine(penActiveBoundary, xMain2 + xMainDelta, yMainTop, xOrig2 + xOrigDelta, y2);
-						drawTrimBracket(xOrig2, y1, y2, TrimDirection.Right, uiObjects.TrimThreshPixels, xOrigDelta);
+                        if (uiObjects.ShowEasingHandles)
+                            g.DrawLine(penActiveBoundary, xOrigEaseR, y1, xOrigEaseR, y2);
+                        else
+                        {
+                            g.DrawLine(penActiveBoundary, xMain2 + xMainDelta, yMainTop, xOrig2 + xOrigDelta, y2);
+                            drawTrimBracket(xOrig2, y1, y2, TrimDirection.Right, uiObjects.TrimThreshPixels, xOrigDelta);
+                        }
 					}
 				}
 			}
@@ -492,7 +640,7 @@ namespace Vidka.Components
 			// draw marker on 
 			var frameOffset = uiObjects.OriginalTimelinePlaybackMode
 				? uiObjects.CurrentMarkerFrame
-				: uiObjects.CurrentMarkerFrame - (uiObjects.CurrentClipFrameAbsPos ?? 0) + currentClip.FrameStart;
+				: uiObjects.CurrentMarkerFrame - (uiObjects.CurrentClipFrameAbsPos ?? 0) + currentClip.FrameStartNoEase;
 			int xMarker = dimdim.convert_Frame2ScreenX_OriginalTimeline(frameOffset, currentClip.FileLengthFrames, Width);
 			g.DrawLine(penMarker, xMarker, y1, xMarker, y2);
 		}
@@ -512,7 +660,8 @@ namespace Vidka.Components
             // draw entire original clip (0 .. vclip.FileLength)
             DrawWaveform(currentClip.FileName, currentClip.FileLengthSec ?? 0, currentClip.FileLengthSec ?? 0, 0,
                 0, y1, Width, y2 - y1,
-                0, currentClip.FileLengthSec ?? 0);
+                0, currentClip.FileLengthSec ?? 0,
+                false, false);
             // outline
             g.DrawRectangle(penDefault, 0, y1, Width, y2 - y1);
             // current active
@@ -584,7 +733,8 @@ namespace Vidka.Components
             double videoLengthSec,
             double audioOffsetSec,
 			int x1, int y1, int clipw, int cliph,
-			double secStart, double secEnd)
+			double secStart, double secEnd,
+            bool isMuted, bool hasCustomAudio)
 		{
             double audioT1 = (audioOffsetSec + secStart) / audioLengthSec;
             double audioT2 = (audioOffsetSec + secEnd) / audioLengthSec;
@@ -622,6 +772,10 @@ namespace Vidka.Components
                 destRect.Height = cliph;
 				g.DrawImage(bmpWave, destRect: destRect, srcRect: srcRect, srcUnit: GraphicsUnit.Pixel);
 			}
+            if (isMuted)
+                g.FillRectangle(brushHazyMute, destRect);
+            if (hasCustomAudio)
+                g.FillRectangle(brushHazyCustomAudio, destRect);
 		}
 
 		/// <param name="secStart">needs to be in seconds to figure out which thumb</param>
@@ -674,15 +828,21 @@ namespace Vidka.Components
 		/// Draws one red bracket if drag frames = 0. If there has been a drag > 0,
 		/// draws 2 brackets: one purple for original edge, one red for active (under mouse)
 		/// </summary>
-		private void drawTrimBracket(int x, int y1, int y2, TrimDirection trimDirection, int bracketLength, int trimDeltaX)
+		private void drawTrimBracket(int x, int y1, int y2, TrimDirection trimDirection, int bracketLength, int trimDeltaX,
+            Pen penActive = null,
+            Pen penActivePrev = null)
 		{
+            if (penActive == null)
+                penActive = penActiveBoundary;
+            if (penActivePrev == null)
+                penActivePrev = penActiveBoundaryPrev;
 			if (trimDeltaX == 0)
-				drawTrimBracketSingle(g, penActiveBoundary, x, y1, y2, trimDirection, bracketLength);
+                drawTrimBracketSingle(g, penActive, x, y1, y2, trimDirection, bracketLength);
 			else
 			{
 				g.FillRectangle(brushHazy, Math.Min(x, x + trimDeltaX), y1, Math.Abs(trimDeltaX), y2-y1);
-				drawTrimBracketSingle(g, penActiveBoundaryPrev, x, y1, y2, trimDirection, bracketLength);
-				drawTrimBracketSingle(g, penActiveBoundary, x + trimDeltaX, y1, y2, trimDirection, bracketLength);
+                drawTrimBracketSingle(g, penActivePrev, x, y1, y2, trimDirection, bracketLength);
+                drawTrimBracketSingle(g, penActive, x + trimDeltaX, y1, y2, trimDirection, bracketLength);
 			}
 		}
 
@@ -699,6 +859,15 @@ namespace Vidka.Components
 			g.DrawLine(pen, x, y2, x + bracketDx, y2);
 		}
 
+		#region helpers and shit
+        
+        private void drawBesierFromMyBzPoints(Pen penGray)
+        {
+            g.DrawBezier(penGray, bzP1, bzP1c, bzP2c, bzP2);
+        }
+
+		#endregion
+
 		#endregion
 
 		#region ================================== AlignVideoAudio ===================================
@@ -707,8 +876,9 @@ namespace Vidka.Components
 		{
 			var y1 = (int)(Height * 0.1);
 			var cliph = (int)(Height * 0.5);
-			var clipvh = (int)(Height * 0.3);
-			drawVideoClip(vclip, null, 0, y1, cliph, clipvh, brushWhite);
+            var clipvh = (int)(Height * 0.3);
+            var yEase = (int)(Height * 0.7);
+            drawVideoClip(vclip, null, 0, y1, cliph, clipvh, yEase, brushWhite);
 		}
 
         internal void AlignVideoAudio_drawAudio(VidkaClipAudio aclip, float audioOffsetSec)
@@ -722,7 +892,7 @@ namespace Vidka.Components
             int x1 = dimdim.convert_Frame2ScreenX(0);
             int x2 = dimdim.convert_Frame2ScreenX(0 + aclip.LengthFrameCalc);
             int xOffset = dimdim.convert_SecToAbsX(audioOffsetSec);
-            DrawWaveform(aclip.FileName, aclip.FileLengthSec ?? 0, aclip.FileLengthSec ?? 0, 0, x1 + xOffset, yaudio, x2 - x1, y2 - yaudio, 0, aclip.FileLengthSec ?? 0);
+            DrawWaveform(aclip.FileName, aclip.FileLengthSec ?? 0, aclip.FileLengthSec ?? 0, 0, x1 + xOffset, yaudio, x2 - x1, y2 - yaudio, 0, aclip.FileLengthSec ?? 0, false, false);
             g.DrawRectangle(penDefault, x1 + xOffset, yaudio, x2 - x1, y2 - yaudio);
         }
 

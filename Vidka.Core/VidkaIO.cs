@@ -39,8 +39,9 @@ namespace Vidka.Core
 			var sbClipStats = new StringBuilder();
             var sbPostOp = new StringBuilder();
             var sbAudio = new StringBuilder();
-			var lastClip = Proj.ClipsVideo.LastOrDefault();
-			foreach (var clip in Proj.ClipsVideo)
+            var renderableClips = Proj.GetVideoClipsForRendering();
+            var lastClip = renderableClips.LastOrDefault();
+            foreach (var clip in renderableClips)
 			{
                 var lineEnding = (clip != lastClip) ? ", \\\n" : " ";
                 sbPostOp.Clear();
@@ -52,15 +53,24 @@ namespace Vidka.Core
                 if (clip.IsMuted)
                     sbPostOp.Append(".MuteThisClip()");
                 sbPostOp.Append((clip.PostOp ?? "").Replace("\n", ""));
-                if (clip is VidkaClipVideo)
+                foreach (var mix in clip.MixesAudioFromVideo)
+                {
+                    if (mix.IsAudioFile)
+                        sbPostOp.Append(String.Format(".MixAudioFromAudio(\"{0}\", {1}, {2}, {3})",
+                            mix.FileName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
+                    else
+                        sbPostOp.Append(String.Format(".MixAudioFromVideo(\"{0}\", {1}, {2}, {3})",
+                            mix.FileName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
+                }
+                if (clip.ClipType == VideoClipRenderableType.Video)
                 {
 	                sbClips.Append(String.Format("\tNeutralClip(\"{0}\", {1}, {2}){3}{4}",
                         clip.FileName, clip.FrameStart, clip.FrameEnd-1, sbPostOp.ToString(), lineEnding));
 	                sbClipStats.Append(String.Format("collectpixeltypestat(\"{0}\", {1})\n",
 		                clip.FileName, clip.LengthFrameCalc));
                 }
-                else if (clip is VidkaClipImage
-	                || clip is VidkaClipTextSimple)
+                else if (clip.ClipType == VideoClipRenderableType.Image
+                    || clip.ClipType == VideoClipRenderableType.Text)
                 {
 	                sbClips.Append(String.Format("\tNeutralClipImage(\"{0}\", {1}){2}{3}",
                         clip.FileName, clip.LengthFrameCalc, sbPostOp.ToString(), lineEnding));
@@ -69,9 +79,11 @@ namespace Vidka.Core
 
             foreach (var clip in Proj.ClipsAudio)
             {
+                sbPostOp.Clear();
+                sbPostOp.Append((clip.PostOp ?? "").Replace("\n", ""));
                 sbAudio.Append(String.Format(@"
-voiceover=BlankClip(last,{0}) ++BlankClip(last, {1}).AudioDub(DirectShowSource(""{2}"").ResampleAudio(44100)).Trim({3}, {4})
-MixAudio(last,voiceover)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.FrameStart, clip.FrameEnd));
+voiceover=BlankClip(last,{0}) ++BlankClip(last, {1}).AudioDub(DirectShowSource(""{2}"").ResampleAudio(44100)).Trim({3}, {4}){5}
+MixAudio(last,voiceover)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.FrameStart, clip.FrameEnd, sbPostOp.ToString()));
             }
 
 			// TODO: calc abs path based on exe

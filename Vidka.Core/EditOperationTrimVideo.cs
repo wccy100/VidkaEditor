@@ -39,7 +39,8 @@ namespace Vidka.Core
 				&& (uiObjects.TimelineHover == timeline)
 				&& (uiObjects.CurrentVideoClipHover != null)
 				&& (!uiObjects.CurrentVideoClipHover.IsLocked)
-				&& (uiObjects.TrimHover == side);
+				&& (uiObjects.TrimHover == side)
+                && (!uiObjects.ShowEasingHandles);
 		}
 
 		public override void MouseDragStart(int x, int y, int w, int h)

@@ -11,15 +11,14 @@ using Vidka.Components;
 
 namespace Vidka.Components
 {
-	public partial class VideoClipPropertiesWindow : Form
+	public partial class ClipPropertiesWindowAudio : Form
 	{
-		public VideoClipPropertiesWindow()
+		public ClipPropertiesWindowAudio()
 		{
 			InitializeComponent();
 		}
 
-		public CommonVideoClipProperties CommonPropertiesControl { get { return commonVideoClipProperties; } }
-		public CommonVideoClipCustomAudio CommonCustomAudioControl { get { return commonVideoClipCustomAudio; } }
+        public CommonAudioClipProperties CommonPropertiesControl { get { return commonAudioClipProperties; } }
 
 		public void AddImportantTab(string title, Control control)
 		{

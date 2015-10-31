@@ -70,13 +70,13 @@ function NeutralClip(string filename, int fstart, int fend,\
 	#~ vclip = (filename.RightStr(4).lcase() == ".avi") \
 		#~ ? AviSource(filename) \
 		#~ : FFmpegSource2(filename) # fps=proj_frameRate, convertfps=true)
-	vclip = DirectShowSource(filename, audio=True) # fps=proj_frameRate, convertfps=true)
+	vclip = DirectShowSource(filename, audio=True, fps=proj_frameRate, convertfps=true)
 	# if need be convert to color space of the most frequent one
 
 	vclip = toProperPixelType(vclip)
 		
 	# convert clip so that they are all same video size, fps, audio format, etc...
-	vclip = (vclip.framerate != proj_frameRate) ? vclip.ChangeFPS(proj_frameRate) : vclip
+	#~ vclip = (vclip.framerate != proj_frameRate) ? vclip.ChangeFPS(proj_frameRate) : vclip
 	vclip = (vclip.width != proj_width || vclip.height != proj_height) ? vclip.BilinearResize(proj_width, proj_height) : vclip
 	audioSilence = Tone(length=(vclip.FrameCount/vclip.FrameRate), samplerate=proj_audiorate, channels=proj_audiochannels, type="silence", level=0.0)
 	vclip = !vclip.HasAudio ? AudioDub(vclip, audioSilence) : vclip
@@ -86,6 +86,9 @@ function NeutralClip(string filename, int fstart, int fend,\
 	vclip = (vclip.AudioRate != proj_audiorate) ? vclip.ResampleAudio(proj_audiorate) : vclip
 	# trim, of course!
 	vclip = vclip.Trim(fstart, fend, true)
+	# pad audio. see http://avisynth.nl/index.php/Trim (...when last_frame=0 => till end)
+	vclip = vclip.Trim(0, 0, pad=true)
+	
 	# misc manipulations
 	#vclip = Defined(slowmo) ? ConvertFPS(slowmo * proj_frameRate).AssumeFPS(proj_frameRate, sync_audio=true).ResampleAudio(44100) : vclip
 	
@@ -121,6 +124,7 @@ function AddCustomAudio(Clip vclip, string filenameAudio, float audioOffset, int
 	audioTrimEnd = (fend == -1) ? audio.audioduration-1 : audioOffset + fend / float(proj_frameRate)
 	audio = audio.AudioTrim(audioTrimStart, audioTrimEnd)
 	vclip = AudioDub(vclip, audio)
+	vclip = vclip.Trim(0, 0, pad=true) # pad audio. see http://avisynth.nl/index.php/Trim (...when last_frame=0 => till end)
 	return vclip
 }
 
@@ -128,6 +132,26 @@ function MuteThisClip(Clip vclip)
 {
 	audioSilence = Tone(length=(vclip.FrameCount/vclip.FrameRate), samplerate=proj_audiorate, channels=proj_audiochannels, type="silence", level=0.0)
 	vclip = AudioDub(vclip, audioSilence)
+	return vclip
+}
+
+function MixAudioFromVideo(Clip vclip, string filename, int fstart, int fend,\
+		int "fOffset")
+{
+	fOffset = Default(fOffset, 0)
+	aclip = NeutralClip(filename, fstart, fend)
+	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
+	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
+	return vclip
+}
+
+function MixAudioFromAudio(Clip vclip, string filename, int fstart, int fend,\
+		int "fOffset")
+{
+	fOffset = Default(fOffset, 0)
+	aclip = BlankClip(vclip, fend).AudioDub(DirectShowSource(filename).ResampleAudio(44100)).Trim(fstart, fend)
+	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
+	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
 	return vclip
 }
 

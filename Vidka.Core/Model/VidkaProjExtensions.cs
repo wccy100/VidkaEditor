@@ -102,7 +102,7 @@ namespace Vidka.Core.Model
 			{
 				if (curFrame >= totalFrame && curFrame < totalFrame + ccc.LengthFrameCalc)
 				{
-					frameOffset = curFrame - totalFrame + ccc.FrameStart;
+					frameOffset = curFrame - totalFrame + ccc.FrameStartNoEase;
 					return index;
 				}
 				index++;
@@ -122,7 +122,7 @@ namespace Vidka.Core.Model
 			if (index == -1 && proj.ClipsVideo.Count > 0) {
 				// ze forcing...
 				index = proj.ClipsVideo.Count - 1;
-				frameOffset = proj.ClipsVideo[index].FrameEnd;
+				frameOffset = proj.ClipsVideo[index].FrameEndNoEase;
 			}
 			return index;
 		}
@@ -212,24 +212,162 @@ namespace Vidka.Core.Model
 				return 0;
 			if (side == TrimDirection.Left)
 			{
-				var frame = clip.FrameStart + delta;
-				if (frame < 0)
-					return -clip.FrameStart; // to make 0
-				else if (frame >= clip.FrameEnd)
-					return -clip.FrameStart + clip.FrameEnd - 1; // to make frameEnd-1
+                if (clip.FrameStart + delta < 0) // left bound...
+					return -clip.FrameStart; // ...to make 0
+                else if (clip.FrameStartNoEase + delta >= clip.FrameEndNoEase) // right bound...
+					return -clip.FrameStartNoEase + clip.FrameEndNoEase - 1; // ...to make frameEndNoEase-1
 				return delta;
 			}
 			else if (side == TrimDirection.Right)
 			{
-				var frame = clip.FrameEnd + delta;
-				if (frame <= clip.FrameStart)
-					return -clip.FrameEnd + clip.FrameStart + 1; // to male frameStart+1
-				else if (frame >= clip.FileLengthFrames)
-					return -clip.FrameEnd + clip.FileLengthFrames; // to make clip.LengthFrameCalc
+                if (clip.FrameEndNoEase + delta <= clip.FrameStartNoEase) // left bound...
+					return -clip.FrameEndNoEase + clip.FrameStartNoEase + 1; // ...to male frameStartNoEase+1
+                else if (clip.FrameEnd + delta >= clip.FileLengthFrames) // right bound...
+					return -clip.FrameEnd + clip.FileLengthFrames; // ...to make clip.LengthFrameCalc
 				return delta;
 			}
 			return 0;
 		}
+
+        public static long HowMuchCanBeEased(this VidkaClipVideoAbstract clip, TrimDirection side, long delta)
+        {
+            if (clip == null)
+                return 0;
+            if (side == TrimDirection.Left)
+            {
+                var deltaBoundPositive = clip.LengthFrameCalcNoEase - 1 - clip.EasingLeft - clip.EasingRight;
+                var deltaBoundNegative = clip.EasingLeft;
+                if (delta > 0 && delta > deltaBoundNegative)
+                    return deltaBoundNegative;
+                else if (delta < 0 && delta < -deltaBoundPositive)
+                    return -deltaBoundPositive;
+                return delta;
+            }
+            else if (side == TrimDirection.Right)
+            {
+                var deltaBoundPositive = clip.LengthFrameCalcNoEase - 1 - clip.EasingLeft - clip.EasingRight;
+                var deltaBoundNegative = clip.EasingRight;
+                if (delta < 0 && delta < -deltaBoundNegative)
+                    return -deltaBoundNegative;
+                else if (delta > 0 && delta > deltaBoundPositive)
+                    return deltaBoundPositive;
+                return delta;
+            }
+            return 0;
+        }
+
+        public static IEnumerable<VideoClipRenderable> GetVideoClipsForRendering(this VidkaProj proj)
+        {
+            var arrClips = proj.ClipsVideo.ToArray();
+            var arrClips2 = arrClips.Select(x => new VideoClipRenderable
+            {
+                FileName = x.FileName,
+                FrameStart = x.FrameStart + x.EasingLeft,
+                FrameEnd = x.FrameEnd - x.EasingRight,
+                IsMuted = x.IsMuted,
+                PostOp = x.PostOp,
+                HasCustomAudio = x.HasCustomAudio,
+                CustomAudioFilename = x.CustomAudioFilename,
+                CustomAudioOffset = x.CustomAudioOffset,
+                ClipType = GetRenderableTypeOfClip(x),
+            }).ToArray();
+
+            // .... set up the easings and their audio mixes
+            long curFrameEnd = 0;
+            for (int i = 0; i < arrClips.Length; i++)
+            {
+                curFrameEnd += arrClips2[i].LengthFrameCalc;
+                if (arrClips[i].EasingLeft == 0 && arrClips[i].EasingRight == 0)
+                    continue;
+                if (arrClips[i].EasingLeft > 0)
+                {
+                    var curFrame = curFrameEnd - arrClips2[i].LengthFrameCalc;
+                    long easeEndAbs = curFrame - arrClips[i].EasingLeft;
+                    long easerFrame = arrClips[i].FrameStart + arrClips[i].EasingLeft;
+                    var index = i;
+                    while (curFrame > easeEndAbs && index > 0)
+                    {
+                        index--;
+                        long curClipLen = arrClips2[index].LengthFrameCalc;
+                        var easerFilename = arrClips[i].FileName;
+                        long easerFrame1 = easerFrame - curClipLen;
+                        long easerFrame2 = easerFrame;
+                        long easerOffset = 0;
+                        var isAudio = false;
+                        if (easerFrame1 < arrClips[i].FrameStart)
+                        {
+                            easerOffset = arrClips[i].FrameStart - easerFrame1;
+                            easerFrame1 = arrClips[i].FrameStart;
+                        }
+                        if (arrClips[i].HasCustomAudio)
+                        {
+                            easerFilename = arrClips[i].CustomAudioFilename;
+                            easerFrame1 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
+                            easerFrame2 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
+                            isAudio = true;
+                        }
+                        arrClips2[index].MixesAudioFromVideo.Add(new VideoEasingAudioToMix {
+                            FileName = easerFilename,
+                            FrameStart = easerFrame1,
+                            FrameEnd = easerFrame2,
+                            FrameOffset = easerOffset,
+                            IsAudioFile = isAudio,
+                        });
+                        curFrame -= curClipLen;
+                        easerFrame -= curClipLen;
+                    }
+                }
+                if (arrClips[i].EasingRight > 0)
+                {
+                    var curFrame = curFrameEnd;
+                    long easeEndAbs = curFrame + arrClips[i].EasingRight;
+                    long easerFrame = arrClips[i].FrameEnd - arrClips[i].EasingRight;
+                    var index = i;
+                    while (curFrame < easeEndAbs && index <= arrClips.Length - 1)
+                    {
+                        index++;
+                        long curClipLen = arrClips2[index].LengthFrameCalc;
+                        var easerFilename = arrClips[i].FileName;
+                        long easerFrame1 = easerFrame;
+                        long easerFrame2 = easerFrame + curClipLen;
+                        var isAudio = false;
+                        if (easerFrame2 > arrClips[i].FrameEnd)
+                        {
+                            easerFrame2 = arrClips[i].FrameEnd;
+                        }
+                        if (arrClips[i].HasCustomAudio)
+                        {
+                            easerFilename = arrClips[i].CustomAudioFilename;
+                            easerFrame1 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
+                            easerFrame2 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
+                            isAudio = true;
+                        }
+                        arrClips2[index].MixesAudioFromVideo.Add(new VideoEasingAudioToMix
+                        {
+                            FileName = easerFilename,
+                            FrameStart = easerFrame1,
+                            FrameEnd = easerFrame2,
+                            FrameOffset = 0,
+                            IsAudioFile = isAudio,
+                        });
+                        curFrame += curClipLen;
+                        easerFrame += curClipLen;
+                    }
+                }
+            }
+            return arrClips2;
+        }
+
+        private static VideoClipRenderableType GetRenderableTypeOfClip(VidkaClipVideoAbstract clip)
+        {
+            if (clip is VidkaClipVideo)
+                return VideoClipRenderableType.Video;
+            if (clip is VidkaClipImage)
+                return VideoClipRenderableType.Image;
+            if (clip is VidkaClipTextSimple)
+                return VideoClipRenderableType.Text;
+            return VideoClipRenderableType.Video;
+        }
 
 		/// <summary>
 		/// Debug description

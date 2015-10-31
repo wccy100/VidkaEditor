@@ -51,6 +51,7 @@
     <Compile Include="EditOperationSelectOriginalSegment.cs" />
     <Compile Include="EditOperationMoveVideo.cs" />
     <Compile Include="EditOperationTrimAudio.cs" />
+    <Compile Include="EditOperationVideoEasings.cs" />
     <Compile Include="EditOperationTrimVideo.cs" />
     <Compile Include="EditorDraggy.cs" />
     <Compile Include="Error\VidkaErrorLog.cs" />
@@ -61,6 +62,7 @@
     <Compile Include="IVidkaConsole.cs" />
     <Compile Include="IVideoPlayer.cs" />
     <Compile Include="IVideoShitbox.cs" />
+    <Compile Include="Model\VideoClipRenderable.cs" />
     <Compile Include="Ops\MetaGeneratorInOtherThread.cs" />
     <Compile Include="Ops\MEncoderMaveVideoFile.cs" />
     <Compile Include="Ops\MPlayerPlaybackSegment.cs" />

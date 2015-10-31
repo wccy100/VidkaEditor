@@ -18,7 +18,7 @@ namespace Vidka.Core
 
 		// vertical subdivisions
 		private ProjectDimensionsTimeline[] timelines;
-		private ProjectDimensionsTimeline tlMain, tlOriginal, tlAudios;
+		private ProjectDimensionsTimeline tlMain, tlMainEasing, tlOriginal, tlAudios;
 		private int tlAxisHeight;
 
 		// horizontal frame
@@ -35,9 +35,10 @@ namespace Vidka.Core
 		{
 			tlOriginal = new ProjectDimensionsTimeline(0, 25, ProjectDimensionsTimelineType.Original) { yHalfway = 15 };
 			//tlMain = new ProjectDimensionsTimeline(30, 70, ProjectDimensionsTimelineType.Main) { yHalfway = 55 };
-			tlMain = new ProjectDimensionsTimeline(45, 70, ProjectDimensionsTimelineType.Main) { yHalfway = 60 };
+            tlMain = new ProjectDimensionsTimeline(40, 65, ProjectDimensionsTimelineType.Main) { yHalfway = 55 };
+            tlMainEasing = new ProjectDimensionsTimeline(65, 72, ProjectDimensionsTimelineType.MainEases);
 			tlAudios = new ProjectDimensionsTimeline(75, 90, ProjectDimensionsTimelineType.Audios);
-			timelines = new ProjectDimensionsTimeline[] { tlOriginal, tlMain, tlAudios };
+            timelines = new ProjectDimensionsTimeline[] { tlOriginal, tlMain, tlMainEasing, tlAudios };
 			tlAxisHeight = 6;
 		}
 
@@ -120,7 +121,8 @@ namespace Vidka.Core
 		public ProjectDimensionsTimelineType collision_whatTimeline(int y, int h)
 		{
 			lastCollision_succeeded = false;
-			var y100 = 100f * y / h;
+            lastCollision_easeSide = TrimDirection.None;
+            var y100 = 100f * y / h;
 			var answer = timelines.FirstOrDefault(ttt => (y100 >= ttt.y1100 && y100 <= ttt.y2100));
 			if (answer == null)
 				return ProjectDimensionsTimelineType.None;
@@ -132,6 +134,7 @@ namespace Vidka.Core
 		public VidkaClipVideoAbstract collision_main(int x)
 		{
 			lastCollision_succeeded = false;
+            lastCollision_easeSide = TrimDirection.None;
 			long frameTotal = 0;
 			foreach (var ccc in proj.ClipsVideo)
 			{
@@ -142,9 +145,32 @@ namespace Vidka.Core
 			return null;
 		}
 
+        public VidkaClipVideoAbstract collision_mainEases(int x)
+        {
+            lastCollision_succeeded = false;
+            lastCollision_easeSide = TrimDirection.None;
+            long frameTotal = 0;
+            foreach (var ccc in proj.ClipsVideo)
+            {
+                if (ccc.EasingLeft > 0)
+                    if (lastCollision_succeeded = calculateCollision_proj(x, frameTotal - ccc.EasingLeft, ccc.EasingLeft)) {
+                        lastCollision_easeSide = TrimDirection.Left;
+                        return ccc;
+                    }
+                if (ccc.EasingRight > 0)
+                    if (lastCollision_succeeded = calculateCollision_proj(x, frameTotal + ccc.LengthFrameCalc, ccc.EasingRight)) {
+                        lastCollision_easeSide = TrimDirection.Right;
+                        return ccc;
+                    }
+                frameTotal += ccc.LengthFrameCalc;
+            }
+            return null;
+        }
+
 		public VidkaClipAudio collision_audio(int x)
 		{
 			lastCollision_succeeded = false;
+            lastCollision_easeSide = TrimDirection.None;
             VidkaClipAudio lastAudioClipCollision = null;
 			foreach (var ccc in proj.ClipsAudio)
 			{
@@ -170,7 +196,7 @@ namespace Vidka.Core
 
 		public VidkaClip collision_original_all(int x, int w, IEnumerable<VidkaClip> clips)
 		{
-			var allResults = clips.Where(clip => collision_original_one(x, w, clip.FileLengthFrames, clip.FrameStart, clip.FrameEnd));
+            var allResults = clips.Where(clip => collision_original_one(x, w, clip.FileLengthFrames, clip.FrameStartNoEase, clip.FrameEndNoEase));
 			if (allResults.Count() <= 1)
 				return allResults.FirstOrDefault();
 			var sampleClip = allResults.FirstOrDefault(); // should never be null!
@@ -182,8 +208,9 @@ namespace Vidka.Core
 			//var finalChoice = allResults
 			//	.OrderBy(clip => collision_original_all_choiceWeight(clip, frameX, maxStart, minEnd))
 			//	.FirstOrDefault();
-			lastCollision_x1 = convert_Frame2ScreenX_OriginalTimeline(finalChoice.FrameStart, finalChoice.FileLengthFrames, w);
-			lastCollision_x2 = convert_Frame2ScreenX_OriginalTimeline(finalChoice.FrameEnd, finalChoice.FileLengthFrames, w);
+            lastCollision_x1 = convert_Frame2ScreenX_OriginalTimeline(finalChoice.FrameStartNoEase, finalChoice.FileLengthFrames, w);
+            lastCollision_x2 = convert_Frame2ScreenX_OriginalTimeline(finalChoice.FrameEndNoEase, finalChoice.FileLengthFrames, w);
+			
 			lastCollision_succeeded = true;
 			return finalChoice;
 		}
@@ -212,10 +239,11 @@ namespace Vidka.Core
 		/// Will be true if lastCollision_* coordinates are valid, otherwise there had been no collision
 		/// </summary>
 		public bool lastCollision_succeeded { get; private set; }
-		public int lastCollision_x1 { get; private set; }
+        public int lastCollision_x1 { get; private set; }
 		public int lastCollision_x2 { get; private set; }
 		public int lastCollision_y1 { get; private set; }
 		public int lastCollision_y2 { get; private set; }
+        public TrimDirection lastCollision_easeSide { get; private set; }
 
 		#endregion
 
@@ -295,6 +323,12 @@ namespace Vidka.Core
 		}
 		public int getY_main_half(int h) {
 			return h * tlMain.yHalfway / 100;
+		}
+        public int getY_main_easing1(int h) {
+			return h * tlMainEasing.y1100 / 100;
+		}
+        public int getY_main_easing2(int h) {
+			return h * tlMainEasing.y2100 / 100;
 		}
 		public int getY_audio1(int h) {
 			return h * tlAudios.y1100 / 100;

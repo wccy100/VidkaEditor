@@ -13,8 +13,7 @@ namespace Vidka.Core
 		private bool keyboardMode;
 		private long origFrame1;
 		private long origFrame2;
-		private long prevStart;
-		private long prevEnd;
+        private long prevStart, prevEnd, prevEaseL, prevEaseR;
 		private bool isStarted;
 
 		public EditOperationSelectOriginalSegment(ISomeCommonEditorOperations iEditor,
@@ -46,6 +45,16 @@ namespace Vidka.Core
             var clip = uiObjects.CurrentClip;
 			prevStart = clip.FrameStart;
 			prevEnd = clip.FrameEnd;
+            prevEaseL = 0;
+            prevEaseR = 0;
+            if (clip is VidkaClipVideoAbstract)
+            {
+                var vclip = (VidkaClipVideoAbstract)clip;
+                prevEaseL = vclip.EasingLeft;
+                prevEaseR = vclip.EasingRight;
+                vclip.EasingLeft = 0;
+                vclip.EasingRight = 0;
+            }
 			origFrame1 = origFrame2 = dimdim.convert_ScreenX2Frame_OriginalTimeline(x, clip.FileLengthFrames, w);
             uiObjects.SetOriginalTimelinePlaybackMode(false);
             if (uiObjects.CurrentClipIsVideo)
@@ -84,20 +93,34 @@ namespace Vidka.Core
 				var newStart = Math.Min(origFrame1, origFrame2);
 				var newEnd = Math.Max(origFrame1, origFrame2);
 				var oldStart = prevStart;
-				var oldEnd = prevEnd;
+                var oldEnd = prevEnd;
+                var oldEaseL = prevEaseL;
+                var oldEaseR = prevEaseR;
 				iEditor.AddUndableAction_andFireRedo(new UndoableAction()
 				{
 					Redo = () =>
 					{
 						cxzxc("Select region");
 						clip.FrameStart = newStart;
-						clip.FrameEnd = newEnd;
+                        clip.FrameEnd = newEnd;
+                        if (clip is VidkaClipVideoAbstract)
+                        {
+                            var vclip = (VidkaClipVideoAbstract)clip;
+                            vclip.EasingLeft = 0;
+                            vclip.EasingRight = 0;
+                        }
 					},
 					Undo = () =>
 					{
 						cxzxc("UNDO Select region");
 						clip.FrameStart = oldStart;
 						clip.FrameEnd = oldEnd;
+                        if (clip is VidkaClipVideoAbstract)
+                        {
+                            var vclip = (VidkaClipVideoAbstract)clip;
+                            vclip.EasingLeft = prevEaseL;
+                            vclip.EasingRight = prevEaseR;
+                        }
 					},
 					PostAction = () =>
 					{

@@ -21,6 +21,9 @@ namespace Vidka.Core
 
 	public class EditorLogic : ISomeCommonEditorOperations
 	{
+        private bool Debug_outputEditOpLifecycle = true;
+
+
 		// constants
 
 		/// <summary>
@@ -35,6 +38,10 @@ namespace Vidka.Core
 		/// Pixels to clip border within which bound drag is enabled
 		/// </summary>
 		private const int BOUND_THRESH_MAX = 30;
+        /// <summary>
+        /// Pixels to clip border within which bound drag is enabled
+        /// </summary>
+        private const int BOUND_EASING_BOTTOM_PIXELS = 20;
 		/// <summary>
 		/// Once zoomed out and clips are too small
 		/// </summary>
@@ -98,6 +105,8 @@ namespace Vidka.Core
 				new EditOperationMoveVideo(this, UiObjects, Dimdim, editor, videoPlayer, MetaGenerator),
 				new EditOperationMoveAudio(this, UiObjects, Dimdim, editor, videoPlayer, MetaGenerator),
 				new EditOperationSelectOriginalSegment(this, UiObjects, Dimdim, editor, videoPlayer),
+				new EditOperationVideoEasings(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left),
+				new EditOperationVideoEasings(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right),
 			};
 			setProjToAllEditOps(Proj);
 		}
@@ -473,7 +482,13 @@ namespace Vidka.Core
 					var clip = Dimdim.collision_main(x);
 					UiObjects.SetHoverVideo(clip);
 					CheckClipTrimCollision(x);
-					break;
+                    CheckClipEasingCollision_mainTimeline(x, y, clip);
+                    break;
+                case ProjectDimensionsTimelineType.MainEases:
+                    var clipEase = Dimdim.collision_mainEases(x);
+                    UiObjects.SetHoverVideo(clipEase);
+                    CheckClipEasingCollision_easesTimeline(x, y, clipEase);
+                    break;
 				case ProjectDimensionsTimelineType.Original:
 					if (UiObjects.CurrentClip == null)
 						break;
@@ -529,6 +544,47 @@ namespace Vidka.Core
 				UiObjects.SetTrimHover(TrimDirection.None);
 			UiObjects.SetTrimThreshPixels(boundThres);
 		}
+
+        private void CheckClipEasingCollision_mainTimeline(int x, int y, VidkaClipVideoAbstract clip)
+        {
+            UiObjects.SetShowEasingHandles(false);
+            if (clip == null || UiObjects.TrimHover == TrimDirection.None)
+                return;
+            if (UiObjects.TrimHover == TrimDirection.Left && clip.EasingLeft > 0)
+                return;
+            if (UiObjects.TrimHover == TrimDirection.Right && clip.EasingRight > 0)
+                return;
+            var y1 = Dimdim.lastCollision_y1;
+            var y2 = Dimdim.lastCollision_y2;
+            var yEasingThresh = Math.Max(y2 - BOUND_EASING_BOTTOM_PIXELS, (y2 - y1) / 2);
+            if (y >= yEasingThresh)
+                UiObjects.SetShowEasingHandles(true);
+        }
+
+        private void CheckClipEasingCollision_easesTimeline(int x, int y, VidkaClipVideoAbstract clip)
+        {
+            UiObjects.SetTrimHover(TrimDirection.None);
+            UiObjects.SetShowEasingHandles(false);
+            if (clip == null)
+                return;
+            var boundThres = BOUND_THRESH_MAX;
+            if (Dimdim.lastCollision_easeSide == TrimDirection.Left)
+            {
+                if (x - Dimdim.lastCollision_x1 <= boundThres)
+                {
+                    UiObjects.SetTrimHover(TrimDirection.Left);
+                    UiObjects.SetShowEasingHandles(true);
+                }
+            }
+            else if (Dimdim.lastCollision_easeSide == TrimDirection.Right)
+            {
+                if (Dimdim.lastCollision_x2 - x <= boundThres)
+                {
+                    UiObjects.SetTrimHover(TrimDirection.Right);
+                    UiObjects.SetShowEasingHandles(true);
+                }
+            }
+        }
 
 		#endregion
 
@@ -677,7 +733,7 @@ namespace Vidka.Core
 			if (curClipIndex == -1)
 				return SetFrameMarker_ShowFrameInPlayer(0);
 			var clip = Proj.ClipsVideo[curClipIndex];
-			var framesToStartOfClip = frameOffset - clip.FrameStart;
+			var framesToStartOfClip = frameOffset - clip.FrameStartNoEase;
 			if (keyData == Keys.Left)
 			{
 				frameOffset = 0;
@@ -869,6 +925,10 @@ namespace Vidka.Core
 						var clip = Dimdim.collision_main(x);
 						UiObjects.SetActiveVideo(clip, Proj);
 						break;
+                    case ProjectDimensionsTimelineType.MainEases:
+                        var clipEase = Dimdim.collision_mainEases(x);
+                        UiObjects.SetActiveVideo(clipEase, Proj);
+                        break;
 					case ProjectDimensionsTimelineType.Original:
 						if (UiObjects.CurrentVideoClipHover != null && UiObjects.CurrentVideoClipHover != UiObjects.CurrentClip)
 						{
@@ -905,9 +965,10 @@ namespace Vidka.Core
 						var cursorFrame = Dimdim.convert_ScreenX2Frame_OriginalTimeline(x, clip.FileLengthFrames, w);
 						if (cursorFrame < 0)
 							cursorFrame = 0;
-						if (cursorFrame >= clip.FrameStart && cursorFrame < clip.FrameEnd) {
+                        if (cursorFrame >= clip.FrameStartNoEase && cursorFrame < clip.FrameEndNoEase)
+                        {
 							UiObjects.SetOriginalTimelinePlaybackMode(false);
-							SetFrameMarker_ShowFrameInPlayer(cursorFrame + (UiObjects.CurrentClipFrameAbsPos ?? 0) - UiObjects.CurrentClip.FrameStart);
+							SetFrameMarker_ShowFrameInPlayer(cursorFrame + (UiObjects.CurrentClipFrameAbsPos ?? 0) - UiObjects.CurrentClip.FrameStartNoEase);
 						}
 						else {
 							// we are outside the clip bounds on the original timeline,
@@ -1025,6 +1086,23 @@ namespace Vidka.Core
 			___UiTransactionEnd();
 		}
 
+        /// <summary>
+        /// Called on ANY key press
+        /// </summary>
+        public void KeyPressed(Keys key)
+        {
+            ___UiTransactionBegin();
+            if (CurEditOp == null)
+            {
+                ActivateCorrectOp((op) => {
+                    return op.TriggerBy_KeyPress(key);
+                });
+                if (CurEditOp != null)
+                    CurEditOp.KeyPressedOther(key);
+            }
+            ___UiTransactionEnd();
+        }
+
 		#endregion
 
 		#region ---------------------- split clips -----------------------------
@@ -1042,8 +1120,10 @@ namespace Vidka.Core
 				return;
 			}
 			var clip_oldStart = clip.FrameStart;
+            var clip_oldEaseLeft = clip.EasingLeft;
 			var clipNewOnTheLeft = clip.MakeCopy();
 			clipNewOnTheLeft.FrameEnd = frameOffsetStartOfVideo; // remember, frameOffset is returned relative to start of the media file
+            clipNewOnTheLeft.EasingRight = 0;
 			AddUndableAction_andFireRedo(new UndoableAction
 			{
 				Undo = () =>
@@ -1051,12 +1131,14 @@ namespace Vidka.Core
 					cxzxc("UNDO split");
 					Proj.ClipsVideo.Remove(clipNewOnTheLeft);
 					clip.FrameStart = clip_oldStart;
+                    clip.EasingLeft = clip_oldEaseLeft;
 				},
 				Redo = () =>
 				{
 					cxzxc("split: location=" + frameOffsetStartOfVideo);
 					Proj.ClipsVideo.Insert(clipIndex, clipNewOnTheLeft);
 					clip.FrameStart = frameOffsetStartOfVideo;
+                    clip.EasingLeft = 0;
 				},
 				PostAction = () => {
 					UiObjects.SetActiveVideo(clip, Proj); // to reset CurrentClipFrameAbsPos
@@ -1076,19 +1158,22 @@ namespace Vidka.Core
 			if (!DoVideoSplitCalculations(out clip, out clipIndex, out frameOffsetStartOfVideo))
 				return;
 			var clip_oldStart = clip.FrameStart;
-			AddUndableAction_andFireRedo(new UndoableAction
+            var clip_oldEaseLeft = clip.EasingLeft;
+            AddUndableAction_andFireRedo(new UndoableAction
 			{
 				Undo = () =>
 				{
 					cxzxc("UNDO splitL: start=" + clip_oldStart);
-					clip.FrameStart = clip_oldStart;
+                    clip.FrameStart = clip_oldStart;
+                    clip.EasingLeft = clip_oldEaseLeft;
 					UpdateCanvasWidthFromProjAndDimdim();
 				},
 				Redo = () =>
 				{
 					cxzxc("splitL: start=" + frameOffsetStartOfVideo);
 					clip.FrameStart = frameOffsetStartOfVideo;
-					UpdateCanvasWidthFromProjAndDimdim();
+                    clip.EasingLeft = 0;
+                    UpdateCanvasWidthFromProjAndDimdim();
 				},
 				PostAction = () =>
 				{
@@ -1106,18 +1191,21 @@ namespace Vidka.Core
 			if (!DoVideoSplitCalculations(out clip, out clipIndex, out frameOffsetStartOfVideo))
 				return;
 			var clip_oldEnd = clip.FrameEnd;
-			AddUndableAction_andFireRedo(new UndoableAction
+            var clip_oldEaseRight = clip.EasingRight;
+            AddUndableAction_andFireRedo(new UndoableAction
 			{
 				Undo = () =>
 				{
 					cxzxc("UNDO splitR: end=" + clip_oldEnd);
-					clip.FrameEnd = clip_oldEnd;
+                    clip.FrameEnd = clip_oldEnd;
+                    clip.EasingRight = clip_oldEaseRight;
 					UpdateCanvasWidthFromProjAndDimdim();
 				},
 				Redo = () =>
 				{
 					cxzxc("splitR: end=" + frameOffsetStartOfVideo);
-					clip.FrameEnd = frameOffsetStartOfVideo;
+                    clip.FrameEnd = frameOffsetStartOfVideo;
+                    clip.EasingRight = 0;
 					UpdateCanvasWidthFromProjAndDimdim();
 				},
 				PostAction = () => {
@@ -1143,7 +1231,7 @@ namespace Vidka.Core
 				return false;
 			}
 			clip = Proj.GetVideoClipAtIndex(clipIndex);
-			if (frameOffsetStartOfVideo == clip.FrameStart)
+			if (frameOffsetStartOfVideo == clip.FrameStartNoEase)
 			{
 				cxzxc("On the seam... Cannot split!");
 				return false;
@@ -1420,7 +1508,8 @@ namespace Vidka.Core
 				return;
 			CurEditOp.EndOperation();
 			CurEditOp = null;
-			//editor.AppendToConsole(VidkaConsoleLogLevel.Info, "Edit mode: none");
+            if (Debug_outputEditOpLifecycle)
+			    iiii("Edit mode: none");
 		}
 
 		/// <summary>
@@ -1447,8 +1536,12 @@ namespace Vidka.Core
 			)
 		{
 			CurEditOp = EditOpsAll.FirstOrDefault(op => trigger(op));
-			if (CurEditOp != null)
+            if (CurEditOp != null)
+            {
 				CurEditOp.Init();
+                if (Debug_outputEditOpLifecycle)
+                    iiii("Edit op: " + CurEditOp.Description);
+            }
 		}
 
 		/// <summary>
@@ -1482,7 +1575,7 @@ namespace Vidka.Core
 			{
 				insertIndex = targetIndex;
 				targetClip = Proj.ClipsVideo[targetIndex];
-				if (frameOffset - targetClip.FrameStart >= targetClip.LengthFrameCalc / 2) // which half of the clip is the marker on?
+				if (frameOffset - targetClip.FrameStartNoEase >= targetClip.LengthFrameCalc / 2) // which half of the clip is the marker on?
 					insertIndex = targetIndex + 1;
 			}
 			AddUndableAction_andFireRedo(new UndoableAction
@@ -1634,6 +1727,24 @@ namespace Vidka.Core
 					}
 				});
 			}
+            else if (Proj.ClipsAudio.Contains(clip))
+            {
+                var aclip = (VidkaClipAudio)clip;
+                var aclip2 = (VidkaClipAudio)newClip;
+                AddUndableAction_andFireRedo(new UndoableAction
+                {
+                    Redo = () =>
+                    {
+                        if (Proj.ClipsAudio.ReplaceElement(aclip, aclip2))
+                            UiObjects.SetActiveAudio(aclip2);
+                    },
+                    Undo = () =>
+                    {
+                        if (Proj.ClipsAudio.ReplaceElement(aclip2, aclip))
+                            UiObjects.SetActiveAudio(aclip);
+                    },
+                });
+            }
 			//TODO: audio..
 		}
 
