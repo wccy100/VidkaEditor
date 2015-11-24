@@ -35,6 +35,9 @@ namespace Vidka.Components {
 
 		public delegate void PleaseSetFormTitle_H(string title);
 		public event PleaseSetFormTitle_H PleaseSetFormTitle;
+
+        public delegate void ProjectUpdated_H();
+        public event ProjectUpdated_H ProjectUpdated;
 		#endregion
 
 		// state
@@ -121,20 +124,27 @@ namespace Vidka.Components {
 
 		#region ================================ drag drop ================================
 
-		private void VideoShitbox_DragEnter(object sender, DragEventArgs e) {
-			if (e.Data.GetDataPresent(DataFormats.FileDrop))
-				e.Effect = DragDropEffects.Copy;
-			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-			Logic.MediaFileDragEnter(files, Width);
-			//foreach (string file in files)
-			//	Trace.WriteLine(file);
+		private void VideoShitbox_DragEnter(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop, false))
+            {
+                e.Effect = DragDropEffects.Copy;
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                Logic.MediaFileDragEnter(files, Width);
+                //foreach (string file in files)
+                //	Trace.WriteLine(file);
+            }
 		}
 
-		private void VideoShitbox_DragDrop(object sender, DragEventArgs e) {
-			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-			Logic.MediaFileDragDrop(files);
-			Invalidate();
-			prevDragX = -1;
+		private void VideoShitbox_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop, false))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+                Logic.MediaFileDragDrop(files);
+                Invalidate();
+                prevDragX = -1;
+            }
 		}
 
 		private void VideoShitbox_DragOver(object sender, DragEventArgs e)
@@ -144,12 +154,12 @@ namespace Vidka.Components {
 			prevDragX = e.X;
 			var point = this.PointToClient(new Point(e.X, e.Y));
 			Logic.MediaFileDragMove(point.X);
-		}
+        }
 
 		private void VideoShitbox_DragLeave(object sender, EventArgs e)
 		{
 			Logic.CancelDragDrop();
-		}
+        }
 
 		#endregion
 
@@ -251,7 +261,7 @@ namespace Vidka.Components {
                 if (clip is VidkaClipVideo)
                 {
                     var vclip = (VidkaClipVideo)clip;
-                    var vclip2 = vclip.MakeCopy();
+                    var vclip2 = vclip.MakeCopy_VideoClip();
                     newClip = vclip2;
                     window.CommonPropertiesControl.SetParticulars(vclip2);
                     window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
@@ -259,7 +269,7 @@ namespace Vidka.Components {
                 else if (clip is VidkaClipImage)
                 {
                     var vclip = (VidkaClipImage)clip;
-                    var vclip2 = vclip.MakeCopy();
+                    var vclip2 = vclip.MakeCopy_VideoClip();
                     newClip = vclip2;
                     window.CommonPropertiesControl.SetParticulars(vclip2);
                     window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
@@ -268,7 +278,7 @@ namespace Vidka.Components {
                 else if (clip is VidkaClipTextSimple)
                 {
                     var vclip = (VidkaClipTextSimple)clip;
-                    var vclip2 = (VidkaClipTextSimple)vclip.MakeCopy();
+                    var vclip2 = (VidkaClipTextSimple)vclip.MakeCopy_VideoClip();
                     newClip = vclip2;
                     window.CommonPropertiesControl.SetParticulars(vclip2);
                     window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
@@ -284,7 +294,7 @@ namespace Vidka.Components {
                 };
                 windowDialog = window;
                 var aclip = (VidkaClipAudio)clip;
-                var aclip2 = aclip.MakeCopy();
+                var aclip2 = aclip.MakeCopy_AudioClip();
                 newClip = aclip2;
                 window.CommonPropertiesControl.SetParticulars(aclip2);
             }
@@ -353,7 +363,7 @@ namespace Vidka.Components {
 
 		#endregion
 
-		#region ================================ IVideoEditor interface shit ================================
+		#region ================================ IVideoShitbox interface shit ================================
 
 		//public void SetDraggy(VideoMetadataUseful meta) {
 		//	State.IsDraggy = true;
@@ -438,6 +448,25 @@ namespace Vidka.Components {
 		{
 			imageMan.UnlockFileIfInUse(filename);
 		}
+
+        public bool ShouldIProceedIfProjectChanged()
+        {
+            if (Logic.IsFileChanged && !Settings.Default.SuppressChangedFilePromptOnClose)
+            {
+                var wantToSave = MessageBox.Show("Save changes to " + Logic.CurFileNameShort, "Save?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+                if (wantToSave == DialogResult.Yes)
+                    Logic.SaveTriggered();
+                else if (wantToSave == DialogResult.Cancel)
+                    return false;
+            }
+            return true;
+        }
+
+        public void ProjectLoaded()
+        {
+            if (ProjectUpdated != null)
+                ProjectUpdated();
+        }
 
 		#endregion
 
@@ -536,5 +565,5 @@ namespace Vidka.Components {
 
 		#endregion
 
-	}
+    }
 }

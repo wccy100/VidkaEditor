@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Vidka.Core.Model
@@ -171,7 +172,7 @@ namespace Vidka.Core.Model
 						curFrame = frameStart;
 					continue;
 				}
-				var newVClip = vclip.MakeCopy();
+				var newVClip = vclip.MakeCopy_VideoClip();
 				// trim start, if neccessary (asd1d21w)
 				if (curFrame < frameStart)
 					newVClip.FrameStart += (frameStart - curFrame);
@@ -183,7 +184,7 @@ namespace Vidka.Core.Model
 			}
             foreach (var aclip in proj.ClipsAudio)
             {
-                var newAClip = aclip.MakeCopy();
+                var newAClip = aclip.MakeCopy_AudioClip();
                 newAClip.FrameOffset = aclip.FrameOffset - frameStart;
                 if (newAClip.FrameOffset + newAClip.LengthFrameCalc < 0)
                     continue;
@@ -256,12 +257,53 @@ namespace Vidka.Core.Model
             return 0;
         }
 
-        public static IEnumerable<VideoClipRenderable> GetVideoClipsForRendering(this VidkaProj proj)
+        // see Regex cheat sheet http://www.mikesdotnetting.com/article/46/c-regular-expressions-cheat-sheet
+        private static Regex regexNonWordChar = new Regex("\\W");
+        private static Regex regexBeginsWithNumber = new Regex("^\\d");
+        public static string FilenameToVarName(this string filename)
+        {
+            var underscores = Path.GetFileName(filename)
+                .Replace(' ', '_')
+                .Replace('.', '_')
+                ;
+            var clean = regexNonWordChar.Replace(underscores, "");
+            if (regexBeginsWithNumber.IsMatch(clean))
+                clean = "_" + clean;
+            return clean;
+        }
+
+        public static RenderableProject GetVideoClipsForRendering(this VidkaProj proj)
         {
             var arrClips = proj.ClipsVideo.ToArray();
+            var fileList1 = arrClips
+                .DistinctHaving(x => x.FileName)
+                .Select(x => new RenderableVideoFile {
+                    FileName = x.FileName,
+                    VarName = x.FileName.FilenameToVarName(),
+                    Type = GetRenderableVideoFileType(x),
+                });
+            // custom audios...
+            var fileList2 = arrClips
+                .Where(x => x.HasCustomAudio)
+                .DistinctHaving(x => x.CustomAudioFilename)
+                .Select(x => new RenderableVideoFile
+                {
+                    FileName = x.CustomAudioFilename,
+                    VarName = x.CustomAudioFilename.FilenameToVarName(),
+                    Type = RenderableVideoFileType.AudioSource,
+                });
+            var fileList = fileList1
+                .Union(fileList2)
+                .DistinctHaving(x => x.FileName);
+            foreach (var fileFile in fileList)
+            {
+                var nonUniques = fileList.Where(x => x != fileFile && x.VarName == x.VarName);
+                foreach (var nonUnique in nonUniques)
+                    nonUnique.VarName += "__" + VidkaIO.MakeGuidWord();
+            }
             var arrClips2 = arrClips.Select(x => new VideoClipRenderable
             {
-                FileName = x.FileName,
+                VideoFile = fileList.FirstOrDefault(y => y.FileName == x.FileName),
                 FrameStart = x.FrameStart + x.EasingLeft,
                 FrameEnd = x.FrameEnd - x.EasingRight,
                 IsMuted = x.IsMuted,
@@ -271,6 +313,11 @@ namespace Vidka.Core.Model
                 CustomAudioOffset = x.CustomAudioOffset,
                 ClipType = GetRenderableTypeOfClip(x),
             }).ToArray();
+
+            long maxLengthOfImageClip = 0;
+            var imageClips = arrClips.Where(x => x is VidkaClipImage || x is VidkaClipTextSimple);
+            if (imageClips.Any())
+                maxLengthOfImageClip = imageClips.Select(x => x.LengthFrameCalc).Max();
 
             // .... set up the easings and their audio mixes
             long curFrameEnd = 0;
@@ -289,7 +336,8 @@ namespace Vidka.Core.Model
                     {
                         index--;
                         long curClipLen = arrClips2[index].LengthFrameCalc;
-                        var easerFilename = arrClips[i].FileName;
+                        //var easerFilename = arrClips[i].FileName;
+                        var easerFile = fileList.FirstOrDefault(y => y.FileName == arrClips[i].FileName);
                         long easerFrame1 = easerFrame - curClipLen;
                         long easerFrame2 = easerFrame;
                         long easerOffset = 0;
@@ -301,13 +349,15 @@ namespace Vidka.Core.Model
                         }
                         if (arrClips[i].HasCustomAudio)
                         {
-                            easerFilename = arrClips[i].CustomAudioFilename;
+                            //easerFilename = arrClips[i].CustomAudioFilename;
+                            easerFile = fileList.FirstOrDefault(y => y.FileName == arrClips[i].CustomAudioFilename);
                             easerFrame1 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
                             easerFrame2 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
                             isAudio = true;
                         }
                         arrClips2[index].MixesAudioFromVideo.Add(new VideoEasingAudioToMix {
-                            FileName = easerFilename,
+                            VideoFile = easerFile,
+                            //CustomAudioFilename = easerFilename,
                             FrameStart = easerFrame1,
                             FrameEnd = easerFrame2,
                             FrameOffset = easerOffset,
@@ -327,7 +377,8 @@ namespace Vidka.Core.Model
                     {
                         index++;
                         long curClipLen = arrClips2[index].LengthFrameCalc;
-                        var easerFilename = arrClips[i].FileName;
+                        //var easerFilename = arrClips[i].FileName;
+                        var easerFile = fileList.FirstOrDefault(y => y.FileName == arrClips[i].FileName);
                         long easerFrame1 = easerFrame;
                         long easerFrame2 = easerFrame + curClipLen;
                         var isAudio = false;
@@ -337,14 +388,16 @@ namespace Vidka.Core.Model
                         }
                         if (arrClips[i].HasCustomAudio)
                         {
-                            easerFilename = arrClips[i].CustomAudioFilename;
+                            //easerFilename = arrClips[i].CustomAudioFilename;
+                            easerFile = fileList.FirstOrDefault(y => y.FileName == arrClips[i].CustomAudioFilename);
                             easerFrame1 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
                             easerFrame2 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
                             isAudio = true;
                         }
                         arrClips2[index].MixesAudioFromVideo.Add(new VideoEasingAudioToMix
                         {
-                            FileName = easerFilename,
+                            VideoFile = easerFile,
+                            //CustomAudioFilename = easerFilename,
                             FrameStart = easerFrame1,
                             FrameEnd = easerFrame2,
                             FrameOffset = 0,
@@ -355,7 +408,20 @@ namespace Vidka.Core.Model
                     }
                 }
             }
-            return arrClips2;
+            return new RenderableProject {
+                Files = fileList,
+                Clips = arrClips2,
+                MaxLengthOfImageClip = maxLengthOfImageClip,
+            };
+        }
+
+        private static RenderableVideoFileType GetRenderableVideoFileType(VidkaClipVideoAbstract vclip)
+        {
+            if (vclip is VidkaClipImage)
+                return RenderableVideoFileType.ImageSource;
+            if (vclip is VidkaClipTextSimple)
+                return RenderableVideoFileType.ImageSource;
+            return RenderableVideoFileType.DirectShowSource;
         }
 
         private static VideoClipRenderableType GetRenderableTypeOfClip(VidkaClipVideoAbstract clip)

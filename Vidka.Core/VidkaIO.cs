@@ -35,12 +35,27 @@ namespace Vidka.Core
 
 		internal static void ExportToAvs(VidkaProj Proj, string fileOut)
 		{
+			var sbFiles = new StringBuilder();
 			var sbClips = new StringBuilder();
 			var sbClipStats = new StringBuilder();
             var sbPostOp = new StringBuilder();
             var sbAudio = new StringBuilder();
-            var renderableClips = Proj.GetVideoClipsForRendering();
+            var renderableProj = Proj.GetVideoClipsForRendering();
+            var renderableClips = renderableProj.Clips;
             var lastClip = renderableClips.LastOrDefault();
+            foreach (var file in renderableProj.Files)
+            {
+                if (file.Type == RenderableVideoFileType.DirectShowSource)
+                    sbFiles.Append(String.Format("{0} = DirectShowSource(\"{1}\", audio=True, fps=proj_frameRate, convertfps=true)",
+                        file.VarName, file.FileName));
+                else if (file.Type == RenderableVideoFileType.ImageSource)
+                    sbFiles.Append(String.Format("{0} = ImageSource(\"{1}\", start=0, end={2}, fps=proj_frameRate)",
+                        file.VarName, file.FileName, renderableProj.MaxLengthOfImageClip));
+                else if (file.Type == RenderableVideoFileType.AudioSource)
+                    sbFiles.Append(String.Format("{0} = DirectShowSource(\"{1}\")",
+                        file.VarName, file.FileName));
+                sbFiles.Append("\n");
+            }
             foreach (var clip in renderableClips)
 			{
                 var lineEnding = (clip != lastClip) ? ", \\\n" : " ";
@@ -56,33 +71,34 @@ namespace Vidka.Core
                 foreach (var mix in clip.MixesAudioFromVideo)
                 {
                     if (mix.IsAudioFile)
-                        sbPostOp.Append(String.Format(".MixAudioFromAudio(\"{0}\", {1}, {2}, {3})",
-                            mix.FileName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
+                        sbPostOp.Append(String.Format(".MixAudioFromAudio({0}, {1}, {2}, {3})",
+                            mix.VideoFile.VarName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
                     else
-                        sbPostOp.Append(String.Format(".MixAudioFromVideo(\"{0}\", {1}, {2}, {3})",
-                            mix.FileName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
+                        sbPostOp.Append(String.Format(".MixAudioFromVideo({0}, {1}, {2}, {3})",
+                            mix.VideoFile.VarName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
                 }
                 if (clip.ClipType == VideoClipRenderableType.Video)
                 {
-	                sbClips.Append(String.Format("\tNeutralClip(\"{0}\", {1}, {2}){3}{4}",
-                        clip.FileName, clip.FrameStart, clip.FrameEnd-1, sbPostOp.ToString(), lineEnding));
-	                sbClipStats.Append(String.Format("collectpixeltypestat(\"{0}\", {1})\n",
-		                clip.FileName, clip.LengthFrameCalc));
+	                sbClips.Append(String.Format("\tNeutralClip({0}, {1}, {2}){3}{4}",
+                        clip.VideoFile.VarName, clip.FrameStart, clip.FrameEnd-1, sbPostOp.ToString(), lineEnding));
+	                sbClipStats.Append(String.Format("collectpixeltypestat({0}, {1})\n",
+                        clip.VideoFile.VarName, clip.LengthFrameCalc));
                 }
                 else if (clip.ClipType == VideoClipRenderableType.Image
                     || clip.ClipType == VideoClipRenderableType.Text)
                 {
-	                sbClips.Append(String.Format("\tNeutralClipImage(\"{0}\", {1}){2}{3}",
-                        clip.FileName, clip.LengthFrameCalc, sbPostOp.ToString(), lineEnding));
+	                sbClips.Append(String.Format("\tNeutralClipImage({0}, {1}){2}{3}",
+                        clip.VideoFile.VarName, clip.LengthFrameCalc, sbPostOp.ToString(), lineEnding));
                 }
 			}
 
+            //TODO: 12dsakddsadas I guess audio clips do not make part of RenderableProject
             foreach (var clip in Proj.ClipsAudio)
             {
                 sbPostOp.Clear();
                 sbPostOp.Append((clip.PostOp ?? "").Replace("\n", ""));
                 sbAudio.Append(String.Format(@"
-voiceover=BlankClip(last,{0}) ++BlankClip(last, {1}).AudioDub(DirectShowSource(""{2}"").ResampleAudio(44100)).Trim({3}, {4}){5}
+voiceover=BlankClip(last,{0}) ++BlankClip(last, {1}).AudioDub(DirectShowSource(""{2}"", fps=proj_frameRate, convertfps=true).ResampleAudio(44100)).Trim({3}, {4}){5}
 MixAudio(last,voiceover)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.FrameStart, clip.FrameEnd, sbPostOp.ToString()));
             }
 
@@ -97,8 +113,9 @@ MixAudio(last,voiceover)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.
 				.Replace("{proj-fps}", "" + Proj.FrameRate)
 				.Replace("{proj-width}", "" + Proj.Width)
 				.Replace("{proj-height}", "" + Proj.Height)
+                .Replace("{video-files}", sbFiles.ToString())
 				.Replace("{video-clips}", strVideoClips)
-				.Replace("{collectpixeltypestat-videos}", sbClipStats.ToString())
+                .Replace("{collectpixeltypestat-videos}", sbClipStats.ToString())
 				.Replace("{audio-clips}", sbAudio.ToString())
 			;
 
@@ -150,7 +167,11 @@ MixAudio(last,voiceover)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.
 		}
 
 		public static string MakeUniqueFilename(string template) {
-			return String.Format(template, Guid.NewGuid().ToString().Replace("-", ""));
+            return String.Format(template, MakeGuidWord());
+		}
+
+        public static string MakeGuidWord() {
+			return Guid.NewGuid().ToString().Replace("-", "");
 		}
 
 		public static string MakeUniqueFilename_AuxSimpleText() {

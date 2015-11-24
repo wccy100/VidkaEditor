@@ -34,7 +34,9 @@ namespace Vidka.Core.Model
 		public List<VidkaClipVideoAbstract> ClipsVideo { get; set; }
 		
 		public List<VidkaClipAudio> ClipsAudio { get; set; }
-		
+
+        public bool PreviewAvsSegmentLocalFilename { get; set; }
+
 		/// <summary>
 		/// call this whenever a new clip is added and frame rate changes.
 		/// This will set all the helper variables in every clip
@@ -48,7 +50,7 @@ namespace Vidka.Core.Model
                 vclip.FileLengthFrames = this.SecToFrame(vclip.FileLengthSec ?? 0); 
 			}
 		}
-	}
+    }
 
 	[Serializable]
 	public class VidkaClip
@@ -90,6 +92,12 @@ namespace Vidka.Core.Model
 		public long FileLengthFrames { get; set; }
 		[XmlIgnore]
 		public bool IsNotYetAnalyzed { get; set; }
+
+        public virtual VidkaClip MakeCopy()
+        {
+            var clip = (VidkaClip)this.MemberwiseClone();
+            return clip;
+        }
 	}
 
 	[Serializable]
@@ -121,12 +129,15 @@ namespace Vidka.Core.Model
         [XmlIgnore]
         public override long FrameEndNoEase { get { return FrameEnd - EasingRight; } }
 
-		public virtual VidkaClipVideoAbstract MakeCopy()
+		public virtual VidkaClipVideoAbstract MakeCopy_VideoClip()
 		{
 			var clip = (VidkaClipVideoAbstract)this.MemberwiseClone();
 			// TODO: copy over non-shallow values (subtitles, etc)
 			return clip;
 		}
+        public override VidkaClip MakeCopy() {
+            return MakeCopy_VideoClip();
+        }
 		public virtual long GetPlaybackFrameStart(long? curstomFrameOffset) {
             return curstomFrameOffset ?? FrameStart + EasingLeft;
 		}
@@ -145,7 +156,7 @@ namespace Vidka.Core.Model
 		[XmlIgnore]
 		public override bool HasAudio { get { return HasAudioXml ?? true; } }
 
-		public override VidkaClipVideoAbstract MakeCopy()
+		public override VidkaClipVideoAbstract MakeCopy_VideoClip()
 		{
 			var clip = (VidkaClipVideoAbstract)this.MemberwiseClone();
 			// TODO: copy over non-shallow values (subtitles, etc)
@@ -199,11 +210,14 @@ namespace Vidka.Core.Model
 		public long FrameOffset { get; set; }
         public string PostOp { get; set; }
 
-		public VidkaClipAudio MakeCopy()
+		public VidkaClipAudio MakeCopy_AudioClip()
 		{
 			var clip = (VidkaClipAudio)this.MemberwiseClone();
 			return clip;
 		}
+        public override VidkaClip MakeCopy() {
+            return MakeCopy_AudioClip();
+        }
     }
 
 	[Serializable]

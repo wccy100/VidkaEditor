@@ -59,6 +59,7 @@ namespace Vidka.MainForm
 			videoShitbox.PleaseShowClipUsages += videoShitbox_PleaseShowClipUsages;
 			videoShitbox.PleaseSetPlayerAbsPosition += videoShitbox_PleaseSetPlayerAbsPosition;
 			videoShitbox.PleaseSetFormTitle += videoShitbox_PleaseSetFormTitle;
+            videoShitbox.ProjectUpdated += videoShitbox_ProjectUpdated;
 			
 			//TODO: maybe load these from configuration?
 			//setPreviewPlayer(VidkaPreviewMode.Normal);
@@ -106,6 +107,13 @@ namespace Vidka.MainForm
 			this.Text = title;
 		}
 
+        private void videoShitbox_ProjectUpdated()
+        {
+            exposePreviewAVSToolStripMenuItem.Checked = logic.Proj != null
+                ? logic.Proj.PreviewAvsSegmentLocalFilename
+                : false;
+        }
+
 		#endregion
 
 		private void txtConsole_TextChanged(object sender, EventArgs e)
@@ -121,7 +129,7 @@ namespace Vidka.MainForm
 
 		private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
 		{
-			var proceed = ShouldIProceedIfProjectChanged();
+			var proceed = videoShitbox.ShouldIProceedIfProjectChanged();
 			if (!proceed)
 				e.Cancel = true;
             logic.StopAllPlayback();
@@ -133,9 +141,7 @@ namespace Vidka.MainForm
 
 		private void newToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var proceed = ShouldIProceedIfProjectChanged();
-			if (proceed)
-				logic.NewProjectPlease();
+			logic.NewProjectPlease();
 		}
 
 		private void saveToolStripMenuItem_Click(object sender, EventArgs e)
@@ -146,9 +152,7 @@ namespace Vidka.MainForm
 
 		private void openToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			var proceed = ShouldIProceedIfProjectChanged();
-			if (proceed)
-				logic.OpenTriggered();
+			logic.OpenTriggered();
 		}
 
 		private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -401,19 +405,6 @@ namespace Vidka.MainForm
 			}
 		}
 
-		private bool ShouldIProceedIfProjectChanged()
-		{
-			if (logic.IsFileChanged && !Settings.Default.SuppressChangedFilePromptOnClose)
-			{
-				var wantToSave = MessageBox.Show("Save changes to " + logic.CurFileNameShort, "Save?", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
-				if (wantToSave == DialogResult.Yes)
-					logic.SaveTriggered();
-				else if (wantToSave == DialogResult.Cancel)
-					return false;
-			}
-			return true;
-		}
-
 		#endregion
 
 		#region ------------------- IVidkaMainForm members ---------------------
@@ -430,6 +421,11 @@ namespace Vidka.MainForm
 		}
 
 		#endregion
+
+        private void exposePreviewAVSToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            logic.Proj.PreviewAvsSegmentLocalFilename = exposePreviewAVSToolStripMenuItem.Checked;
+        }
 
 
 	}

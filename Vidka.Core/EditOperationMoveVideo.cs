@@ -84,7 +84,7 @@ namespace Vidka.Core
 			int draggyVideoShoveIndex = dimdim.GetVideoClipDraggyShoveIndex(uiObjects.Draggy);
 			if (copyMode)
 			{
-				var newClip = copyMode ? clip.MakeCopy() : null;
+				var newClip = copyMode ? clip.MakeCopy_VideoClip() : null;
 				iEditor.AddUndableAction_andFireRedo(new UndoableAction()
 				{
 					Redo = () =>
@@ -136,7 +136,8 @@ namespace Vidka.Core
 						},
 						PostAction = () =>
 						{
-							long frameMarker = proj.GetVideoClipAbsFramePositionLeft(clip);
+                            uiObjects.UpdateCurrentClipFrameAbsPos(proj);
+                            long frameMarker = proj.GetVideoClipAbsFramePositionLeft(clip);
 							iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
 						}
 					});

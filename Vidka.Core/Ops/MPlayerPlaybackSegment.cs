@@ -20,10 +20,12 @@ namespace Vidka.Core.Ops
 	public class MPlayerPlaybackSegment : OpBaseClass
 	{
 		private const string TMP_FILENAME = "MPlayerPlaybackSegment-temp.avs";
+
         private VidkaProj proj;
         private long frameStart;
         private long framesLength;
         private bool onlyLockedClips;
+        private string tmpCustomFilename;
         public bool doCrop;
         public ExternalPlayerType ExternalPlayer { get; set; }
 
@@ -42,6 +44,11 @@ namespace Vidka.Core.Ops
             this.onlyLockedClips = onlyLockedClips;
         }
 
+        public void WhileYoureAtIt_setTmpAvs(string tmpCustomFilename)
+        {
+            this.tmpCustomFilename = tmpCustomFilename;
+        }
+
         public void run()
         {
             var projCropped = proj;
@@ -58,7 +65,7 @@ namespace Vidka.Core.Ops
                 ErrorMessage = "There are no locked clips from this point on!";
                 return;
             }
-            var tmpAvsPath = VidkaIO.GetFileFromThisAppDirectory(TMP_FILENAME);
+            var tmpAvsPath = VidkaIO.GetFileFromThisAppDirectory(tmpCustomFilename ?? TMP_FILENAME);
             VidkaIO.ExportToAvs(projCropped, tmpAvsPath);
             RunMPlayer(tmpAvsPath, proj);
         }

@@ -132,7 +132,7 @@ namespace Vidka.Components
             this.fileMapping = fileMapping;
             this.proj = proj;
             // ..... set up the vclip that we will draw
-            vclipFullToDraw = vclip.MakeCopy();
+            vclipFullToDraw = vclip.MakeCopy_VideoClip();
             vclipFullToDraw.FrameStart = 0;
             vclipFullToDraw.FrameEnd = vclipFullToDraw.LengthFrameCalc;
             // ..... set up UI

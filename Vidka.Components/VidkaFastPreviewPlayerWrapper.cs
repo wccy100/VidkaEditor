@@ -62,17 +62,4 @@ namespace Vidka.Components
 			form.SwapPreviewPlayerUI(isWmpEnabled ? VidkaPreviewMode.Normal : VidkaPreviewMode.Fast);
 		}
 	}
-
-	//====================== misc enum and interfaces =============================
-
-	public interface IVidkaMainForm
-	{
-		void SwapPreviewPlayerUI(VidkaPreviewMode mode);
-	}
-
-	public enum VidkaPreviewMode
-	{
-		Normal = 1,
-		Fast = 2,
-	}
 }

@@ -48,6 +48,7 @@
             this.currentFrameStillToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.opsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.rebuildAuxillaryFilesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.checkForErrorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.deleteAllNonlockedClipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.linearShuffleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -60,7 +61,7 @@
             this.vidkaFastPreviewPlayer = new Vidka.Components.VidkaFastPreviewPlayer();
             this.videoShitbox = new Vidka.Components.VideoShitbox();
             this.vidkaPreviewPlayer = new Vidka.Components.VidkaPreviewPlayer();
-            this.checkForErrorsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exposePreviewAVSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -87,6 +88,7 @@
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
             this.toolStripSeparator1,
+            this.exposePreviewAVSToolStripMenuItem,
             this.exportToVideoToolStripMenuItem,
             this.toolStripSeparator2,
             this.quitToolStripMenuItem});
@@ -233,6 +235,13 @@
             this.rebuildAuxillaryFilesToolStripMenuItem.Text = "Rebuild auxillary files";
             this.rebuildAuxillaryFilesToolStripMenuItem.Click += new System.EventHandler(this.rebuildAuxillaryFilesToolStripMenuItem_Click);
             // 
+            // checkForErrorsToolStripMenuItem
+            // 
+            this.checkForErrorsToolStripMenuItem.Name = "checkForErrorsToolStripMenuItem";
+            this.checkForErrorsToolStripMenuItem.Size = new System.Drawing.Size(451, 46);
+            this.checkForErrorsToolStripMenuItem.Text = "Check for errors";
+            this.checkForErrorsToolStripMenuItem.Click += new System.EventHandler(this.checkForErrorsToolStripMenuItem_Click);
+            // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
@@ -329,12 +338,13 @@
             this.vidkaPreviewPlayer.Size = new System.Drawing.Size(634, 417);
             this.vidkaPreviewPlayer.TabIndex = 1;
             // 
-            // checkForErrorsToolStripMenuItem
+            // exposePreviewAVSToolStripMenuItem
             // 
-            this.checkForErrorsToolStripMenuItem.Name = "checkForErrorsToolStripMenuItem";
-            this.checkForErrorsToolStripMenuItem.Size = new System.Drawing.Size(451, 46);
-            this.checkForErrorsToolStripMenuItem.Text = "Check for errors";
-            this.checkForErrorsToolStripMenuItem.Click += new System.EventHandler(this.checkForErrorsToolStripMenuItem_Click);
+            this.exposePreviewAVSToolStripMenuItem.CheckOnClick = true;
+            this.exposePreviewAVSToolStripMenuItem.Name = "exposePreviewAVSToolStripMenuItem";
+            this.exposePreviewAVSToolStripMenuItem.Size = new System.Drawing.Size(478, 46);
+            this.exposePreviewAVSToolStripMenuItem.Text = "Expose preview AVS";
+            this.exposePreviewAVSToolStripMenuItem.Click += new System.EventHandler(this.exposePreviewAVSToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -391,6 +401,7 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem currentFrameStillToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem checkForErrorsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exposePreviewAVSToolStripMenuItem;
 	}
 }
 

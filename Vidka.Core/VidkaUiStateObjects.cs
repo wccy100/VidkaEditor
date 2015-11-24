@@ -170,10 +170,8 @@ namespace Vidka.Core
 			resetCurrentClipUsages();
 			if (active != null)
 				CurClipAllUsagesVideo = ArrayOfOne_ClipsVideo;
-			CurrentClipFrameAbsPos = (active != null)
-				? (long?)proj.GetVideoClipAbsFramePositionLeft(active)
-				: null;
-		}
+            UpdateCurrentClipFrameAbsPos(proj);
+        }
 
 		/// <summary>
 		/// There can only be one selected (active) b/w video and audio line, so video will be set to null
@@ -192,8 +190,20 @@ namespace Vidka.Core
 			resetCurrentClipUsages();
 			if (active != null)
 				CurClipAllUsagesAudio = ArrayOfOne_ClipsAudio;
-			CurrentClipFrameAbsPos = (active != null) ? (long?)active.FrameStart : null;
+            UpdateCurrentClipFrameAbsPos(null);
 		}
+
+        /// <summary>
+        /// proj parameter is only needed for video clip, to find its abs position
+        /// </summary>
+        public void UpdateCurrentClipFrameAbsPos(VidkaProj proj)
+        {
+            CurrentClipFrameAbsPos = null;
+            if (CurrentVideoClip != null && proj != null)
+                CurrentClipFrameAbsPos = (long?)proj.GetVideoClipAbsFramePositionLeft(CurrentVideoClip);
+            else if (CurrentAudioClip != null)
+                CurrentClipFrameAbsPos = (long?)CurrentAudioClip.FrameOffset;
+        }
 
 		public void SetCurrentMarkerFrame(long frame) {
 			if (frame < 0)

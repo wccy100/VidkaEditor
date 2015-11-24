@@ -90,51 +90,58 @@ namespace Vidka.Core
             // don't allow clips to be dragged past frame 0!
             if (clip.FrameOffset + frameDelta < 0)
                 frameDelta -= (clip.FrameOffset + frameDelta);
-            if (copyMode)
+            if (frameDelta != 0)
             {
-                var newClip = clip.MakeCopy();
-                newClip.FrameOffset = clip.FrameOffset + frameDelta;
-                iEditor.AddUndableAction_andFireRedo(new UndoableAction()
+                if (copyMode)
                 {
-                    Redo = () =>
+                    var newClip = clip.MakeCopy_AudioClip();
+                    newClip.FrameOffset = clip.FrameOffset + frameDelta;
+                    iEditor.AddUndableAction_andFireRedo(new UndoableAction()
                     {
-                        cxzxc("copy: " + Path.GetFileName(clip.FileName));
-                        proj.ClipsAudio.Add(newClip);
-                        uiObjects.SetActiveAudio(newClip);
-                    },
-                    Undo = () =>
-                    {
-                        cxzxc("UNDO copy audio");
-                        proj.ClipsAudio.Remove(newClip);
-                        uiObjects.SetActiveAudio(clip);
-                    },
-                    PostAction = () =>
-                    {
-                        iEditor.UpdateCanvasWidthFromProjAndDimdim();
-                    }
-                });
-            }
-            else
-            {
-                var oldOffset = clip.FrameOffset;
-                var newOffset = clip.FrameOffset + frameDelta;
-                iEditor.AddUndableAction_andFireRedo(new UndoableAction()
+                        Redo = () =>
+                        {
+                            cxzxc("copy: " + Path.GetFileName(clip.FileName));
+                            proj.ClipsAudio.Add(newClip);
+                            uiObjects.SetActiveAudio(newClip);
+                        },
+                        Undo = () =>
+                        {
+                            cxzxc("UNDO copy audio");
+                            proj.ClipsAudio.Remove(newClip);
+                            uiObjects.SetActiveAudio(clip);
+                        },
+                        PostAction = () =>
+                        {
+                            //uiObjects.UpdateCurrentClipFrameAbsPos(proj); // no need for this b/c SetActiveAudio above will also update abspos
+                            iEditor.SetFrameMarker_ShowFrameInPlayer(uiObjects.CurrentAudioClip.FrameOffset);
+                            iEditor.UpdateCanvasWidthFromProjAndDimdim();
+                        }
+                    });
+                }
+                else
                 {
-                    Redo = () =>
+                    var oldOffset = clip.FrameOffset;
+                    var newOffset = clip.FrameOffset + frameDelta;
+                    iEditor.AddUndableAction_andFireRedo(new UndoableAction()
                     {
-                        cxzxc("move: " + Path.GetFileName(clip.FileName));
-                        clip.FrameOffset = newOffset;
-                    },
-                    Undo = () =>
-                    {
-                        cxzxc("UNDO move audio");
-                        clip.FrameOffset = oldOffset;
-                    },
-                    PostAction = () =>
-                    {
-                        iEditor.UpdateCanvasWidthFromProjAndDimdim();
-                    }
-                });
+                        Redo = () =>
+                        {
+                            cxzxc("move: " + Path.GetFileName(clip.FileName));
+                            clip.FrameOffset = newOffset;
+                        },
+                        Undo = () =>
+                        {
+                            cxzxc("UNDO move audio");
+                            clip.FrameOffset = oldOffset;
+                        },
+                        PostAction = () =>
+                        {
+                            uiObjects.UpdateCurrentClipFrameAbsPos(proj);
+                            iEditor.UpdateCanvasWidthFromProjAndDimdim();
+                            iEditor.SetFrameMarker_ShowFrameInPlayer(clip.FrameOffset);
+                        }
+                    });
+                }
             }
             IsDone = true;
             copyMode = false;

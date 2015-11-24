@@ -54,6 +54,8 @@ namespace Vidka.Core
 				return EditorDraggyMode.AudioTimeline;
 			if (Mode == DragAndDropManagerMode.Folder)
 				return EditorDraggyMode.DraggingFolder;
+            if (Mode == DragAndDropManagerMode.VidkaProject)
+                return EditorDraggyMode.DraggingFolder;
 			return EditorDraggyMode.None;
 		} }
 
@@ -143,6 +145,15 @@ namespace Vidka.Core
 					Filename = sampleFirst,
 				});
 			}
+            else if (IsFilenameVidkaProject(sampleFirst))
+            {
+                Mode = DragAndDropManagerMode.VidkaProject;
+                DraggyText = Path.GetFileName(sampleFirst);
+                _draggies.Add(new DragAndDropMediaFile(Proj)
+                {
+                    Filename = sampleFirst,
+                });
+            }
 			foreach (var ddd in _draggies) {
 				ddd.Mode = Mode;
 			}
@@ -315,6 +326,10 @@ namespace Vidka.Core
 		public static bool IsFilenameImage(string filename) {
 			return IsFilenameOneOfThese(filename, EXT_image);
 		}
+        private bool IsFilenameVidkaProject(string filename) {
+            var ext = Path.GetExtension(filename).ToLower();
+            return ext == ".vidka";
+        }
 
 		private static bool IsFilenameOneOfThese(string filename, string[] extensions)
 		{
@@ -366,6 +381,7 @@ namespace Vidka.Core
 		Video = 1,
 		Audio = 2,
 		Image = 3,
+        VidkaProject = 4,
 		Folder = 10,
 	}
 

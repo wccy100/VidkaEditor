@@ -35,15 +35,6 @@ namespace Vidka.MainForm.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool SuppressChangedFilePromptOnClose {
-            get {
-                return ((bool)(this["SuppressChangedFilePromptOnClose"]));
-            }
-        }
-        
-        [global::System.Configuration.ApplicationScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool IsConsoleVisible {
             get {
                 return ((bool)(this["IsConsoleVisible"]));

@@ -49,5 +49,14 @@ namespace Vidka.Components.Properties {
                 return ((double)(this["SecondsMplayerPreview2"]));
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SuppressChangedFilePromptOnClose {
+            get {
+                return ((bool)(this["SuppressChangedFilePromptOnClose"]));
+            }
+        }
     }
 }

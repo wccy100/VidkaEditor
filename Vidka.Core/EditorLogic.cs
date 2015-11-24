@@ -199,6 +199,14 @@ namespace Vidka.Core
 					dragAndDropMan.QueueUpTheWholeFolder(dragAndDropMan.OriginalFile);
 				}
 			}
+            else if (dragAndDropMan.Mode == DragAndDropManagerMode.VidkaProject)
+            {
+                var proceed = shitbox.ShouldIProceedIfProjectChanged();
+                if (!proceed)
+                    return;
+                LoadProjFromFile(filenames.FirstOrDefault());
+                //LoadProjectByDragDrop;
+            }
 			UiObjects.ClearDraggy();
 			___UiTransactionEnd();
 		}
@@ -251,6 +259,9 @@ namespace Vidka.Core
 
 		public void NewProjectPlease()
 		{
+            var proceed = shitbox.ShouldIProceedIfProjectChanged();
+            if (!proceed)
+                return;
 			SetProj(new VidkaProj());
 			curFilename = null;
 			SetFileChanged(false);
@@ -265,6 +276,9 @@ namespace Vidka.Core
 
 		public void OpenTriggered()
 		{
+            var proceed = shitbox.ShouldIProceedIfProjectChanged();
+            if (!proceed)
+                return;
 			var filename = shitbox.OpenProjectOpenDialog();
 			if (String.IsNullOrEmpty(filename)) // still null? => user cancelled
 				return;
@@ -286,6 +300,8 @@ namespace Vidka.Core
 			// load...
 			var proj = ioOps.LoadProjFromFile(curFilename);
 			SetProj(proj);
+
+            shitbox.ProjectLoaded();
 
 			// update UI...
 			___UiTransactionBegin();
@@ -780,14 +796,8 @@ namespace Vidka.Core
 			{
 				if (UiObjects.OriginalTimelinePlaybackMode)
 				{
-					var clip = UiObjects.CurrentClip;
-					Proj_forOriginalPlayback.ClipsVideo.Clear();
-					Proj_forOriginalPlayback.ClipsVideo.Add(new VidkaClipVideo {
-						FrameStart = 0,
-						FrameEnd = clip.FileLengthFrames,
-						FileName = clip.FileName,
-					});
-					previewLauncher.StartPreviewPlayback(Proj_forOriginalPlayback, UiObjects.CurrentMarkerFrame, false);
+                    var projFullClip = SetupTmpProjForOriginalPlayback();
+					previewLauncher.StartPreviewPlayback(projFullClip, UiObjects.CurrentMarkerFrame, false);
 				}
 				else
 					previewLauncher.StartPreviewPlayback(Proj, UiObjects.CurrentMarkerFrame, onlyLockedClips);
@@ -806,6 +816,8 @@ namespace Vidka.Core
 			cxzxc("creating mplayer...");
             var mplayed = new MPlayerPlaybackSegment(Proj);
             mplayed.WhileYoureAtIt_cropProj(UiObjects.CurrentMarkerFrame, (long)(Proj.FrameRate * secMplayerPreview), onlyLockedClips);
+            if (Proj.PreviewAvsSegmentLocalFilename)
+                mplayed.WhileYoureAtIt_setTmpAvs(curFilename + ".tmp-preview.avs");
             mplayed.run();
 			if (mplayed.ResultCode == OpResultCode.FileNotFound)
 				shitbox.AppendToConsole(VidkaConsoleLogLevel.Error, "Error: please make sure mplayer is in your PATH!");
@@ -833,13 +845,41 @@ namespace Vidka.Core
 			}
 		}
 
-		#endregion
+        #region ---------------------- Helpers -----------------------------
+        
+        private VidkaProj SetupTmpProjForOriginalPlayback()
+        {
+            Proj_forOriginalPlayback.ClipsAudio.Clear();
+            Proj_forOriginalPlayback.ClipsVideo.Clear();
+            if (UiObjects.CurrentVideoClip != null)
+            {
+                var clipFull = UiObjects.CurrentVideoClip.MakeCopy_VideoClip();
+                clipFull.FrameStart = 0;
+                clipFull.FrameEnd = UiObjects.CurrentClip.FileLengthFrames;
+                Proj_forOriginalPlayback.ClipsVideo.Add(clipFull);
+            }
+            else if (UiObjects.CurrentAudioClip != null)
+            {
+                var clipFull = UiObjects.CurrentAudioClip.MakeCopy_AudioClip();
+                Proj_forOriginalPlayback.ClipsVideo.Add(new VidkaClipVideo
+                {
+                    FileName = UiObjects.CurrentAudioClip.FileName,
+                    FrameStart = 0,
+                    FrameEnd = UiObjects.CurrentClip.FileLengthFrames,
+                });
+            }
+            return Proj_forOriginalPlayback;
+        }
 
-		#region ============================= editing =============================
+        #endregion
+        
+        #endregion
 
-		#region ---------------------- UNDO/REDO -----------------------------
-		
-		public void Redo()
+        #region ============================= editing =============================
+
+        #region ---------------------- UNDO/REDO -----------------------------
+
+        public void Redo()
 		{
 			if (!redoStack.Any())
 				return;
@@ -1121,7 +1161,7 @@ namespace Vidka.Core
 			}
 			var clip_oldStart = clip.FrameStart;
             var clip_oldEaseLeft = clip.EasingLeft;
-			var clipNewOnTheLeft = clip.MakeCopy();
+			var clipNewOnTheLeft = clip.MakeCopy_VideoClip();
 			clipNewOnTheLeft.FrameEnd = frameOffsetStartOfVideo; // remember, frameOffset is returned relative to start of the media file
             clipNewOnTheLeft.EasingRight = 0;
 			AddUndableAction_andFireRedo(new UndoableAction
@@ -1256,7 +1296,7 @@ namespace Vidka.Core
 			{
 				var toDuplicate = UiObjects.CurrentVideoClip;
 				var clipIndex = Proj.ClipsVideo.IndexOf(toDuplicate);
-				var duplicat = toDuplicate.MakeCopy();
+				var duplicat = toDuplicate.MakeCopy_VideoClip();
 				AddUndableAction_andFireRedo(new UndoableAction
 				{
 					Redo = () =>
@@ -1280,7 +1320,7 @@ namespace Vidka.Core
             if (UiObjects.CurrentAudioClip != null)
             {
                 var toDuplicate = UiObjects.CurrentAudioClip;
-                var duplicat = toDuplicate.MakeCopy();
+                var duplicat = toDuplicate.MakeCopy_AudioClip();
                 duplicat.FrameOffset += toDuplicate.LengthFrameCalc;
                 AddUndableAction_andFireRedo(new UndoableAction
                 {

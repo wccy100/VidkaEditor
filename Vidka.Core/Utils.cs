@@ -32,6 +32,11 @@ namespace Vidka.Core
 			return !oneDifferent;
 		}
 
+        public static IEnumerable<T> DistinctHaving<T, TK>(this IEnumerable<T> list, Func<T, TK> comparator)
+		{
+            return list.GroupBy(comparator).Select(x => x.FirstOrDefault());
+		}
+
 		public static bool ReplaceElement<T>(this List<T> list, T objOld, T objNew)
 		{
 			if (!list.Contains(objOld))

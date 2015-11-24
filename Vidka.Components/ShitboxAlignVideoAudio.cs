@@ -48,7 +48,7 @@ namespace Vidka.Components
 			this.fileMapping = fileMapping;
 			this.vclip = vclip;
             // set up the vclip that we will draw
-            vclipFullToDraw = vclip.MakeCopy();
+            vclipFullToDraw = vclip.MakeCopy_VideoClip();
             vclipFullToDraw.FrameStart = 0;
             vclipFullToDraw.FrameEnd = vclipFullToDraw.LengthFrameCalc;
             // set up the audio clip that we will draw

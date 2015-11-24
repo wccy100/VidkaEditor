@@ -19,6 +19,9 @@ global stat_nYV24 = 0
 global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
+#################### all video files ############################
+{video-files}
+
 #################### determine the most frequently used pixel type ############################
 {collectpixeltypestat-videos}
 
@@ -63,20 +66,14 @@ curStatMax = Max(curStatMax, stat_nRGB)
 
 #################### functions! ###########################
 
-function NeutralClip(string filename, int fstart, int fend,\
+function NeutralClip(Clip vclip, int fstart, int fend,\
 		float "slowmo")
 {
-	# load clip
-	#~ vclip = (filename.RightStr(4).lcase() == ".avi") \
-		#~ ? AviSource(filename) \
-		#~ : FFmpegSource2(filename) # fps=proj_frameRate, convertfps=true)
-	vclip = DirectShowSource(filename, audio=True, fps=proj_frameRate, convertfps=true)
 	# if need be convert to color space of the most frequent one
-
-	vclip = toProperPixelType(vclip)
+	vclip = vclip.toProperPixelType()
 		
 	# convert clip so that they are all same video size, fps, audio format, etc...
-	#~ vclip = (vclip.framerate != proj_frameRate) ? vclip.ChangeFPS(proj_frameRate) : vclip
+	vclip = (vclip.framerate != proj_frameRate) ? vclip.ChangeFPS(proj_frameRate) : vclip
 	vclip = (vclip.width != proj_width || vclip.height != proj_height) ? vclip.BilinearResize(proj_width, proj_height) : vclip
 	audioSilence = Tone(length=(vclip.FrameCount/vclip.FrameRate), samplerate=proj_audiorate, channels=proj_audiochannels, type="silence", level=0.0)
 	vclip = !vclip.HasAudio ? AudioDub(vclip, audioSilence) : vclip
@@ -103,9 +100,8 @@ function NeutralClip(string filename, int fstart, int fend,\
 	return vclip
 }
 
-function NeutralClipImage(string filename, int frames)
+function NeutralClipImage(Clip vclip, int frames)
 {
-	vclip = ImageSource(filename, start=0, end=frames, fps=proj_frameRate)
 	vclip = (vclip.width != proj_width || vclip.height != proj_height) ? vclip.BilinearResize(proj_width, proj_height) : vclip
 	audioSilence = Tone(length=(vclip.FrameCount/vclip.FrameRate), samplerate=proj_audiorate, channels=proj_audiochannels, type="silence", level=0.0)
 	vclip = !vclip.HasAudio ? AudioDub(vclip, audioSilence) : vclip
@@ -122,7 +118,8 @@ function AddCustomAudio(Clip vclip, string filenameAudio, float audioOffset, int
 	audio = (audio.AudioRate != proj_audiorate) ? audio.ResampleAudio(proj_audiorate) : audio
 	audioTrimStart = audioOffset + fstart / float(proj_frameRate)
 	audioTrimEnd = (fend == -1) ? audio.audioduration-1 : audioOffset + fend / float(proj_frameRate)
-	audio = audio.AudioTrim(audioTrimStart, audioTrimEnd)
+	#audio = audio.AudioTrim(audioTrimStart, audioTrimEnd)
+	audio = (audioTrimStart < 0) ? audio.BlankClip(length=int(-audioTrimStart * proj_frameRate), fps=proj_frameRate) + audio.AudioTrim(0, audioTrimEnd) : audio.AudioTrim(audioTrimStart, audioTrimEnd)
 	vclip = AudioDub(vclip, audio)
 	vclip = vclip.Trim(0, 0, pad=true) # pad audio. see http://avisynth.nl/index.php/Trim (...when last_frame=0 => till end)
 	return vclip
@@ -135,21 +132,21 @@ function MuteThisClip(Clip vclip)
 	return vclip
 }
 
-function MixAudioFromVideo(Clip vclip, string filename, int fstart, int fend,\
+function MixAudioFromVideo(Clip vclip, Clip vclipAudio, int fstart, int fend,\
 		int "fOffset")
 {
 	fOffset = Default(fOffset, 0)
-	aclip = NeutralClip(filename, fstart, fend)
+	aclip = NeutralClip(vclipAudio, fstart, fend)
 	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
 	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
 	return vclip
 }
 
-function MixAudioFromAudio(Clip vclip, string filename, int fstart, int fend,\
+function MixAudioFromAudio(Clip vclip, Clip vclipAudio, int fstart, int fend,\
 		int "fOffset")
 {
 	fOffset = Default(fOffset, 0)
-	aclip = BlankClip(vclip, fend).AudioDub(DirectShowSource(filename).ResampleAudio(44100)).Trim(fstart, fend)
+	aclip = BlankClip(vclip, fend).AudioDub(vclipAudio.ResampleAudio(44100)).Trim(fstart, fend)
 	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
 	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
 	return vclip
@@ -171,9 +168,8 @@ function toProperPixelType(vclip)
 	return vclip
 }
 
-function CollectPixelTypeStat(filename, weight)
+function CollectPixelTypeStat(Clip vclip, weight)
 {
-	vclip = DirectShowSource(filename, audio=True) # fps=proj_frameRate, convertfps=true)
 	global stat_nRGB = stat_nRGB + (vclip.IsRGB() ? weight : 0)
 	global stat_nRGB24 = stat_nRGB24 + (vclip.IsRGB24() ? weight : 0)
 	global stat_nRGB32 = stat_nRGB32 + (vclip.IsRGB32() ? weight : 0)
