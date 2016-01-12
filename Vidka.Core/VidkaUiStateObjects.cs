@@ -273,7 +273,8 @@ namespace Vidka.Core
 			string text = null,
 			int? mouseX = null,
 			int? mouseXOffset = null,
-			bool? hasAudio = null)
+			bool? hasAudio = null,
+            long? frameAbsLeft = null)
 		{
 			if (mode.HasValue && mode.Value != Draggy.Mode)
 				stateChanged = true;
@@ -287,13 +288,16 @@ namespace Vidka.Core
 				stateChanged = true;
 			if (hasAudio.HasValue && hasAudio.Value != Draggy.HasAudio)
 				stateChanged = true;
+            if (frameAbsLeft.HasValue && frameAbsLeft.Value != Draggy.FrameAbsLeft)
+                stateChanged = true;
 			Draggy.SetCoordinates(
 				mode: mode,
 				frameLength: frameLength,
 				text: text,
 				mouseX: mouseX,
 				mouseXOffset: mouseXOffset,
-				hasAudio: hasAudio);
+				hasAudio: hasAudio,
+                frameAbsLeft: frameAbsLeft);
 		}
 
 		public void ClearDraggy() {

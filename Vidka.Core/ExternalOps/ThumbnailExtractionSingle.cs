@@ -10,7 +10,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.ComponentModel;
 
-namespace Vidka.Core.Ops
+namespace Vidka.Core.ExternalOps
 {
 	public class ThumbnailExtractionSingle : OpBaseClass
 	{

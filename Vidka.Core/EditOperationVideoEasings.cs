@@ -14,7 +14,7 @@ namespace Vidka.Core
 		private bool keyboardMode;
         private TrimDirection side;
 
-        public EditOperationVideoEasings(ISomeCommonEditorOperations iEditor,
+        public EditOperationVideoEasings(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,

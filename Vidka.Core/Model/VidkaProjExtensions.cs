@@ -163,7 +163,7 @@ namespace Vidka.Core.Model
 					continue;
 				}
 				// outside: too late
-				if (curFrame > frameEnd)
+				if (curFrame >= frameEnd)
 					break;
 				if (onlyLockedClips && !vclip.IsLocked) {
 					// we are on a the first non-locked clip of our subsequence...
@@ -197,6 +197,9 @@ namespace Vidka.Core.Model
                 }
                 newProj.ClipsAudio.Add(newAClip);
             }
+            var firstStatCandidate = proj.ClipsVideo.FirstOrDefault(x => x.IsPixelTypeStandard);
+            if (firstStatCandidate != null)
+                newProj.PixelTypeStandardClip = firstStatCandidate;
 			return newProj;
 		}
 
@@ -277,7 +280,7 @@ namespace Vidka.Core.Model
             var arrClips = proj.ClipsVideo.ToArray();
             var fileList1 = arrClips
                 .DistinctHaving(x => x.FileName)
-                .Select(x => new RenderableVideoFile {
+                .Select(x => new RenderableMediaFile {
                     FileName = x.FileName,
                     VarName = x.FileName.FilenameToVarName(),
                     Type = GetRenderableVideoFileType(x),
@@ -286,30 +289,28 @@ namespace Vidka.Core.Model
             var fileList2 = arrClips
                 .Where(x => x.HasCustomAudio)
                 .DistinctHaving(x => x.CustomAudioFilename)
-                .Select(x => new RenderableVideoFile
+                .Select(x => new RenderableMediaFile
                 {
                     FileName = x.CustomAudioFilename,
                     VarName = x.CustomAudioFilename.FilenameToVarName(),
-                    Type = RenderableVideoFileType.AudioSource,
+                    Type = RenderableMediaFileType.AudioSource,
                 });
             var fileList = fileList1
                 .Union(fileList2)
-                .DistinctHaving(x => x.FileName);
-            foreach (var fileFile in fileList)
+                .DistinctHaving(x => x.FileName)
+                .ToList();
+            var arrClips2 = arrClips.Select((x, i) => new VideoClipRenderable
             {
-                var nonUniques = fileList.Where(x => x != fileFile && x.VarName == x.VarName);
-                foreach (var nonUnique in nonUniques)
-                    nonUnique.VarName += "__" + VidkaIO.MakeGuidWord();
-            }
-            var arrClips2 = arrClips.Select(x => new VideoClipRenderable
-            {
+                VarName = x.FileName.FilenameToVarName() + "_" + i,
                 VideoFile = fileList.FirstOrDefault(y => y.FileName == x.FileName),
-                FrameStart = x.FrameStart + x.EasingLeft,
-                FrameEnd = x.FrameEnd - x.EasingRight,
+                FrameStart = x.FrameStart,
+                FrameEnd = x.FrameEnd,
+                EasingLeft = x.EasingLeft,
+                EasingRight = x.EasingRight,
                 IsMuted = x.IsMuted,
                 PostOp = x.PostOp,
                 HasCustomAudio = x.HasCustomAudio,
-                CustomAudioFilename = x.CustomAudioFilename,
+                CustomAudioFile = fileList.FirstOrDefault(y => y.FileName == x.CustomAudioFilename),
                 CustomAudioOffset = x.CustomAudioOffset,
                 ClipType = GetRenderableTypeOfClip(x),
             }).ToArray();
@@ -321,107 +322,145 @@ namespace Vidka.Core.Model
 
             // .... set up the easings and their audio mixes
             long curFrameEnd = 0;
-            for (int i = 0; i < arrClips.Length; i++)
+            for (int i = 0; i < arrClips2.Length; i++)
             {
                 curFrameEnd += arrClips2[i].LengthFrameCalc;
-                if (arrClips[i].EasingLeft == 0 && arrClips[i].EasingRight == 0)
+                if (arrClips2[i].EasingLeft == 0 && arrClips2[i].EasingRight == 0)
                     continue;
-                if (arrClips[i].EasingLeft > 0)
+                if (arrClips2[i].EasingLeft > 0)
                 {
                     var curFrame = curFrameEnd - arrClips2[i].LengthFrameCalc;
-                    long easeEndAbs = curFrame - arrClips[i].EasingLeft;
-                    long easerFrame = arrClips[i].FrameStart + arrClips[i].EasingLeft;
+                    long easeEndAbs = curFrame - arrClips2[i].EasingLeft;
+                    // ... begin counting from clip's beginning and end (right) of left ease
+                    long easerFrame = arrClips2[i].EasingLeft;
                     var index = i;
+                    // ... walk backward until easing is used up
                     while (curFrame > easeEndAbs && index > 0)
                     {
                         index--;
-                        long curClipLen = arrClips2[index].LengthFrameCalc;
-                        //var easerFilename = arrClips[i].FileName;
-                        var easerFile = fileList.FirstOrDefault(y => y.FileName == arrClips[i].FileName);
+                        long curClipLen = arrClips2[index].LengthFrameCalcNoEasing;
                         long easerFrame1 = easerFrame - curClipLen;
                         long easerFrame2 = easerFrame;
                         long easerOffset = 0;
-                        var isAudio = false;
-                        if (easerFrame1 < arrClips[i].FrameStart)
+                        // ... when offset is needed, when curClipLen (clip being audio-ed) is longer than the easing. Easing audio will begin at the right side of this clip using the offset
+                        if (easerFrame1 < 0)
                         {
-                            easerOffset = arrClips[i].FrameStart - easerFrame1;
-                            easerFrame1 = arrClips[i].FrameStart;
-                        }
-                        if (arrClips[i].HasCustomAudio)
-                        {
-                            //easerFilename = arrClips[i].CustomAudioFilename;
-                            easerFile = fileList.FirstOrDefault(y => y.FileName == arrClips[i].CustomAudioFilename);
-                            easerFrame1 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
-                            easerFrame2 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
-                            isAudio = true;
+                            easerOffset = -easerFrame1;
+                            easerFrame1 = 0;
                         }
                         arrClips2[index].MixesAudioFromVideo.Add(new VideoEasingAudioToMix {
-                            VideoFile = easerFile,
-                            //CustomAudioFilename = easerFilename,
+                            ClipVarName = arrClips2[i].VarName,
                             FrameStart = easerFrame1,
                             FrameEnd = easerFrame2,
                             FrameOffset = easerOffset,
-                            IsAudioFile = isAudio,
                         });
                         curFrame -= curClipLen;
                         easerFrame -= curClipLen;
                     }
                 }
-                if (arrClips[i].EasingRight > 0)
+                if (arrClips2[i].EasingRight > 0)
                 {
                     var curFrame = curFrameEnd;
-                    long easeEndAbs = curFrame + arrClips[i].EasingRight;
-                    long easerFrame = arrClips[i].FrameEnd - arrClips[i].EasingRight;
+                    long easeEndAbs = curFrame + arrClips2[i].EasingRight;
+                    // ... begin counting from clip's end and beginning (left) of right ease
+                    long easerFrame = arrClips2[i].LengthFrameCalc - arrClips2[i].EasingRight;
                     var index = i;
-                    while (curFrame < easeEndAbs && index <= arrClips.Length - 1)
+                    // ... walk forward until easing is used up
+                    while (curFrame < easeEndAbs && index < arrClips2.Length - 1)
                     {
                         index++;
-                        long curClipLen = arrClips2[index].LengthFrameCalc;
-                        //var easerFilename = arrClips[i].FileName;
-                        var easerFile = fileList.FirstOrDefault(y => y.FileName == arrClips[i].FileName);
+                        long curClipLen = arrClips2[index].LengthFrameCalcNoEasing;
                         long easerFrame1 = easerFrame;
                         long easerFrame2 = easerFrame + curClipLen;
-                        var isAudio = false;
-                        if (easerFrame2 > arrClips[i].FrameEnd)
+                        // ... when curClipLen (the clip being audio-ed) exceeds the overflow. Overflow is small and overflows in just the first part of the clip
+                        if (easerFrame2 > arrClips2[i].FrameEnd)
                         {
-                            easerFrame2 = arrClips[i].FrameEnd;
-                        }
-                        if (arrClips[i].HasCustomAudio)
-                        {
-                            //easerFilename = arrClips[i].CustomAudioFilename;
-                            easerFile = fileList.FirstOrDefault(y => y.FileName == arrClips[i].CustomAudioFilename);
-                            easerFrame1 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
-                            easerFrame2 += proj.SecToFrame(arrClips[i].CustomAudioOffset);
-                            isAudio = true;
+                            easerFrame2 = arrClips2[i].FrameEnd;
                         }
                         arrClips2[index].MixesAudioFromVideo.Add(new VideoEasingAudioToMix
                         {
-                            VideoFile = easerFile,
-                            //CustomAudioFilename = easerFilename,
+                            ClipVarName = arrClips2[i].VarName,
                             FrameStart = easerFrame1,
                             FrameEnd = easerFrame2,
                             FrameOffset = 0,
-                            IsAudioFile = isAudio,
                         });
                         curFrame += curClipLen;
                         easerFrame += curClipLen;
                     }
                 }
             }
+            var statVideos = arrClips2;
+            //... this is important to reduce AVS overhead
+            var firstStatCandidate = arrClips.FirstOrDefault(x => x.IsPixelTypeStandard);
+            if (firstStatCandidate != null)
+                statVideos = new[] { new VideoClipRenderable {
+                    VideoFile = fileList.FirstOrDefault(f => f.FileName == firstStatCandidate.FileName)
+                }};
+            //... this is more important when project was cropped, b/c for cropped projects the clip marked
+            //    as IsPixelTypeStandard can easily be outside
+            if (proj.PixelTypeStandardClip != null)
+            {
+                var videoFileForThisOne = fileList.FirstOrDefault(f => f.FileName == proj.PixelTypeStandardClip.FileName);
+                if (videoFileForThisOne == null)
+                    fileList.Add(videoFileForThisOne = new RenderableMediaFile {
+                        FileName = proj.PixelTypeStandardClip.FileName,
+                        VarName = proj.PixelTypeStandardClip.FileName.FilenameToVarName(),
+                        Type = GetRenderableVideoFileType(proj.PixelTypeStandardClip),
+                    });
+                statVideos = new[] { new VideoClipRenderable {
+                    VideoFile = videoFileForThisOne
+                }};
+            }
+
+            // ... make file var names all unique
+            foreach (var fileFile in fileList)
+            {
+                var nonUniques = fileList.Where(x => x != fileFile && x.VarName == fileFile.VarName);
+                foreach (var nonUnique in nonUniques)
+                    nonUnique.VarName += "__" + VidkaIO.MakeGuidWord();
+            }
+
             return new RenderableProject {
                 Files = fileList,
                 Clips = arrClips2,
                 MaxLengthOfImageClip = maxLengthOfImageClip,
+                StatVideos = statVideos,
             };
         }
 
-        private static RenderableVideoFileType GetRenderableVideoFileType(VidkaClipVideoAbstract vclip)
+        public static int RenderBreakupsCount(this VidkaProj proj)
+        {
+            return proj.ClipsVideo.Count(x => x.IsRenderBreakupPoint) + 1;
+        }
+        public static VidkaProj[] RenderBreakupsSplitIntoSubProjects(this VidkaProj proj)
+        {
+            var breakups = proj.ClipsVideo.Where(x => x.IsRenderBreakupPoint).ToArray();
+            if (breakups.Length == 0)
+                return new[] { proj };
+            var result = new VidkaProj[breakups.Length + 1];
+            long prevBreakup = 0;
+            for (int i = 0; i < breakups.Length; i++)
+            {
+                var newBreakup = proj.GetVideoClipAbsFramePositionLeft(breakups[i]);
+                result[i] = proj.Crop(prevBreakup, newBreakup - prevBreakup);
+                prevBreakup = newBreakup;
+            }
+            // ... last one
+            result[breakups.Length] = proj.Crop(prevBreakup, proj.GetTotalLengthOfVideoClipsFrame() - prevBreakup);
+            return result;
+        }
+        
+        #endregion
+
+        #region ------------------------- helpers --------------------------
+
+        private static RenderableMediaFileType GetRenderableVideoFileType(VidkaClipVideoAbstract vclip)
         {
             if (vclip is VidkaClipImage)
-                return RenderableVideoFileType.ImageSource;
+                return RenderableMediaFileType.ImageSource;
             if (vclip is VidkaClipTextSimple)
-                return RenderableVideoFileType.ImageSource;
-            return RenderableVideoFileType.DirectShowSource;
+                return RenderableMediaFileType.ImageSource;
+            return RenderableMediaFileType.DirectShowSource;
         }
 
         private static VideoClipRenderableType GetRenderableTypeOfClip(VidkaClipVideoAbstract clip)
@@ -435,18 +474,19 @@ namespace Vidka.Core.Model
             return VideoClipRenderableType.Video;
         }
 
-		/// <summary>
+        #endregion
+
+        #region ------------------------- misc --------------------------
+
+        /// <summary>
 		/// Debug description
 		/// </summary>
 		public static string cxzxc(this VidkaClipVideoAbstract clip) {
 			if (clip == null)
 				return "null";
 			return Path.GetFileName(clip.FileName);
-		}
+        }
+        #endregion
 
-
-		#endregion
-
-
-	}
+    }
 }

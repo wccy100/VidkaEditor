@@ -8,19 +8,21 @@ using System.Threading.Tasks;
 using Vidka.Core.Model;
 using Vidka.Core.Properties;
 
-namespace Vidka.Core.Ops
+namespace Vidka.Core.ExternalOps
 {
-	public class MEncoderMaveVideoFile : OpBaseClass
+	public class MEncoderSaveVideoFile : OpBaseClass
 	{
 		private string args;
 
-		public MEncoderMaveVideoFile(string filenameAvs, string filenameVideo)
+		public MEncoderSaveVideoFile(string filenameAvs, string filenameVideo, string mencoderArgs)
 		{
+            // link: http://www.mplayerhq.hu/DOCS/HTML/en/menc-feat-selecting-codec.html
 			//mencoder -ovc x264 -x264encopts preset=slow:tune=film:crf=22 -of lavf -of avi -o  "{file-video}" -forcedsubsonly -oac mp3lame "{file-avs}" -vf scale,format=i420
 			//         -ovc x264 -x264encopts pass=1:turbo=1:crf=10 -oac mp3lame -lameopts cbr:br=128 -forcedsubsonly -of avi -o "{file-video}" "{file-avs}" -vf scale,format=i420
 			//mencoder -ovc xvid -xvidencopts bitrate=1500:me_quality=6:rc_reaction_delay_factor=100:rc_averaging_period=16:rc_buffer=100:quant_type=h263:min_iquant=1:max_iquant=31:min_pquant=1:max_pquant=31:min_bquant=1:max_bquant=31:max_key_interval=250:quant_type=h263:max_bframes=2:bquant_ratio=150:bquant_offset=100:bf_threshold=0:vhq=2:bvhq=1:curve_compression_high=0:curve_compression_low=0:overflow_control_strength=10:max_overflow_improvement=10:max_overflow_degradation=10:trellis:noqpel:nogmc:nocartoon:chroma_opt:chroma_me:nointerlacing:par=ext:par_width=1:par_height=1:closed_gop:nopacked:threads=8 -vf scale,format=i420 -forcedsubsonly -nosub -oac mp3lame -mc 0 "{file-avs}" -of avi -o "{file-video}"
-			
-			args = Settings.Default.mencoderArguments
+            //         -ovc raw -vf scale,format=i420 -forcedsubsonly -nosub -oac pcm -mc 0 "{file-avs}" -of avi -o "{file-video}"
+
+            args = mencoderArgs //Settings.Default.mencoderArguments
 				.Replace("{file-video}", filenameVideo)
 				.Replace("{file-avs}", filenameAvs);
 		}

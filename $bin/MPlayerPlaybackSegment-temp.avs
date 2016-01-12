@@ -20,12 +20,11 @@ global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
 #################### all video files ############################
-VID_20150427_172140_mp4 = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\timelapse\VID_20150427_172140.mp4", audio=True, fps=proj_frameRate, convertfps=true)
-_20140921_153957_whisperingpines_mp3 = ImageSource("C:\Users\Mikhail\Music\sounds\20140921_153957_whisperingpines.mp3", start=0, end=0, fps=proj_frameRate)
+_20151111_132932_mp4 = DirectShowSource("C:\Users\Mikhail\Documents\unifua\_sem3\sessB\phone\videos\20151111_132932.mp4", audio=True, fps=proj_frameRate, convertfps=true)
 
 
 #################### determine the most frequently used pixel type ############################
-collectpixeltypestat(VID_20150427_172140_mp4, 173)
+collectpixeltypestat(_20151111_132932_mp4, 150)
 
 
 global mostFrequentPixelType = "RGB32"
@@ -51,7 +50,10 @@ curStatMax = Max(curStatMax, stat_nRGB)
 
 #################### render ###########################
 
-	NeutralClip(VID_20150427_172140_mp4, 0, 172).AddCustomAudio("C:\Users\Mikhail\Music\sounds\20140921_153957_whisperingpines.mp3", 1, fstart=0, fend=172) 
+_20151111_132932_mp4_0 = NeutralClip(_20151111_132932_mp4, 347, 496)
+
+
+	_20151111_132932_mp4_0 
 
 
 
@@ -113,11 +115,10 @@ function NeutralClipImage(Clip vclip, int frames)
 }
 
 # fstart and fend are optional trimmings (in frames) used on vclip, to synch audio with it
-function AddCustomAudio(Clip vclip, string filenameAudio, float audioOffset, int "fstart", int "fend")
+function AddCustomAudio(Clip vclip, Clip audio, float audioOffset, int "fstart", int "fend")
 {
 	fstart = Default(fstart, 0)
 	fend = Default(fend, -1)
-	audio = DirectShowSource(filenameAudio)
 	audio = (audio.AudioRate != proj_audiorate) ? audio.ResampleAudio(proj_audiorate) : audio
 	audioTrimStart = audioOffset + fstart / float(proj_frameRate)
 	audioTrimEnd = (fend == -1) ? audio.audioduration-1 : audioOffset + fend / float(proj_frameRate)
@@ -135,24 +136,24 @@ function MuteThisClip(Clip vclip)
 	return vclip
 }
 
-function MixAudioFromVideo(Clip vclip, Clip vclipAudio, int fstart, int fend,\
+function MixAudioFromClip(Clip vclip, Clip vclipAudio, int fstart, int fend,\
 		int "fOffset")
 {
 	fOffset = Default(fOffset, 0)
-	aclip = NeutralClip(vclipAudio, fstart, fend)
+	aclip = vclipAudio.Trim(fstart, fend)
 	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
 	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
 	return vclip
 }
 
-function MixAudioFromAudio(Clip vclip, Clip vclipAudio, int fstart, int fend,\
-		int "fOffset")
+function FadeOutAudioOnly(Clip vclip, int frames)
 {
-	fOffset = Default(fOffset, 0)
-	aclip = BlankClip(vclip, fend).AudioDub(vclipAudio.ResampleAudio(44100)).Trim(fstart, fend)
-	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
-	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
-	return vclip
+	return AudioDub(vclip, vclip.FadeOut(frames))
+}
+
+function FadeInAudioOnly(Clip vclip, int frames)
+{
+	return AudioDub(vclip, vclip.FadeIn(frames))
 }
 
 function toProperPixelType(vclip)

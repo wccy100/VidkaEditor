@@ -14,7 +14,8 @@ namespace Vidka.Core
 	public class EditorDraggy
 	{
 		public EditorDraggyMode Mode { get; private set; }
-		public long FrameLength { get; private set; }
+        public long FrameAbsLeft { get; private set; } // ... so far only DrawVideoAudioAligns uses this, so I only set this in EditOpMoveAudio
+        public long FrameLength { get; private set; }
 		public string Text { get; private set; }
 		public int MouseX { get; private set; }
 		public int MouseXOffset { get; private set; }
@@ -41,7 +42,8 @@ namespace Vidka.Core
 			string text = null,
 			int? mouseX = null,
 			int? mouseXOffset = null,
-			bool? hasAudio = null)
+			bool? hasAudio = null,
+            long? frameAbsLeft = null)
 		{
 			if (mode.HasValue && mode.Value == EditorDraggyMode.None)
 				throw new HowTheFuckDidThisHappenException(null, "Trying to set draggy mode to None in setCoordinates! Should do it in clear!");
@@ -55,6 +57,8 @@ namespace Vidka.Core
 				MouseX = mouseX.Value;
 			if (mouseXOffset.HasValue)
 				MouseXOffset = mouseXOffset.Value;
+            if (frameAbsLeft.HasValue)
+                FrameAbsLeft = frameAbsLeft.Value;
 			HasAudio = hasAudio ?? true;
 		}
 

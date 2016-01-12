@@ -32,10 +32,8 @@ namespace Vidka.Core
 		string OpenProjectOpenDialog();
         bool ShouldIProceedIfProjectChanged();
 		void ShowErrorMessage(string title, string message);
-		bool ShowConfirmMessage(string title, string message);
-		void AskTo_PleaseSetPlayerAbsPosition(PreviewPlayerAbsoluteLocation location);
-		void AskTo_PleaseSetFormTitle(string title);
+        bool ShowConfirmMessage(string title, string message);
+        bool ShowInputMessage(string title, string message, string oldAnswer, out string answer);
 		void PleaseUnlockThisFile(string filename);
-        void ProjectLoaded();
     }
 }

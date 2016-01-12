@@ -35,5 +35,14 @@
     <Setting Name="TextClipInitialLengthSeconds" Type="System.Single" Scope="Application">
       <Value Profile="(Default)">0.75</Value>
     </Setting>
+    <Setting Name="mencoderArgumentsRaw" Type="System.String" Scope="Application">
+      <Value Profile="(Default)">-ovc raw -vf scale,format=i420 -forcedsubsonly -nosub -oac pcm -mc 0 "{file-avs}" -of avi -o "{file-video}"</Value>
+    </Setting>
+    <Setting Name="RawVideoDumpFolder" Type="System.String" Scope="User">
+      <Value Profile="(Default)">F:\_poligon</Value>
+    </Setting>
+    <Setting Name="VDubRawConcatScriptTemplate" Type="System.String" Scope="User">
+      <Value Profile="(Default)">App_data/vdub_append_save-h264-20.vdscript</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

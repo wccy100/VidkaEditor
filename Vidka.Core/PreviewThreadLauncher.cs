@@ -33,14 +33,15 @@ namespace Vidka.Core
 		private const double STOP_BEFORE_THRESH = 1/30.0;
 		private IVideoPlayer player;
         private IAudioPlayer playerAudio;
-		private ISomeCommonEditorOperations editor;
+        private IVidkaOpContext editor;
 		private PreviewThreadMutex mutex;
 		private Timer ticker;
 
 		//current state
 
 
-		public PreviewThreadLauncher(IVideoPlayer player, IAudioPlayer playerAudio, ISomeCommonEditorOperations editor) {
+        public PreviewThreadLauncher(IVideoPlayer player, IAudioPlayer playerAudio, IVidkaOpContext editor)
+        {
             this.player = player;
             this.playerAudio = playerAudio;
 			this.editor = editor;

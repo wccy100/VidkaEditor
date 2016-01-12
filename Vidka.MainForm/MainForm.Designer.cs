@@ -37,6 +37,7 @@
             this.saveAsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exportToVideoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exportToVideoPartialToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.quitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -58,10 +59,11 @@
             this.whereIsTheCurrentFileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.associatevidkaFilesWithThisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtConsole = new System.Windows.Forms.RichTextBox();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.whereIsTheLastAVSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.vidkaFastPreviewPlayer = new Vidka.Components.VidkaFastPreviewPlayer();
             this.videoShitbox = new Vidka.Components.VideoShitbox();
             this.vidkaPreviewPlayer = new Vidka.Components.VidkaPreviewPlayer();
-            this.exposePreviewAVSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -88,8 +90,8 @@
             this.saveToolStripMenuItem,
             this.saveAsToolStripMenuItem,
             this.toolStripSeparator1,
-            this.exposePreviewAVSToolStripMenuItem,
             this.exportToVideoToolStripMenuItem,
+            this.exportToVideoPartialToolStripMenuItem,
             this.toolStripSeparator2,
             this.quitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
@@ -146,6 +148,12 @@
             this.exportToVideoToolStripMenuItem.Size = new System.Drawing.Size(478, 46);
             this.exportToVideoToolStripMenuItem.Text = "Export to video";
             this.exportToVideoToolStripMenuItem.Click += new System.EventHandler(this.exportToVideoToolStripMenuItem_Click);
+            // 
+            // exportToVideoPartialToolStripMenuItem
+            // 
+            this.exportToVideoPartialToolStripMenuItem.Name = "exportToVideoPartialToolStripMenuItem";
+            this.exportToVideoPartialToolStripMenuItem.Size = new System.Drawing.Size(478, 46);
+            this.exportToVideoPartialToolStripMenuItem.Text = "Export to video (partial)";
             // 
             // toolStripSeparator2
             // 
@@ -264,10 +272,12 @@
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.viewOnGithubToolStripMenuItem,
             this.whereIsTheCurrentFileToolStripMenuItem,
             this.whereIsTheCurrentFileToolStripMenuItem1,
-            this.associatevidkaFilesWithThisToolStripMenuItem});
+            this.whereIsTheLastAVSToolStripMenuItem,
+            this.toolStripSeparator4,
+            this.associatevidkaFilesWithThisToolStripMenuItem,
+            this.viewOnGithubToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 48);
             this.helpToolStripMenuItem.Text = "Help";
@@ -311,6 +321,18 @@
             this.txtConsole.Text = "";
             this.txtConsole.TextChanged += new System.EventHandler(this.txtConsole_TextChanged);
             // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(511, 6);
+            // 
+            // whereIsTheLastAVSToolStripMenuItem
+            // 
+            this.whereIsTheLastAVSToolStripMenuItem.Name = "whereIsTheLastAVSToolStripMenuItem";
+            this.whereIsTheLastAVSToolStripMenuItem.Size = new System.Drawing.Size(514, 46);
+            this.whereIsTheLastAVSToolStripMenuItem.Text = "Where is the last AVS?";
+            this.whereIsTheLastAVSToolStripMenuItem.Click += new System.EventHandler(this.whereIsTheLastAVSToolStripMenuItem_Click);
+            // 
             // vidkaFastPreviewPlayer
             // 
             this.vidkaFastPreviewPlayer.BackColor = System.Drawing.SystemColors.ControlDarkDark;
@@ -337,14 +359,6 @@
             this.vidkaPreviewPlayer.Name = "vidkaPreviewPlayer";
             this.vidkaPreviewPlayer.Size = new System.Drawing.Size(634, 417);
             this.vidkaPreviewPlayer.TabIndex = 1;
-            // 
-            // exposePreviewAVSToolStripMenuItem
-            // 
-            this.exposePreviewAVSToolStripMenuItem.CheckOnClick = true;
-            this.exposePreviewAVSToolStripMenuItem.Name = "exposePreviewAVSToolStripMenuItem";
-            this.exposePreviewAVSToolStripMenuItem.Size = new System.Drawing.Size(478, 46);
-            this.exposePreviewAVSToolStripMenuItem.Text = "Expose preview AVS";
-            this.exposePreviewAVSToolStripMenuItem.Click += new System.EventHandler(this.exposePreviewAVSToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -401,7 +415,9 @@
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripMenuItem currentFrameStillToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem checkForErrorsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem exposePreviewAVSToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem exportToVideoPartialToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem whereIsTheLastAVSToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
 	}
 }
 

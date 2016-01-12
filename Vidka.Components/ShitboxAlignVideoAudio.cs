@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vidka.Core.Model;
 using Vidka.Core;
-using Vidka.Core.Ops;
+using Vidka.Core.ExternalOps;
 
 namespace Vidka.Components
 {

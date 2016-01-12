@@ -96,6 +96,7 @@
             this.Controls.Add(this.txtPostOp);
             this.Name = "CommonAudioClipProperties";
             this.Size = new System.Drawing.Size(1216, 705);
+            this.Load += new System.EventHandler(this.CommonAudioClipProperties_Load);
             this.ResumeLayout(false);
 
 		}

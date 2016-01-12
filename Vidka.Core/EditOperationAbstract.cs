@@ -10,7 +10,7 @@ namespace Vidka.Core
 {
 	abstract class EditOperationAbstract
 	{
-		protected ISomeCommonEditorOperations iEditor;
+        protected IVidkaOpContext iEditor;
 		protected VidkaUiStateObjects uiObjects;
 		protected ProjectDimensions dimdim;
 		protected IVideoShitbox editor;
@@ -18,7 +18,7 @@ namespace Vidka.Core
 		protected VidkaProj proj;
 
 		public EditOperationAbstract(
-			ISomeCommonEditorOperations iEditor,
+            IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,
@@ -132,7 +132,7 @@ namespace Vidka.Core
 		/// </summary>
 		protected void cxzxc(string text)
 		{
-			editor.AppendToConsole(VidkaConsoleLogLevel.Debug, text);
+			editor.cxzxc(text);
 		}
 
 		#endregion

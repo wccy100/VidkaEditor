@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Vidka.Core.Ops;
+using Vidka.Core.ExternalOps;
 
 namespace ConsoleTests {
 	class Program {

@@ -4,11 +4,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Vidka.Core.Ops;
+using Vidka.Core.ExternalOps;
 using Vidka.Core.Properties;
 using Vidka.Core.VideoMeta;
 
-namespace Vidka.Core.Ops
+namespace Vidka.Core.ExternalOps
 {
 	public class MetaGeneratorInOtherThread
 	{

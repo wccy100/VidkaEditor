@@ -1,0 +1,8 @@
+C:\Users\Mikhail\Documents\GitHub\vs\VidkaEditor\ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\bin\Debug\FixVidkaDataFilenames.exe.config
+C:\Users\Mikhail\Documents\GitHub\vs\VidkaEditor\ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\bin\Debug\FixVidkaDataFilenames.exe
+C:\Users\Mikhail\Documents\GitHub\vs\VidkaEditor\ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\bin\Debug\FixVidkaDataFilenames.pdb
+C:\Users\Mikhail\Documents\GitHub\vs\VidkaEditor\ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\bin\Debug\Vidka.Core.dll
+C:\Users\Mikhail\Documents\GitHub\vs\VidkaEditor\ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\bin\Debug\Vidka.Core.pdb
+C:\Users\Mikhail\Documents\GitHub\vs\VidkaEditor\ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\obj\Debug\FixVidkaDataFilenames.csprojResolveAssemblyReference.cache
+C:\Users\Mikhail\Documents\GitHub\vs\VidkaEditor\ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\obj\Debug\FixVidkaDataFilenames.exe
+C:\Users\Mikhail\Documents\GitHub\vs\VidkaEditor\ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\obj\Debug\FixVidkaDataFilenames.pdb

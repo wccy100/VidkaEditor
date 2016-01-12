@@ -10,7 +10,7 @@ using System.Text;
 using System.Xml.Serialization;
 using Vidka.Core.VideoMeta;
 
-namespace Vidka.Core.Ops {
+namespace Vidka.Core.ExternalOps {
 	public class MetadataExtraction : OpBaseClass
 	{
 		const int SampleRate = 8000;

@@ -8,8 +8,8 @@ namespace Vidka.Core
 {
 	public interface IVidkaConsole
 	{
-		void AppendToConsole(VidkaConsoleLogLevel level, string text);		
-	}
+		void AppendToConsole(VidkaConsoleLogLevel level, string text);
+    }
 
 	public static class IVidkaConsole_extensions
 	{

@@ -8,7 +8,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.ComponentModel;
 
-namespace Vidka.Core.Ops
+namespace Vidka.Core.ExternalOps
 {
 	public enum OpResultCode {
 		/// <summary>

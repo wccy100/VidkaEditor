@@ -7,14 +7,17 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 using Vidka.Core.Model;
-using Vidka.Core.Ops;
+using Vidka.Core.ExternalOps;
+using Vidka.Core.Properties;
 
 namespace Vidka.Core
 {
 	public class VidkaIO
 	{
-		private const string TEMPLATE_AVS = "App_data/template.avs";
+        private const string TEMPLATE_AVS = "App_data/template.avs";
 		private const string COMPILE_DIR = ".vidkacompile";
+        private const string AvsTmpFilename = "GeneratedTemp-AvsScript.avs";
+        private const string VDubTmpFilename = "GeneratedTemp-VDubScript.vdscript";
 
 		internal VidkaProj LoadProjFromFile(string filename)
 		{
@@ -37,6 +40,7 @@ namespace Vidka.Core
 		{
 			var sbFiles = new StringBuilder();
 			var sbClips = new StringBuilder();
+            var sbClipsSplice = new StringBuilder();
 			var sbClipStats = new StringBuilder();
             var sbPostOp = new StringBuilder();
             var sbAudio = new StringBuilder();
@@ -45,52 +49,63 @@ namespace Vidka.Core
             var lastClip = renderableClips.LastOrDefault();
             foreach (var file in renderableProj.Files)
             {
-                if (file.Type == RenderableVideoFileType.DirectShowSource)
+                if (file.Type == RenderableMediaFileType.DirectShowSource)
                     sbFiles.Append(String.Format("{0} = DirectShowSource(\"{1}\", audio=True, fps=proj_frameRate, convertfps=true)",
                         file.VarName, file.FileName));
-                else if (file.Type == RenderableVideoFileType.ImageSource)
+                else if (file.Type == RenderableMediaFileType.ImageSource)
                     sbFiles.Append(String.Format("{0} = ImageSource(\"{1}\", start=0, end={2}, fps=proj_frameRate)",
                         file.VarName, file.FileName, renderableProj.MaxLengthOfImageClip));
-                else if (file.Type == RenderableVideoFileType.AudioSource)
+                else if (file.Type == RenderableMediaFileType.AudioSource)
                     sbFiles.Append(String.Format("{0} = DirectShowSource(\"{1}\")",
                         file.VarName, file.FileName));
                 sbFiles.Append("\n");
             }
             foreach (var clip in renderableClips)
 			{
-                var lineEnding = (clip != lastClip) ? ", \\\n" : " ";
                 sbPostOp.Clear();
                 if (clip.HasCustomAudio)
                 {
-                    sbPostOp.Append(String.Format(".AddCustomAudio(\"{0}\", {1}, fstart={2}, fend={3})",
-                        clip.CustomAudioFilename, clip.CustomAudioOffset, clip.FrameStart, clip.FrameEnd-1));
+                    sbPostOp.Append(String.Format(".AddCustomAudio({0}, {1}, fstart={2}, fend={3})",
+                        clip.CustomAudioFile.VarName, clip.CustomAudioOffset, clip.FrameStart, clip.FrameEnd - 1));
                 }
                 if (clip.IsMuted)
                     sbPostOp.Append(".MuteThisClip()");
                 sbPostOp.Append((clip.PostOp ?? "").Replace("\n", ""));
-                foreach (var mix in clip.MixesAudioFromVideo)
-                {
-                    if (mix.IsAudioFile)
-                        sbPostOp.Append(String.Format(".MixAudioFromAudio({0}, {1}, {2}, {3})",
-                            mix.VideoFile.VarName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
-                    else
-                        sbPostOp.Append(String.Format(".MixAudioFromVideo({0}, {1}, {2}, {3})",
-                            mix.VideoFile.VarName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
-                }
                 if (clip.ClipType == VideoClipRenderableType.Video)
                 {
-	                sbClips.Append(String.Format("\tNeutralClip({0}, {1}, {2}){3}{4}",
-                        clip.VideoFile.VarName, clip.FrameStart, clip.FrameEnd-1, sbPostOp.ToString(), lineEnding));
-	                sbClipStats.Append(String.Format("collectpixeltypestat({0}, {1})\n",
-                        clip.VideoFile.VarName, clip.LengthFrameCalc));
+	                sbClips.Append(String.Format("{0} = NeutralClip({1}, {2}, {3}){4}\n",
+                        clip.VarName, clip.VideoFile.VarName, clip.FrameStart, clip.FrameEnd-1, sbPostOp.ToString()));
                 }
                 else if (clip.ClipType == VideoClipRenderableType.Image
                     || clip.ClipType == VideoClipRenderableType.Text)
                 {
-	                sbClips.Append(String.Format("\tNeutralClipImage({0}, {1}){2}{3}",
-                        clip.VideoFile.VarName, clip.LengthFrameCalc, sbPostOp.ToString(), lineEnding));
+	                sbClips.Append(String.Format("{0} = NeutralClipImage({1}, {2}){3}\n",
+                        clip.VarName, clip.VideoFile.VarName, clip.LengthFrameCalc, sbPostOp.ToString()));
                 }
 			}
+
+            foreach (var clip in renderableClips)
+            {
+                var lineEnding = (clip != lastClip) ? ", \\\n" : " ";
+                sbPostOp.Clear();
+                if (clip.EasingLeft > 0 || clip.EasingRight > 0)
+                    sbPostOp.Append(String.Format(".Trim({0}, {1})",
+                        clip.EasingLeft, clip.LengthFrameCalc - clip.EasingRight));
+                foreach (var mix in clip.MixesAudioFromVideo)
+                {
+                    sbPostOp.Append(String.Format(".MixAudioFromClip({0}, {1}, {2}, {3})",
+                        mix.ClipVarName, mix.FrameStart, mix.FrameEnd, mix.FrameOffset));
+                }
+                sbClipsSplice.Append(String.Format("\t{0}{1}{2}",
+                    clip.VarName, sbPostOp.ToString(), lineEnding));
+            }
+
+            // clip stats
+            foreach (var clip in renderableProj.StatVideos)
+            {
+                sbClipStats.Append(String.Format("collectpixeltypestat({0}, {1})\n",
+                    clip.VideoFile.VarName, clip.LengthFrameCalc));
+            }
 
             //TODO: 12dsakddsadas I guess audio clips do not make part of RenderableProject
             foreach (var clip in Proj.ClipsAudio)
@@ -99,22 +114,21 @@ namespace Vidka.Core
                 sbPostOp.Append((clip.PostOp ?? "").Replace("\n", ""));
                 sbAudio.Append(String.Format(@"
 voiceover=BlankClip(last,{0}) ++BlankClip(last, {1}).AudioDub(DirectShowSource(""{2}"", fps=proj_frameRate, convertfps=true).ResampleAudio(44100)).Trim({3}, {4}){5}
-MixAudio(last,voiceover)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.FrameStart, clip.FrameEnd, sbPostOp.ToString()));
+MixAudio(last,voiceover, clip1_factor=1, clip2_factor=1)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.FrameStart, clip.FrameEnd, sbPostOp.ToString()));
             }
 
-			// TODO: calc abs path based on exe
 			var templateFile = GetFileFromThisAppDirectory(TEMPLATE_AVS);
 			var templateStr = File.ReadAllText(templateFile);
-			var strVideoClips = (Proj.ClipsVideo.Count <= 1)
-				? sbClips.ToString()
-				: "UnalignedSplice( \\\n" + sbClips.ToString() + "\\\n)";
+			var strVideoClipsSplice = (Proj.ClipsVideo.Count <= 1)
+                ? sbClipsSplice.ToString()
+                : "UnalignedSplice( \\\n" + sbClipsSplice.ToString() + "\\\n)";
 			// TODO: inject project properties
 			var outputStr = templateStr
 				.Replace("{proj-fps}", "" + Proj.FrameRate)
 				.Replace("{proj-width}", "" + Proj.Width)
 				.Replace("{proj-height}", "" + Proj.Height)
                 .Replace("{video-files}", sbFiles.ToString())
-				.Replace("{video-clips}", strVideoClips)
+                .Replace("{video-clips}", sbClips.ToString() + "\n\n" + strVideoClipsSplice)
                 .Replace("{collectpixeltypestat-videos}", sbClipStats.ToString())
 				.Replace("{audio-clips}", sbAudio.ToString())
 			;
@@ -143,6 +157,30 @@ MixAudio(last,voiceover)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.
 			VidkaImaging.RenderSimpleTextVideoClipToFile(vclip, Proj, filename);
 			metaGenerator.RequestThumbsOnly(filename, true);
 		}
+
+        public static void MakeVDubScriptForOpenTheseVideosAndStartRender(string[] aviFilenames, string outputAviFile, string outputVdubScriptFile)
+        {
+            // VirtualDub.Open(U"F:\_poligon\barumini-1.vidka.avi");
+            // VirtualDub.Append(U"F:\_poligon\barumini-2.vidka.avi");
+            // VirtualDub.SaveAVI(U"F:\_poligon\barumini.avi");
+
+            var sbFiles = new StringBuilder();
+
+            var isFirst = true;
+            foreach (var file in aviFilenames)
+            {
+                sbFiles.Append(String.Format(isFirst
+                    ? "VirtualDub.Open(U\"{0}\");\n"
+                    : "VirtualDub.Append(U\"{0}\");\n", file));
+                isFirst = false;
+            }
+            sbFiles.Append(String.Format("VirtualDub.SaveAVI(U\"{0}\");\n", outputAviFile));
+
+            var templateFile = GetFileFromThisAppDirectory(Settings.Default.VDubRawConcatScriptTemplate);
+            var templateStr = File.ReadAllText(templateFile);
+            var outputStr = templateStr.Replace("{open-appends-and-save}", sbFiles.ToString());
+            File.WriteAllText(outputVdubScriptFile, outputStr);
+        }
 
 		#region ------------------- filenames and paths --------------------------
 
@@ -182,7 +220,13 @@ MixAudio(last,voiceover)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.
 			return MakeUniqueFilename("frame-{0}.jpg");
 		}
 
-		#endregion
+        public static string GetGeneratedAvsTmpFilename() {
+            return GetFileFromThisAppDirectory(AvsTmpFilename);
+        }
+        public static string GetGeneratedVDubTmpFilename() {
+            return GetFileFromThisAppDirectory(VDubTmpFilename);
+        }
 
-	}
+		#endregion
+    }
 }

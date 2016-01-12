@@ -16,7 +16,7 @@ namespace Vidka.Core
 		private ProjectDimensionsTimelineType timeline;
 		private bool keyboardMode;
 
-        public EditOperationTrimAudio(ISomeCommonEditorOperations iEditor,
+        public EditOperationTrimAudio(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,

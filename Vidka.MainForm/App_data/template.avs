@@ -110,11 +110,10 @@ function NeutralClipImage(Clip vclip, int frames)
 }
 
 # fstart and fend are optional trimmings (in frames) used on vclip, to synch audio with it
-function AddCustomAudio(Clip vclip, string filenameAudio, float audioOffset, int "fstart", int "fend")
+function AddCustomAudio(Clip vclip, Clip audio, float audioOffset, int "fstart", int "fend")
 {
 	fstart = Default(fstart, 0)
 	fend = Default(fend, -1)
-	audio = DirectShowSource(filenameAudio)
 	audio = (audio.AudioRate != proj_audiorate) ? audio.ResampleAudio(proj_audiorate) : audio
 	audioTrimStart = audioOffset + fstart / float(proj_frameRate)
 	audioTrimEnd = (fend == -1) ? audio.audioduration-1 : audioOffset + fend / float(proj_frameRate)
@@ -132,24 +131,24 @@ function MuteThisClip(Clip vclip)
 	return vclip
 }
 
-function MixAudioFromVideo(Clip vclip, Clip vclipAudio, int fstart, int fend,\
+function MixAudioFromClip(Clip vclip, Clip vclipAudio, int fstart, int fend,\
 		int "fOffset")
 {
 	fOffset = Default(fOffset, 0)
-	aclip = NeutralClip(vclipAudio, fstart, fend)
+	aclip = vclipAudio.Trim(fstart, fend)
 	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
 	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
 	return vclip
 }
 
-function MixAudioFromAudio(Clip vclip, Clip vclipAudio, int fstart, int fend,\
-		int "fOffset")
+function FadeOutAudioOnly(Clip vclip, int frames)
 {
-	fOffset = Default(fOffset, 0)
-	aclip = BlankClip(vclip, fend).AudioDub(vclipAudio.ResampleAudio(44100)).Trim(fstart, fend)
-	aclip = (fOffset == 0) ? aclip : BlankClip(aclip, fOffset) ++ aclip
-	vclip = vclip.MixAudio(aclip, clip1_factor=1, clip2_factor=1)
-	return vclip
+	return AudioDub(vclip, vclip.FadeOut(frames))
+}
+
+function FadeInAudioOnly(Clip vclip, int frames)
+{
+	return AudioDub(vclip, vclip.FadeIn(frames))
 }
 
 function toProperPixelType(vclip)

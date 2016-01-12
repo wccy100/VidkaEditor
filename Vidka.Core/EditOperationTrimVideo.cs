@@ -15,7 +15,7 @@ namespace Vidka.Core
 		private ProjectDimensionsTimelineType timeline;
 		private bool keyboardMode;
 
-		public EditOperationTrimVideo(ISomeCommonEditorOperations iEditor,
+        public EditOperationTrimVideo(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,
@@ -123,32 +123,31 @@ namespace Vidka.Core
 			performDefensiveProgrammingCheck();
 			var clip = uiObjects.CurrentVideoClip;
 			var deltaConstrained = clip.HowMuchCanBeTrimmed(side, deltaFrame);
-			if (deltaConstrained != 0)
-			{
-				iEditor.AddUndableAction_andFireRedo(new UndoableAction() {
-					Redo = () => {
-						cxzxc("Trim " + side + ": " + deltaConstrained);
-						if (side == TrimDirection.Left)
-							clip.FrameStart += deltaConstrained;
-						else if (side == TrimDirection.Right)
-							clip.FrameEnd += deltaConstrained;
-					},
-					Undo = () => {
-						cxzxc("UNDO Trim " + side + ": " + deltaConstrained);
-						if (side == TrimDirection.Left)
-							clip.FrameStart -= deltaConstrained;
-						else if (side == TrimDirection.Right)
-							clip.FrameEnd -= deltaConstrained;
-					},
-					PostAction = () => {
-						// show in video player
-						var frameEdge = (side == TrimDirection.Right) ? clip.FrameEnd - 1 : clip.FrameStart;
-						var second = proj.FrameToSec(frameEdge);
-						videoPlayer.SetStillFrame(clip.FileName, second);
-						//cxzxc("preview2:" + second);
-					}
-				});
-			}
+            if (deltaConstrained == 0)
+                return;
+			iEditor.AddUndableAction_andFireRedo(new UndoableAction() {
+				Redo = () => {
+					cxzxc("Trim " + side + ": " + deltaConstrained);
+					if (side == TrimDirection.Left)
+						clip.FrameStart += deltaConstrained;
+					else if (side == TrimDirection.Right)
+						clip.FrameEnd += deltaConstrained;
+				},
+				Undo = () => {
+					cxzxc("UNDO Trim " + side + ": " + deltaConstrained);
+					if (side == TrimDirection.Left)
+						clip.FrameStart -= deltaConstrained;
+					else if (side == TrimDirection.Right)
+						clip.FrameEnd -= deltaConstrained;
+				},
+				PostAction = () => {
+					// show in video player
+					var frameEdge = (side == TrimDirection.Right) ? clip.FrameEnd - 1 : clip.FrameStart;
+					var second = proj.FrameToSec(frameEdge);
+					videoPlayer.SetStillFrame(clip.FileName, second);
+					//cxzxc("preview2:" + second);
+				}
+			});
 			// set ui objects (repaint regardless to give feedback to user that this operation is still in action)
 			uiObjects.SetHoverVideo(clip);
 			uiObjects.SetTrimHover(side);

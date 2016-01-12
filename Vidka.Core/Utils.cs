@@ -13,6 +13,11 @@ namespace Vidka.Core
 	{
 		#region =============== native extensions ===================
 
+        public static T CastAs<T>(this object obj)
+        {
+            return (T)obj;
+        }
+
 		public static void AddUnique<T>(this List<T> list, T obj) {
 			if (list.Contains(obj))
 				return;
@@ -37,6 +42,28 @@ namespace Vidka.Core
             return list.GroupBy(comparator).Select(x => x.FirstOrDefault());
 		}
 
+        /// <summary>
+        /// TODO: test this please!!!!!!!!!!!!!!!!!!!!!
+        /// </summary>
+        public static IEnumerable<IEnumerable<T>> SplitEnumerable<T>(this IEnumerable<T> list, Func<T, bool> comparator)
+		{
+            var index = 0;
+            var lastIndex = 0;
+            var result = new List<IEnumerable<T>>();
+            foreach (var x in list)
+            {
+                if (comparator(x))
+                {
+                    if (index > lastIndex) // prevent 1st element
+                        result.Add(list.Skip(lastIndex).Take(index-lastIndex));
+                    lastIndex = index;
+                }
+                index++;
+            }
+            result.Add(list.Skip(lastIndex).Take(index - lastIndex)); // one last time for the tailing elements
+            return result;
+		}
+
 		public static bool ReplaceElement<T>(this List<T> list, T objOld, T objNew)
 		{
 			if (!list.Contains(objOld))
@@ -55,13 +82,13 @@ namespace Vidka.Core
 
 		#region =============== editing helpers ===================
 
-		public static void SetFrameMarker_LeftOfVClip(this ISomeCommonEditorOperations iEditor, VidkaClipVideoAbstract vclip, VidkaProj proj)
+		public static void SetFrameMarker_LeftOfVClip(this IVidkaOpContext iEditor, VidkaClipVideoAbstract vclip, VidkaProj proj)
 		{
 			long frameMarker = proj.GetVideoClipAbsFramePositionLeft(vclip);
 			iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
 		}
 
-		public static void SetFrameMarker_RightOfVClipJustBefore(this ISomeCommonEditorOperations iEditor, VidkaClipVideoAbstract vclip, VidkaProj proj)
+		public static void SetFrameMarker_RightOfVClipJustBefore(this IVidkaOpContext iEditor, VidkaClipVideoAbstract vclip, VidkaProj proj)
 		{
 			long frameMarker = proj.GetVideoClipAbsFramePositionLeft(vclip);
 			var rightThreshFrames = proj.SecToFrame(Settings.Default.RightTrimMarkerOffsetSeconds);
@@ -71,12 +98,12 @@ namespace Vidka.Core
 			iEditor.SetFrameMarker_ShowFrameInPlayer(frameMarker);
 		}
 
-        public static void SetFrameMarker_LeftOfAClip(this ISomeCommonEditorOperations iEditor, VidkaClipAudio clip)
+        public static void SetFrameMarker_LeftOfAClip(this IVidkaOpContext iEditor, VidkaClipAudio clip)
         {
             iEditor.SetFrameMarker_ShowFrameInPlayer(clip.FrameOffset);
         }
 
-        public static void SetFrameMarker_RightOfAClipJustBefore(this ISomeCommonEditorOperations iEditor, VidkaClipAudio clip, VidkaProj proj)
+        public static void SetFrameMarker_RightOfAClipJustBefore(this IVidkaOpContext iEditor, VidkaClipAudio clip, VidkaProj proj)
         {
             long frameMarker = clip.FrameOffset; // start
             var rightThreshFrames = proj.SecToFrame(Settings.Default.RightTrimMarkerOffsetSeconds);

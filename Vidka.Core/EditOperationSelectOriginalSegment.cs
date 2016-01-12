@@ -16,7 +16,7 @@ namespace Vidka.Core
         private long prevStart, prevEnd, prevEaseL, prevEaseR;
 		private bool isStarted;
 
-		public EditOperationSelectOriginalSegment(ISomeCommonEditorOperations iEditor,
+        public EditOperationSelectOriginalSegment(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,

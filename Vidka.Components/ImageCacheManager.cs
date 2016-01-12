@@ -9,7 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Vidka.Core;
-using Vidka.Core.Ops;
+using Vidka.Core.ExternalOps;
 
 namespace Vidka.Components
 {

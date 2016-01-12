@@ -35,7 +35,13 @@ namespace Vidka.Core.Model
 		
 		public List<VidkaClipAudio> ClipsAudio { get; set; }
 
-        public bool PreviewAvsSegmentLocalFilename { get; set; }
+        //public bool PreviewAvsSegmentLocalFilename { get; set; }
+
+        /// <summary>
+        /// Used when proj is cropped, esp for partial rendering
+        /// </summary>
+        [XmlIgnore]
+        public VidkaClipVideoAbstract PixelTypeStandardClip { get; set; }
 
 		/// <summary>
 		/// call this whenever a new clip is added and frame rate changes.
@@ -117,6 +123,8 @@ namespace Vidka.Core.Model
 		public float CustomAudioOffset { get; set; }
         public long EasingLeft { get; set; }
         public long EasingRight { get; set; }
+        public bool IsPixelTypeStandard { get; set; }
+        public bool IsRenderBreakupPoint { get; set; }
 
         [XmlIgnore]
 		public virtual bool HasAudio { get { return false; } }

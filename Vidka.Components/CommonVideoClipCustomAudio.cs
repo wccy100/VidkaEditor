@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using Vidka.Core.Model;
-using Vidka.Core.Ops;
+using Vidka.Core.ExternalOps;
 using Vidka.Core.VideoMeta;
 using Vidka.Core;
 

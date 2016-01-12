@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Vidka.Core.Ops
+namespace Vidka.Core.ExternalOps
 {
 	public class VidkaFileMapping_proj : VidkaFileMapping
 	{

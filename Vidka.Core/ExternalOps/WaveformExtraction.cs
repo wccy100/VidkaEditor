@@ -8,7 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Vidka.Core.Ops {
+namespace Vidka.Core.ExternalOps {
 	public class WaveformExtraction : OpBaseClass
 	{
 		const int SampleRate = 8000;

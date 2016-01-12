@@ -14,39 +14,20 @@ using System.Runtime.InteropServices;
 using Vidka.Core.Model;
 using System.Windows;
 using Vidka.Components.Properties;
+using Vidka.Components.VideoShitboxDrawOps;
 
 namespace Vidka.Components {
 
 	public partial class VideoShitbox : UserControl, IVideoShitbox
 	{
-		#region events
-		public delegate void TogglePreviewMode_Handler();
-		public event TogglePreviewMode_Handler PleaseTogglePreviewMode;
-
-		public delegate void PleaseToggleConsoleVisibility_Handler();
-		public event PleaseToggleConsoleVisibility_Handler PleaseToggleConsoleVisibility;
-
-
-		public delegate void PleaseShowClipUsages_Handler();
-		public event PleaseShowClipUsages_Handler PleaseShowClipUsages;
-
-		public delegate void PleaseSetPlayerAbsPosition_Handler(PreviewPlayerAbsoluteLocation location);
-		public event PleaseSetPlayerAbsPosition_Handler PleaseSetPlayerAbsPosition;
-
-		public delegate void PleaseSetFormTitle_H(string title);
-		public event PleaseSetFormTitle_H PleaseSetFormTitle;
-
-        public delegate void ProjectUpdated_H();
-        public event ProjectUpdated_H ProjectUpdated;
-		#endregion
-
 		// state
 		private RichTextBox txtConsole;
 		private bool isControlLoaded = false;
 		public EditorLogic Logic { get; private set; }
 		private ImageCacheManager imageMan;
 		private EditorDrawOps drawOps;
-		private bool mouseDown;
+        private DrawOpsCollection vidkaDrawOps; //TODO: get rid of EditorDrawOps drawOps class completely and replace it with vidkaDrawOps by placing all ops into the VideoShitboxDrawOps folder
+        private bool mouseDown;
 		private int prevDragX = 0; // for drag/drop files
 		private int mouseDownX, mouseDownY;
 		private long repaintCount = 0;
@@ -58,9 +39,9 @@ namespace Vidka.Components {
 			InitializeComponent();
 			imageMan = new ImageCacheManager();
 			imageMan.ImagesReady += imageMan_ImagesReady;
-			drawOps = new EditorDrawOps();
 			mouseDown = false;
 			ConsoleSingleton = this;
+			drawOps = new EditorDrawOps();
 		}
 
 		private void VideoShitbox_Load(object sender, EventArgs e) {
@@ -190,14 +171,16 @@ namespace Vidka.Components {
 			else if (e.KeyCode == Keys.Space)
 				Logic.PlayPause(false);
 			else if (e.Control && e.Shift && e.KeyCode == Keys.B)
-				Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview, true);
+				Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview, true, Core.ExternalOps.ExternalPlayerType.Mplayer);
 			else if (e.Control && e.KeyCode == Keys.B)
-                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview, false);
+                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview, false, Core.ExternalOps.ExternalPlayerType.Mplayer);
             else if (e.Control && e.Shift && e.KeyCode == Keys.G)
-                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, true);
+                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, true, Core.ExternalOps.ExternalPlayerType.Mplayer);
             else if (e.Control && e.KeyCode == Keys.G)
-                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, false);
-			else if (e.KeyCode == Keys.Home)
+                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, false, Core.ExternalOps.ExternalPlayerType.Mplayer);
+            else if (e.Control && e.KeyCode == Keys.H)
+                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, false, Core.ExternalOps.ExternalPlayerType.VirtualDub);
+            else if (e.KeyCode == Keys.Home)
 				Logic.SetFrameMarker_0_ForceRepaint();
 			else if (e.KeyCode == Keys.End)
 				Logic.SetFrameMarker_End_ForceRepaint();
@@ -217,33 +200,16 @@ namespace Vidka.Components {
 				Logic.PasteClipFromClipboard();
 			else if (e.Control && e.Shift && e.KeyCode == Keys.D)
 				Logic.DuplicateCurClip();
-			else if (e.KeyCode == Keys.S)
-				Logic.SplitCurClipVideo(false);
-			else if (e.KeyCode == Keys.L)
-				Logic.SplitCurClipVideo(true);
-			else if (e.KeyCode == Keys.A)
-				Logic.SplitCurClipVideo_DeleteLeft();
-			else if (e.KeyCode == Keys.D)
-				Logic.SplitCurClipVideo_DeleteRight();
 			else if (e.KeyCode == Keys.F)
 				Logic.ToggleCurSelectedClip_IsLocked();
 			else if (e.KeyCode == Keys.M)
 				Logic.ToggleCurSelectedClip_IsMuted();
 			else if (e.KeyCode == Keys.Delete)
 				Logic.DeleteCurSelectedClip();
-			else if (e.KeyCode == Keys.P) {
-				if (PleaseTogglePreviewMode != null)
-					PleaseTogglePreviewMode();
-			}
-			else if (e.KeyCode == Keys.O) {
-				if (PleaseToggleConsoleVisibility != null)
-					PleaseToggleConsoleVisibility();
-			}
-			else if (e.KeyCode == Keys.W) {
-				if (PleaseShowClipUsages != null)
-					PleaseShowClipUsages();
-			}
-            Logic.KeyPressed(e.KeyCode);
+
+            // TODO: refactor this shit so the only line in this method is the one below...
+            // everything must extend _VidkaOp class
+            Logic.KeyPressed(e);
 		}
 
 		private void OpenClipProperties(VidkaClip clip)
@@ -303,7 +269,7 @@ namespace Vidka.Components {
             if (newClip != null && windowDialog != null)
 			{
                 var result = windowDialog.ShowDialog();
-				if (result == System.Windows.Forms.DialogResult.OK)
+                if (result == System.Windows.Forms.DialogResult.OK)
 					Logic.ReplaceClip(clip, newClip);
 			}
 		}
@@ -423,16 +389,6 @@ namespace Vidka.Components {
 			});
 		}
 
-		public void AskTo_PleaseSetPlayerAbsPosition(PreviewPlayerAbsoluteLocation location) {
-			if (PleaseSetPlayerAbsPosition != null)
-				PleaseSetPlayerAbsPosition(location);
-		}
-
-		public void AskTo_PleaseSetFormTitle(string title) {
-			if (PleaseSetFormTitle != null)
-				PleaseSetFormTitle(title);
-		}
-
 		public void ShowErrorMessage(string title, string message)
 		{
 			MessageBox.Show(message, title, MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -443,6 +399,12 @@ namespace Vidka.Components {
 			var result = MessageBox.Show(message, title, MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
 			return result == DialogResult.OK;
 		}
+
+        public bool ShowInputMessage(string title, string message, string oldValue, out string newValue)
+        {
+            var result = DialogInput.ShowInputDialog(title, message, oldValue, out newValue);
+            return result == DialogResult.OK;
+        }
 
 		public void PleaseUnlockThisFile(string filename)
 		{
@@ -462,12 +424,6 @@ namespace Vidka.Components {
             return true;
         }
 
-        public void ProjectLoaded()
-        {
-            if (ProjectUpdated != null)
-                ProjectUpdated();
-        }
-
 		#endregion
 
 		#region ================================ object exchange ================================
@@ -482,6 +438,11 @@ namespace Vidka.Components {
 			Logic = logic;
 			if (isControlLoaded)
 				Logic.UiInitialized();
+            vidkaDrawOps = new DrawOpsCollection(new DrawOp[] {
+                new DrawRenderBreakups(Logic, imageMan),
+                new DrawVideoAudioAligns(Logic, imageMan),
+            });
+            Invalidate();
 		}
 
 		#endregion
@@ -532,6 +493,10 @@ namespace Vidka.Components {
 			}
 
 			drawOps.DrawDraggySeparately();
+
+            if (vidkaDrawOps != null)
+                vidkaDrawOps.Paint(e.Graphics, Width, Height);
+
 			imageMan.___paintEnd();
 		}
 

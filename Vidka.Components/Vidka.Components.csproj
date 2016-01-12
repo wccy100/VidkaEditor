@@ -65,9 +65,16 @@
     <Compile Include="CommonVideoClipProperties.Designer.cs">
       <DependentUpon>CommonVideoClipProperties.cs</DependentUpon>
     </Compile>
+    <Compile Include="DialogInput.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DialogInput.Designer.cs">
+      <DependentUpon>DialogInput.cs</DependentUpon>
+    </Compile>
     <Compile Include="EditorDrawOps.cs" />
     <Compile Include="ImageCacheManager.cs" />
     <Compile Include="IVidkaMainForm.cs" />
+    <Compile Include="PPP.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -87,6 +94,7 @@
     <Compile Include="SimpleTextSettings.Designer.cs">
       <DependentUpon>SimpleTextSettings.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utils.Drawing.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="ClipPropertiesWindowVideo.cs">
       <SubType>Form</SubType>
@@ -106,6 +114,10 @@
     <Compile Include="VideoShitbox.Designer.cs">
       <DependentUpon>VideoShitbox.cs</DependentUpon>
     </Compile>
+    <Compile Include="DrawOpsCollection.cs" />
+    <Compile Include="DrawOp.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawVideoAudioAligns.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawRenderBreakups.cs" />
     <Compile Include="VidkaFastPreviewPlayer.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -129,6 +141,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="CommonVideoClipProperties.resx">
       <DependentUpon>CommonVideoClipProperties.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DialogInput.resx">
+      <DependentUpon>DialogInput.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ShitboxAlignVideoAudio.resx">
       <DependentUpon>ShitboxAlignVideoAudio.cs</DependentUpon>
@@ -194,6 +209,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

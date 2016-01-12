@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Vidka.Core.Model;
-using Vidka.Core.Ops;
+using Vidka.Core.ExternalOps;
 using Vidka.Core.Properties;
 using Vidka.Core.VideoMeta;
 
@@ -30,9 +30,13 @@ namespace Vidka.Core
 		#endregion
 
 		private IVideoShitbox editor;
-		private static string[] EXT_video, EXT_audio, EXT_image;
+		private static string[]
+            EXT_video = Settings.Default.FileExtensionsVideo.Split('|'),
+            EXT_audio = Settings.Default.FileExtensionsAudio.Split('|'),
+            EXT_image = Settings.Default.FileExtensionsImage.Split('|');
 		private MetaGeneratorInOtherThread metaGenerator;
 		private List<DragAndDropMediaFile> _draggies;
+        public string[] draggedRelevantFiles;
 		private List<VidkaClipVideoAbstract> outstandingVideo;
 		private List<VidkaClipAudio> outstandingAudio;
 
@@ -67,9 +71,6 @@ namespace Vidka.Core
 			_draggies = new List<DragAndDropMediaFile>();
 			outstandingVideo = new List<VidkaClipVideoAbstract>();
 			outstandingAudio = new List<VidkaClipAudio>();
-			EXT_video = Settings.Default.FileExtensionsVideo.Split('|');
-			EXT_audio = Settings.Default.FileExtensionsAudio.Split('|');
-			EXT_image = Settings.Default.FileExtensionsImage.Split('|');
 			metaGenerator = new MetaGeneratorInOtherThread(fileMapping);
 			//metaGenerator.OneItemFinished += metaGenerator_OneItemFinished;
 			//metaGenerator.MetaGeneratorDone += metaGenerator_MetaGeneratorDone;
@@ -86,15 +87,15 @@ namespace Vidka.Core
 
 		public void NewFilesDragged(string[] filenames, long nFakeFrames)
 		{
-			var relevantFiles = GetRelevantFilenames(filenames);
-			var sampleFirst = relevantFiles.FirstOrDefault();
-			OriginalFiles = relevantFiles;
+			draggedRelevantFiles = GetRelevantFilenames(filenames);
+            var sampleFirst = draggedRelevantFiles.FirstOrDefault();
+            OriginalFiles = draggedRelevantFiles;
 			OriginalFile = sampleFirst;
 			if (IsFilenameVideo(sampleFirst))
 			{
 				Mode = DragAndDropManagerMode.Video;
-				DraggyText = "Analyzing...";
-				foreach (var filename in relevantFiles)
+				DraggyText = GetDraggyTextAnalyzing(draggedRelevantFiles);
+                foreach (var filename in draggedRelevantFiles)
 				{
 					_draggies.Add(new DragAndDropMediaFile(Proj) {
 						Filename = filename,
@@ -107,8 +108,8 @@ namespace Vidka.Core
 			else if (IsFilenameAudio(sampleFirst))
 			{
 				Mode = DragAndDropManagerMode.Audio;
-				DraggyText = "Analyzing...";
-                foreach (var filename in relevantFiles)
+                DraggyText = GetDraggyTextAnalyzing(draggedRelevantFiles);
+                foreach (var filename in draggedRelevantFiles)
                 {
                     _draggies.Add(new DragAndDropMediaFile(Proj)
                     {
@@ -123,8 +124,8 @@ namespace Vidka.Core
 			else if (IsFilenameImage(sampleFirst))
 			{
 				Mode = DragAndDropManagerMode.Image;
-				DraggyText = "Analyzing...";
-				foreach (var filename in relevantFiles)
+                DraggyText = GetDraggyTextAnalyzing(draggedRelevantFiles);
+                foreach (var filename in draggedRelevantFiles)
 				{
 					_draggies.Add(new DragAndDropMediaFile(Proj)
 					{
@@ -159,6 +160,11 @@ namespace Vidka.Core
 			}
 		}
 
+        private string GetDraggyTextAnalyzing(string[] files)
+        {
+            return String.Format("Analyzing... ({0})", files.Length);
+        }
+
 		public VidkaClipVideoAbstract[] FinalizeDragAndMakeVideoClips()
 		{
 			lock (this)
@@ -167,7 +173,7 @@ namespace Vidka.Core
 				if (Mode == DragAndDropManagerMode.Video)
 				{
 					//TODO: asdqdscqwwq Take(1) is to be removed when we support multiple draggies
-					clips = _draggies.Take(1).Select(x => new VidkaClipVideo
+					clips = _draggies.Select(x => new VidkaClipVideo
 					{
 						FileName = x.Filename,
 						FileLengthSec = Proj.FrameToSec(x.LengthInFrames),
@@ -180,7 +186,7 @@ namespace Vidka.Core
 				}
 				else if (Mode == DragAndDropManagerMode.Image)
 				{
-					clips = _draggies.Take(1).Select(x => new VidkaClipImage
+					clips = _draggies.Select(x => new VidkaClipImage
 					{
 						FileName = x.Filename,
 						FileLengthSec = Proj.FrameToSec(x.LengthInFrames),
@@ -190,8 +196,7 @@ namespace Vidka.Core
 						IsNotYetAnalyzed = false
 					}).ToList();
 				}
-				_draggies.Clear();
-				Mode = DragAndDropManagerMode.None;
+                FinalizeThisDragDropOp();
 				return (clips == null)
 					? null
 					: clips.ToArray();
@@ -204,7 +209,7 @@ namespace Vidka.Core
 			lock (this)
 			{
 				//TODO: Take(1) is to be removed when we support multiple draggies
-				var clips = _draggies.Take(1).Select(x => new VidkaClipAudio {
+				var clips = _draggies.Select(x => new VidkaClipAudio {
 					FileName = x.Filename,
 					FileLengthSec = Proj.FrameToSec(x.LengthInFrames),
 					FrameStart = 0,
@@ -218,11 +223,16 @@ namespace Vidka.Core
                     curFrame += clip.LengthFrameCalc;
                 }
 				outstandingAudio.AddRange(clips.Where(x => x.IsNotYetAnalyzed));
-				_draggies.Clear();
-				Mode = DragAndDropManagerMode.None;
+                FinalizeThisDragDropOp();
 				return clips.ToArray();
 			}
 		}
+
+        public void FinalizeThisDragDropOp()
+        {
+            _draggies.Clear();
+            Mode = DragAndDropManagerMode.None;
+        }
 
 		internal void CancelDragDrop()
 		{
@@ -374,7 +384,7 @@ namespace Vidka.Core
 				QueueUpTheWholeFolder(dirname);
 			}
 		}
-	}
+    }
 
 	public enum DragAndDropManagerMode {
 		None = 0,

@@ -6,7 +6,7 @@ using System.Text;
 using System.Windows.Forms;
 using Vidka.Core.Error;
 using Vidka.Core.Model;
-using Vidka.Core.Ops;
+using Vidka.Core.ExternalOps;
 
 namespace Vidka.Core
 {
@@ -19,7 +19,7 @@ namespace Vidka.Core
 		private int clipW;
 		private bool isStarted; // TODO: future plan to only initialize draggy when drag index is different... will avoid flickering... however there is no information about this index without the draggy
 
-        public EditOperationMoveAudio(ISomeCommonEditorOperations iEditor,
+        public EditOperationMoveAudio(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,
@@ -58,7 +58,8 @@ namespace Vidka.Core
 				//mode: EditorDraggyMode.AudioTimeline, //tmp f-b-f drag test
 				frameLength: clip.LengthFrameCalc,
 				mouseX: x,
-				mouseXOffset: x-clipX
+				mouseXOffset: x-clipX,
+                frameAbsLeft: clip.FrameOffset
 			);
 			if (Form.ModifierKeys == Keys.Control)
 				copyMode = true;
@@ -79,7 +80,10 @@ namespace Vidka.Core
             if (clip.FrameOffset + frameDelta < 0)
                 frameDelta -= (clip.FrameOffset + frameDelta);
             var frameDeltaScrX = dimdim.convert_FrameToAbsX(frameDelta);
-            uiObjects.SetDraggyCoordinates(mouseX: x1 + frameDeltaScrX);
+            uiObjects.SetDraggyCoordinates(
+                mouseX: x1 + frameDeltaScrX,
+                frameAbsLeft: clip.FrameOffset + frameDelta
+            );
 		}
 
 		public override void MouseDragEnd(int x, int y, int deltaX, int deltaY, int w, int h)
@@ -143,19 +147,56 @@ namespace Vidka.Core
                     });
                 }
             }
-            IsDone = true;
             copyMode = false;
             uiObjects.ClearDraggy();
             uiObjects.UiStateChanged();
+            //IsDone = true;
+            keyboardMode = true;
+            editor.AppendToConsole(VidkaConsoleLogLevel.Info, "Use arrow keys to adjust frame by frame...");
 		}
 
-		public override void KeyPressedArrow(Keys keyData)
-		{
-			//TODO: kb mode???
-		}
+        //public override void KeyPressedArrow(Keys keyData)
+        //{
+        //    //TODO: kb mode???
+        //}
+
+        public override void ApplyFrameDelta(long deltaFrame)
+        {
+            if (!keyboardMode)
+                return;
+            performDefensiveProgrammingCheck();
+            var clip = uiObjects.CurrentAudioClip;
+            if (clip.FrameOffset + deltaFrame < 0)
+                deltaFrame = -clip.FrameOffset;
+            if (deltaFrame == 0)
+                return;
+            var oldOffset = clip.FrameOffset;
+            var newOffset = clip.FrameOffset + deltaFrame;
+            iEditor.AddUndableAction_andFireRedo(new UndoableAction()
+            {
+                Redo = () =>
+                {
+                    cxzxc("move: " + Path.GetFileName(clip.FileName));
+                    clip.FrameOffset = newOffset;
+                },
+                Undo = () =>
+                {
+                    cxzxc("UNDO move audio");
+                    clip.FrameOffset = oldOffset;
+                },
+                PostAction = () =>
+                {
+                    uiObjects.UpdateCurrentClipFrameAbsPos(proj);
+                    iEditor.UpdateCanvasWidthFromProjAndDimdim();
+                    iEditor.SetFrameMarker_ShowFrameInPlayer(clip.FrameOffset);
+                }
+            });
+        }
 
 		public override void ControlPressed()
 		{
+            if (keyboardMode)
+                return;
 			copyMode = true;
 			uiObjects.SetDraggyVideo(null);
 			cxzxc("Changed to copy mode");

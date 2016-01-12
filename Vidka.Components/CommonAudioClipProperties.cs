@@ -53,5 +53,10 @@ namespace Vidka.Components
             txtPostOp.AppendText(".FadeIn(10)\n");
         }
 
+        private void CommonAudioClipProperties_Load(object sender, EventArgs e)
+        {
+
+        }
+
 	}
 }

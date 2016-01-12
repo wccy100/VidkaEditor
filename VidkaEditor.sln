@@ -13,6 +13,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vidka.MainForm", "Vidka.Mai
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vidka.CreateFileAssociation", "Vidka.CreateFileAssociation\Vidka.CreateFileAssociation.csproj", "{E001E54C-2C86-4CE2-A7B1-F0B150502772}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotBackwardsCompatibleFixers", "NotBackwardsCompatibleFixers", "{157607B9-27C0-491A-A1C7-091C88C7EA99}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixVidkaDataFilenames", "ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\FixVidkaDataFilenames.csproj", "{719B1021-5874-4033-B84B-9E39A0D64290}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -75,8 +79,21 @@ Global
 		{E001E54C-2C86-4CE2-A7B1-F0B150502772}.Release|ARM.ActiveCfg = Release|Any CPU
 		{E001E54C-2C86-4CE2-A7B1-F0B150502772}.Release|x64.ActiveCfg = Release|Any CPU
 		{E001E54C-2C86-4CE2-A7B1-F0B150502772}.Release|x86.ActiveCfg = Release|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Release|Any CPU.Build.0 = Release|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Release|ARM.ActiveCfg = Release|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Release|x64.ActiveCfg = Release|Any CPU
+		{719B1021-5874-4033-B84B-9E39A0D64290}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{719B1021-5874-4033-B84B-9E39A0D64290} = {157607B9-27C0-491A-A1C7-091C88C7EA99}
 	EndGlobalSection
 EndGlobal

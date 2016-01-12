@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vidka.Core.Model;
 
-namespace Vidka.Core.Ops
+namespace Vidka.Core.ExternalOps
 {
     public enum ExternalPlayerType
     {
@@ -44,10 +44,10 @@ namespace Vidka.Core.Ops
             this.onlyLockedClips = onlyLockedClips;
         }
 
-        public void WhileYoureAtIt_setTmpAvs(string tmpCustomFilename)
-        {
-            this.tmpCustomFilename = tmpCustomFilename;
-        }
+        //public void WhileYoureAtIt_setTmpAvs(string tmpCustomFilename)
+        //{
+        //    this.tmpCustomFilename = tmpCustomFilename;
+        //}
 
         public void run()
         {
@@ -65,7 +65,8 @@ namespace Vidka.Core.Ops
                 ErrorMessage = "There are no locked clips from this point on!";
                 return;
             }
-            var tmpAvsPath = VidkaIO.GetFileFromThisAppDirectory(tmpCustomFilename ?? TMP_FILENAME);
+            //var tmpAvsPath = VidkaIO.GetFileFromThisAppDirectory(tmpCustomFilename ?? TMP_FILENAME);
+            var tmpAvsPath = VidkaIO.GetGeneratedAvsTmpFilename();
             VidkaIO.ExportToAvs(projCropped, tmpAvsPath);
             RunMPlayer(tmpAvsPath, proj);
         }

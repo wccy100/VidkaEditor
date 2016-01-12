@@ -12,7 +12,9 @@ using System.Windows;
 using System.Windows.Forms;
 using Vidka.Components;
 using Vidka.Core;
+using Vidka.Core.ExternalOps;
 using Vidka.Core.Model;
+using Vidka.Core.Ops;
 using Vidka.MainForm.Properties;
 
 namespace Vidka.MainForm
@@ -54,12 +56,11 @@ namespace Vidka.MainForm
 
 		private void MainForm_Load(object sender, EventArgs e)
 		{
-			videoShitbox.PleaseTogglePreviewMode += videoShitbox_PleaseTogglePreviewMode;
-			videoShitbox.PleaseToggleConsoleVisibility += videoShitbox_PleaseToggleConsoleVisibility;
-			videoShitbox.PleaseShowClipUsages += videoShitbox_PleaseShowClipUsages;
-			videoShitbox.PleaseSetPlayerAbsPosition += videoShitbox_PleaseSetPlayerAbsPosition;
-			videoShitbox.PleaseSetFormTitle += videoShitbox_PleaseSetFormTitle;
-            videoShitbox.ProjectUpdated += videoShitbox_ProjectUpdated;
+            logic.PleaseTogglePreviewMode += videoShitbox_PleaseTogglePreviewMode;
+			logic.PleaseToggleConsoleVisibility += videoShitbox_PleaseToggleConsoleVisibility;
+			logic.PleaseSetPlayerAbsPosition += videoShitbox_PleaseSetPlayerAbsPosition;
+			logic.PleaseSetFormTitle += videoShitbox_PleaseSetFormTitle;
+            logic.ProjectUpdated_AsFarAsMenusAreConcerned += videoShitbox_ProjectUpdated_AsFarAsMenusAreConcerned;
 			
 			//TODO: maybe load these from configuration?
 			//setPreviewPlayer(VidkaPreviewMode.Normal);
@@ -93,10 +94,6 @@ namespace Vidka.MainForm
 					? VidkaPreviewMode.Normal
 					: VidkaPreviewMode.Fast);
 		}
-		private void videoShitbox_PleaseShowClipUsages()
-		{
-			logic.ShowWhereTheClipIsUsed();
-		}
 		private void videoShitbox_PleaseSetPlayerAbsPosition(PreviewPlayerAbsoluteLocation location)
 		{
 			setPlayerAbsoluteLocation(location);
@@ -107,11 +104,9 @@ namespace Vidka.MainForm
 			this.Text = title;
 		}
 
-        private void videoShitbox_ProjectUpdated()
+        private void videoShitbox_ProjectUpdated_AsFarAsMenusAreConcerned()
         {
-            exposePreviewAVSToolStripMenuItem.Checked = logic.Proj != null
-                ? logic.Proj.PreviewAvsSegmentLocalFilename
-                : false;
+            updateRenderPartMenu();
         }
 
 		#endregion
@@ -162,8 +157,32 @@ namespace Vidka.MainForm
 
 		private void exportToVideoToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			logic.ExportToAvsAndVideo();
+            logic.InvokeOpByName(ExportToAvi.Name);
 		}
+
+        private void updateRenderPartMenu()
+        {
+            var segmentCount = logic.Proj.RenderBreakupsCount();
+            exportToVideoPartialToolStripMenuItem.Enabled = (segmentCount > 1);
+            if (segmentCount > 1)
+            {
+                exportToVideoPartialToolStripMenuItem.DropDownItems.Clear();
+                for (int i = 0; i < segmentCount; i++)
+                {
+                    var iii = i;
+                    var item = exportToVideoPartialToolStripMenuItem.DropDownItems.Add("Segement " + (i + 1));
+                    item.Click += (object sender, EventArgs e) =>
+                    {
+                        logic.RenderSegment(iii);
+                    };
+                }
+                exportToVideoPartialToolStripMenuItem.DropDownItems.Add(new ToolStripSeparator());
+                exportToVideoPartialToolStripMenuItem.DropDownItems.Add("Render all segments").Click += (object sender, EventArgs e) =>
+                {
+                    logic.InvokeOpByName(ExportToAvi_Segment.Name);
+                };
+            }
+        }
 
 		private void quitToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -186,7 +205,7 @@ namespace Vidka.MainForm
 
 		private void whereIsThisClipUsedToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			videoShitbox_PleaseShowClipUsages();
+            logic.InvokeOpByName(ShowClipUsage.Name);
 		}
 
 		#endregion
@@ -209,7 +228,7 @@ namespace Vidka.MainForm
 
 		private void rebuildAuxillaryFilesToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			logic.RebuildProject();
+            logic.InvokeOpByName(RebuildProj.Name);
 		}
 
 		private void deleteAllNonlockedClipsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -245,17 +264,30 @@ namespace Vidka.MainForm
 				return;
 			}
 
-			var folder = Path.GetDirectoryName(logic.CurFileName);
-			Process.Start(folder);
+            OpUtils.OpenWinExplorerAndSelectThisFile(logic.CurFileName);
+            //var folder = Path.GetDirectoryName(logic.CurFileName);
+            //Process.Start(folder);
 		}
 
 		private void whereIsTheCurrentFileToolStripMenuItem1_Click(object sender, EventArgs e)
 		{
-			if (logic.CurVideoFileName == null)
+			if (logic.CurMediaFileName == null)
 				return;
-			var folder = Path.GetDirectoryName(logic.CurVideoFileName);
-			Process.Start(folder);
+            OpUtils.OpenWinExplorerAndSelectThisFile(logic.CurMediaFileName);
+            //var folder = Path.GetDirectoryName(logic.CurMediaFileName);
+            //Process.Start(folder);
 		}
+
+        private void whereIsTheLastAVSToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var tmpAvs = VidkaIO.GetGeneratedAvsTmpFilename();
+            if (!File.Exists(tmpAvs))
+            {
+                MessageBox.Show("File does nota exista", "Fail", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
+                return;
+            }
+            OpUtils.OpenWinExplorerAndSelectThisFile(tmpAvs);
+        }
 
 		private void associatevidkaFilesWithThisToolStripMenuItem_Click(object sender, EventArgs e)
 		{
@@ -421,11 +453,6 @@ namespace Vidka.MainForm
 		}
 
 		#endregion
-
-        private void exposePreviewAVSToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            logic.Proj.PreviewAvsSegmentLocalFilename = exposePreviewAVSToolStripMenuItem.Checked;
-        }
 
 
 	}
