@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Vidka.Core.Error;
 using Vidka.Core.Model;
 
-namespace Vidka.Core
+namespace Vidka.Core.UiObj
 {
 	/// <summary>
 	/// stores information about dragging clips around video or audio

@@ -114,5 +114,16 @@ namespace Vidka.Core
         }
 
 		#endregion
-	}
+
+        #region =============== misc helpers ===================
+
+        public static bool IsLRShiftKey(this Keys key)
+        {
+            return key == (Keys.LButton | Keys.ShiftKey)
+                || key == (Keys.RButton | Keys.ShiftKey);
+        }
+
+        #endregion
+
+    }
 }

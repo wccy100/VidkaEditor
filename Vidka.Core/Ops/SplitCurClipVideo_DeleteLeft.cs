@@ -17,7 +17,7 @@ namespace Vidka.Core.Ops
 
         public override bool TriggerByKeyPress(KeyEventArgs e)
         {
-            return (e.KeyCode == Keys.A);
+            return (e.KeyCode == Keys.A && !e.Shift && !e.Control);
         }
 
         public override void Run()
@@ -33,14 +33,14 @@ namespace Vidka.Core.Ops
             {
                 Undo = () =>
                 {
-                    Context.cxzxc("UNDO splitL: start=" + clip_oldStart);
+                    cxzxc("UNDO splitL: start=" + clip_oldStart);
                     clip.FrameStart = clip_oldStart;
                     clip.EasingLeft = clip_oldEaseLeft;
                     Context.UpdateCanvasWidthFromProjAndDimdim();
                 },
                 Redo = () =>
                 {
-                    Context.cxzxc("splitL: start=" + frameOffsetStartOfVideo);
+                    cxzxc("splitL: start=" + frameOffsetStartOfVideo);
                     clip.FrameStart = frameOffsetStartOfVideo;
                     clip.EasingLeft = 0;
                     Context.UpdateCanvasWidthFromProjAndDimdim();

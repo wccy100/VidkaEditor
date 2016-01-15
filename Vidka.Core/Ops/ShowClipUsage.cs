@@ -23,7 +23,7 @@ namespace Vidka.Core.Ops
         {
             if (Context.UiObjects.CurrentClip == null)
             {
-                Context.cxzxc("Nothing selected!");
+                cxzxc("Nothing selected!");
                 return;
             }
             Context.UiObjects.PleaseShowAllUsages(Context.Proj);

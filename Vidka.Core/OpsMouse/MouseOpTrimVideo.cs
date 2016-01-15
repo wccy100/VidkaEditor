@@ -6,17 +6,17 @@ using System.Windows.Forms;
 using Vidka.Core.Error;
 using Vidka.Core.Model;
 using Vidka.Core.Properties;
+using Vidka.Core.UiObj;
 
-namespace Vidka.Core
+namespace Vidka.Core.OpsMouse
 {
-    // TODO: everything
-	class EditOperationTrimAudio : EditOperationAbstract
+	class MouseOpTrimVideo : MouseOpAbstract
 	{
 		private TrimDirection side;
 		private ProjectDimensionsTimelineType timeline;
 		private bool keyboardMode;
 
-        public EditOperationTrimAudio(IVidkaOpContext iEditor,
+        public MouseOpTrimVideo(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,
@@ -38,24 +38,25 @@ namespace Vidka.Core
 		{
 			return (button == MouseButtons.Left)
 				&& (uiObjects.TimelineHover == timeline)
-				&& (uiObjects.CurrentAudioClipHover != null)
-                && (!uiObjects.CurrentAudioClipHover.IsLocked)
-				&& (uiObjects.TrimHover == side);
+				&& (uiObjects.CurrentVideoClipHover != null)
+				&& (!uiObjects.CurrentVideoClipHover.IsLocked)
+				&& (uiObjects.TrimHover == side)
+                && (!uiObjects.ShowEasingHandles);
 		}
 
 		public override void MouseDragStart(int x, int y, int w, int h)
 		{
 			IsDone = false;
 			// I assume its not null, otherwise how do u have CurrentAudioClipTrimHover?
-            var clip = uiObjects.CurrentAudioClipHover;
-			uiObjects.SetActiveAudio(clip);
+			var clip = uiObjects.CurrentVideoClipHover;
+			uiObjects.SetActiveVideo(clip, proj);
 			keyboardMode = false;
 		}
 
 		public override void MouseDragged(int x, int y, int deltaX, int deltaY, int w, int h)
 		{
 			performDefensiveProgrammingCheck();
-			var clip = uiObjects.CurrentAudioClip;
+			var clip = uiObjects.CurrentVideoClip;
 			var frameDelta = (timeline == ProjectDimensionsTimelineType.Original)
 				? dimdim.convert_ScreenX2Frame_OriginalTimeline(deltaX, clip.FileLengthFrames, w)
 				: dimdim.convert_AbsX2Frame(deltaX);
@@ -64,46 +65,41 @@ namespace Vidka.Core
 			
 			// set UI objects...
 			uiObjects.setMouseDragFrameDelta(frameDeltaContrained);
+
+			// show in video player
+			var frameEdge = (side == TrimDirection.Right) ? clip.FrameEnd-1 : clip.FrameStart;
+			var second = proj.FrameToSec(frameEdge + frameDeltaContrained);
+			videoPlayer.SetStillFrame(clip.FileName, second);
 		}
 
 		public override void MouseDragEnd(int x, int y, int deltaX, int deltaY, int w, int h)
 		{
 			performDefensiveProgrammingCheck();
-            var clip = uiObjects.CurrentAudioClip;
+			var clip = uiObjects.CurrentVideoClip;
 			var deltaConstrained = clip.HowMuchCanBeTrimmed(side, uiObjects.MouseDragFrameDelta);
 			if (deltaConstrained != 0)
 			{
-                var startOld = clip.FrameStart;
-                var endOld = clip.FrameEnd;
-                var offsetOld = clip.FrameEnd;
-                var startNew = (side == TrimDirection.Left)
-                    ? clip.FrameStart + deltaConstrained
-                    : clip.FrameStart;
-                var endNew = (side == TrimDirection.Right)
-                    ? clip.FrameEnd + deltaConstrained
-                    : clip.FrameEnd;
-                var offsetNew = (side == TrimDirection.Left)
-                    ? clip.FrameOffset + deltaConstrained
-                    : clip.FrameOffset;
 				iEditor.AddUndableAction_andFireRedo(new UndoableAction() {
 					Redo = () => {
 						cxzxc("Trim " + side + ": " + deltaConstrained);
-                        clip.FrameStart = startNew;
-                        clip.FrameEnd = endNew;
-                        clip.FrameOffset = offsetNew;
+						if (side == TrimDirection.Left)
+							clip.FrameStart += deltaConstrained;
+						else if (side == TrimDirection.Right)
+							clip.FrameEnd += deltaConstrained;
 					},
 					Undo = () => {
 						cxzxc("UNDO Trim " + side + ": " + deltaConstrained);
-                        clip.FrameStart = startOld;
-                        clip.FrameEnd = endOld;
-                        clip.FrameOffset = offsetOld;
+						if (side == TrimDirection.Left)
+							clip.FrameStart -= deltaConstrained;
+						else if (side == TrimDirection.Right)
+							clip.FrameEnd -= deltaConstrained;
 					},
 					PostAction = () => {
 						iEditor.UpdateCanvasWidthFromProjAndDimdim();
 						if (side == TrimDirection.Left)
-							iEditor.SetFrameMarker_LeftOfAClip(clip);
+							iEditor.SetFrameMarker_LeftOfVClip(clip, proj);
 						else if (side == TrimDirection.Right)
-							iEditor.SetFrameMarker_RightOfAClipJustBefore(clip, proj);
+							iEditor.SetFrameMarker_RightOfVClipJustBefore(clip, proj);
 					}
 				});
 			}
@@ -128,32 +124,31 @@ namespace Vidka.Core
 			performDefensiveProgrammingCheck();
 			var clip = uiObjects.CurrentVideoClip;
 			var deltaConstrained = clip.HowMuchCanBeTrimmed(side, deltaFrame);
-			if (deltaConstrained != 0)
-			{
-				iEditor.AddUndableAction_andFireRedo(new UndoableAction() {
-					Redo = () => {
-						cxzxc("Trim " + side + ": " + deltaConstrained);
-						if (side == TrimDirection.Left)
-							clip.FrameStart += deltaConstrained;
-						else if (side == TrimDirection.Right)
-							clip.FrameEnd += deltaConstrained;
-					},
-					Undo = () => {
-						cxzxc("UNDO Trim " + side + ": " + deltaConstrained);
-						if (side == TrimDirection.Left)
-							clip.FrameStart -= deltaConstrained;
-						else if (side == TrimDirection.Right)
-							clip.FrameEnd -= deltaConstrained;
-					},
-					PostAction = () => {
-						// show in video player
-						var frameEdge = (side == TrimDirection.Right) ? clip.FrameEnd - 1 : clip.FrameStart;
-						var second = proj.FrameToSec(frameEdge);
-						videoPlayer.SetStillFrame(clip.FileName, second);
-						//cxzxc("preview2:" + second);
-					}
-				});
-			}
+            if (deltaConstrained == 0)
+                return;
+			iEditor.AddUndableAction_andFireRedo(new UndoableAction() {
+				Redo = () => {
+					cxzxc("Trim " + side + ": " + deltaConstrained);
+					if (side == TrimDirection.Left)
+						clip.FrameStart += deltaConstrained;
+					else if (side == TrimDirection.Right)
+						clip.FrameEnd += deltaConstrained;
+				},
+				Undo = () => {
+					cxzxc("UNDO Trim " + side + ": " + deltaConstrained);
+					if (side == TrimDirection.Left)
+						clip.FrameStart -= deltaConstrained;
+					else if (side == TrimDirection.Right)
+						clip.FrameEnd -= deltaConstrained;
+				},
+				PostAction = () => {
+					// show in video player
+					var frameEdge = (side == TrimDirection.Right) ? clip.FrameEnd - 1 : clip.FrameStart;
+					var second = proj.FrameToSec(frameEdge);
+					videoPlayer.SetStillFrame(clip.FileName, second);
+					//cxzxc("preview2:" + second);
+				}
+			});
 			// set ui objects (repaint regardless to give feedback to user that this operation is still in action)
 			uiObjects.SetHoverVideo(clip);
 			uiObjects.SetTrimHover(side);
@@ -176,7 +171,7 @@ namespace Vidka.Core
 		//------------------------ privates --------------------------
 		private void performDefensiveProgrammingCheck()
 		{
-			if (uiObjects.CurrentAudioClip == null) // should never happen but who knows
+			if (uiObjects.CurrentVideoClip == null) // should never happen but who knows
 				throw new HowTheFuckDidThisHappenException(
 					proj,
 					String.Format(VidkaErrorMessages.TrimDragCurVideoNull, side.ToString()));

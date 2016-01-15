@@ -44,16 +44,23 @@ namespace Vidka.Core.Model
         public VidkaClipVideoAbstract PixelTypeStandardClip { get; set; }
 
 		/// <summary>
-		/// call this whenever a new clip is added and frame rate changes.
+		/// computes all Calced* values
+        /// call this whenever a new clip is added and frame rate changes.
 		/// This will set all the helper variables in every clip
 		/// </summary>
 		public void Compile()
 		{
-			foreach (var vclip in ClipsVideo) {
+			foreach (var vclip in ClipsVideo)
+            {
 				vclip.FileLengthFrames = this.SecToFrame(vclip.FileLengthSec ?? 0);
+                foreach (var link in vclip.AudioClipLinks)
+                    link.AudioClip = ClipsAudio.FirstOrDefault(areal => areal.Id == link.AudioClip.Id);
 			}
-            foreach (var vclip in ClipsAudio) {
-                vclip.FileLengthFrames = this.SecToFrame(vclip.FileLengthSec ?? 0); 
+            foreach (var aclip in ClipsAudio)
+            {
+                if (String.IsNullOrEmpty(aclip.Id))
+                    aclip.Id = VidkaIO.MakeGuidWord();
+                aclip.FileLengthFrames = this.SecToFrame(aclip.FileLengthSec ?? 0);
 			}
 		}
     }
@@ -111,10 +118,12 @@ namespace Vidka.Core.Model
 	{
 		public VidkaClipVideoAbstract()
 		{
-			Subtitles = new List<VidkaSubtitle>();
+            AudioClipLinks = new List<VidkaAudioClipLink>();
+            Subtitles = new List<VidkaSubtitle>();
 		}
 
-		public List<VidkaSubtitle> Subtitles { get; private set; }
+        public List<VidkaAudioClipLink> AudioClipLinks { get; protected set; }
+        public List<VidkaSubtitle> Subtitles { get; protected set; }
 		public bool IsMuted { get; set; }
 		public string PostOp { get; set; }
 		public bool HasCustomAudio { get; set; }
@@ -139,8 +148,11 @@ namespace Vidka.Core.Model
 
 		public virtual VidkaClipVideoAbstract MakeCopy_VideoClip()
 		{
-			var clip = (VidkaClipVideoAbstract)this.MemberwiseClone();
-			// TODO: copy over non-shallow values (subtitles, etc)
+            var clip = (VidkaClipVideoAbstract)this.MemberwiseClone(); // ... problem with MemberwiseClone is that it copies lists by ref... #$%^&
+            clip.AudioClipLinks = new List<VidkaAudioClipLink>();
+            clip.Subtitles = new List<VidkaSubtitle>();
+            clip.IsRenderBreakupPoint = false;
+            // TODO: copy over subtitles
 			return clip;
 		}
         public override VidkaClip MakeCopy() {
@@ -164,12 +176,14 @@ namespace Vidka.Core.Model
 		[XmlIgnore]
 		public override bool HasAudio { get { return HasAudioXml ?? true; } }
 
-		public override VidkaClipVideoAbstract MakeCopy_VideoClip()
-		{
-			var clip = (VidkaClipVideoAbstract)this.MemberwiseClone();
-			// TODO: copy over non-shallow values (subtitles, etc)
-			return clip;
-		}
+        //TODO: when do we ever need this??
+        //public override VidkaClipVideoAbstract MakeCopy_VideoClip()
+        //{
+        //    var clip = (VidkaClipVideoAbstract)this.MemberwiseClone();
+        //    clip.AudioClipLinks = new List<VidkaAudioClipLink>();
+        //    // TODO: copy over non-shallow values (subtitles, etc)
+        //    return clip;
+        //}
 	}
 
 	[Serializable]
@@ -212,6 +226,7 @@ namespace Vidka.Core.Model
 	{
 		public VidkaClipAudio() { }
 
+        public string Id { get; set; }
 		/// <summary>
 		/// position (frames) wrt project's beginning of the start of this audio clip
 		/// </summary>
@@ -221,11 +236,22 @@ namespace Vidka.Core.Model
 		public VidkaClipAudio MakeCopy_AudioClip()
 		{
 			var clip = (VidkaClipAudio)this.MemberwiseClone();
+            clip.Id = VidkaIO.MakeGuidWord();
 			return clip;
 		}
         public override VidkaClip MakeCopy() {
             return MakeCopy_AudioClip();
         }
+    }
+
+    [Serializable]
+    public class VidkaAudioClipLink
+    {
+        /// <summary>
+        /// Diff = absPosAud - absPosVid
+        /// </summary>
+        public long SynchFrames { get; set; }
+        public VidkaClipAudio AudioClip { get; set; }
     }
 
 	[Serializable]

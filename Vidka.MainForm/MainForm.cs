@@ -214,12 +214,12 @@ namespace Vidka.MainForm
 
 		private void simpleTextClipToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			logic.InsertSimpleTextClip();
+            logic.InvokeOpByName(InsertSimpleTextClip.Name);
 		}
 
         private void currentFrameStillToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            logic.InsertCurrentFrameStill();
+            logic.InvokeOpByName(InsertCurrentFrameStill.Name);
         }
 
 		#endregion
@@ -238,7 +238,7 @@ namespace Vidka.MainForm
 
 		private void linearShuffleToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			logic.linearShuffleByFilename();
+            logic.InvokeOpByName(LinearShuffleByFilename.Name);
 		}
 
         private void checkForErrorsToolStripMenuItem_Click(object sender, EventArgs e)

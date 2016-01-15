@@ -7,6 +7,7 @@ using Vidka.Core.Model;
 using Vidka.Core.ExternalOps;
 using Vidka.Core.Properties;
 using Vidka.Core.VideoMeta;
+using Vidka.Core.UiObj;
 
 namespace Vidka.Core
 {
@@ -210,6 +211,7 @@ namespace Vidka.Core
 			{
 				//TODO: Take(1) is to be removed when we support multiple draggies
 				var clips = _draggies.Select(x => new VidkaClipAudio {
+                    Id = VidkaIO.MakeGuidWord(),
 					FileName = x.Filename,
 					FileLengthSec = Proj.FrameToSec(x.LengthInFrames),
 					FrameStart = 0,

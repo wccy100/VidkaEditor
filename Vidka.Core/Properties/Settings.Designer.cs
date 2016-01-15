@@ -144,15 +144,30 @@ namespace Vidka.Core.Properties {
             }
         }
         
-        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("App_data/vdub_append_save-h264-20.vdscript")]
         public string VDubRawConcatScriptTemplate {
             get {
                 return ((string)(this["VDubRawConcatScriptTemplate"]));
             }
-            set {
-                this["VDubRawConcatScriptTemplate"] = value;
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int SecondsMplayerPreview {
+            get {
+                return ((int)(this["SecondsMplayerPreview"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
+        public int SecondsMplayerPreview2 {
+            get {
+                return ((int)(this["SecondsMplayerPreview2"]));
             }
         }
     }

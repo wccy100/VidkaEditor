@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,5 +55,22 @@ namespace Vidka.Components
                 }
             }
         }
+
+        public static void GetVClipScreenPosition(
+            this ProjectDimensions dimdim,
+            VidkaClipVideoAbstract vclip,
+            VidkaProj proj,
+            int h,
+            ref Rectangle rect)
+        {
+            var frameAbs = proj.GetVideoClipAbsFramePositionLeft(vclip);
+            var y1 = dimdim.getY_main1(h);
+            var y2 = dimdim.getY_main2(h);
+            rect.X = dimdim.convert_Frame2ScreenX(frameAbs);
+            rect.Y = y1;
+            rect.Width = dimdim.convert_FrameToAbsX(vclip.LengthFrameCalc);
+            rect.Height = y2 - y1;
+        }
+
 	}
 }

@@ -41,8 +41,14 @@
     <Setting Name="RawVideoDumpFolder" Type="System.String" Scope="User">
       <Value Profile="(Default)">F:\_poligon</Value>
     </Setting>
-    <Setting Name="VDubRawConcatScriptTemplate" Type="System.String" Scope="User">
+    <Setting Name="VDubRawConcatScriptTemplate" Type="System.String" Scope="Application">
       <Value Profile="(Default)">App_data/vdub_append_save-h264-20.vdscript</Value>
+    </Setting>
+    <Setting Name="SecondsMplayerPreview" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
+    <Setting Name="SecondsMplayerPreview2" Type="System.Int32" Scope="Application">
+      <Value Profile="(Default)">15</Value>
     </Setting>
   </Settings>
 </SettingsFile>

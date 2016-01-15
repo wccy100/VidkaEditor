@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Vidka.Core.UiObj;
 
 namespace Vidka.Core.Model
 {
@@ -430,11 +431,13 @@ namespace Vidka.Core.Model
 
         public static int RenderBreakupsCount(this VidkaProj proj)
         {
-            return proj.ClipsVideo.Count(x => x.IsRenderBreakupPoint) + 1;
+            // skip first one because it makes no sense to split at the first clip...
+            return proj.ClipsVideo.Skip(1).Count(x => x.IsRenderBreakupPoint) + 1;
         }
         public static VidkaProj[] RenderBreakupsSplitIntoSubProjects(this VidkaProj proj)
         {
-            var breakups = proj.ClipsVideo.Where(x => x.IsRenderBreakupPoint).ToArray();
+            // skip first one because it makes no sense to split at the first clip...
+            var breakups = proj.ClipsVideo.Skip(1).Where(x => x.IsRenderBreakupPoint).ToArray();
             if (breakups.Length == 0)
                 return new[] { proj };
             var result = new VidkaProj[breakups.Length + 1];

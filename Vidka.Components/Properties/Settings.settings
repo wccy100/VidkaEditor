@@ -5,12 +5,6 @@
     <Setting Name="MinnimumTimelineSegmentSizeInPixels" Type="System.Int32" Scope="Application">
       <Value Profile="(Default)">200</Value>
     </Setting>
-    <Setting Name="SecondsMplayerPreview" Type="System.Double" Scope="Application">
-      <Value Profile="(Default)">5</Value>
-    </Setting>
-    <Setting Name="SecondsMplayerPreview2" Type="System.Double" Scope="Application">
-      <Value Profile="(Default)">15</Value>
-    </Setting>
     <Setting Name="SuppressChangedFilePromptOnClose" Type="System.Boolean" Scope="Application">
       <Value Profile="(Default)">True</Value>
     </Setting>

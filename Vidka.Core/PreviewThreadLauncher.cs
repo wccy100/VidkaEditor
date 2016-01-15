@@ -161,8 +161,8 @@ namespace Vidka.Core
             //if (clip.HasCustomAudio)
             //    playerAudio.PlayAudioClip(clip.CustomAudioFilename, clip.CustomAudioOffset + clipSecStart, clip.CustomAudioOffset + clipSecEnd);
 			player.PlayVideoClip(clip.FileName, clipSecStart, clipSecEnd, doMute);
-            playerAudio.PauseAll();
-            playerAudio.WeAreHereStartPlaying(curAbsSec);
+            //playerAudio.PauseAll();
+            playerAudio.SynchCurrentAudioClips(curAbsSec);
 		}
 
 		public void StopPlayback()

@@ -116,6 +116,7 @@
     </Compile>
     <Compile Include="DrawOpsCollection.cs" />
     <Compile Include="DrawOp.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawVideoAudioLinkage.cs" />
     <Compile Include="VideoShitboxDrawOps\DrawVideoAudioAligns.cs" />
     <Compile Include="VideoShitboxDrawOps\DrawRenderBreakups.cs" />
     <Compile Include="VidkaFastPreviewPlayer.cs">

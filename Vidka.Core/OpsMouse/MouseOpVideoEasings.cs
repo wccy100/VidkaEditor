@@ -6,15 +6,16 @@ using System.Windows.Forms;
 using Vidka.Core.Error;
 using Vidka.Core.Model;
 using Vidka.Core.Properties;
+using Vidka.Core.UiObj;
 
-namespace Vidka.Core
+namespace Vidka.Core.OpsMouse
 {
-	class EditOperationVideoEasings : EditOperationAbstract
+	class MouseOpVideoEasings : MouseOpAbstract
 	{
 		private bool keyboardMode;
         private TrimDirection side;
 
-        public EditOperationVideoEasings(IVidkaOpContext iEditor,
+        public MouseOpVideoEasings(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,

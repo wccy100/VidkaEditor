@@ -13,11 +13,11 @@ namespace Vidka.Core.Ops
     {
         public SplitCurClipVideo_FinalizeLeft(IVidkaOpContext context) : base(context) { }
         public override string CommandName { get { return Name; } }
-        public const string Name = "SplitCurClipVideo_FinalizeLeft";
+        public new const string Name = "SplitCurClipVideo_FinalizeLeft";
 
         public override bool TriggerByKeyPress(KeyEventArgs e)
         {
-            return (e.KeyCode == Keys.L);
+            return (e.KeyCode == Keys.L && !e.Shift && !e.Control);
         }
 
         public override void Run()

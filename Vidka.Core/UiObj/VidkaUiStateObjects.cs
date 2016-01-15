@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Vidka.Core.Model;
 
-namespace Vidka.Core
+namespace Vidka.Core.UiObj
 {
 	/// <summary>
 	/// This class serves 2 functions:
@@ -30,14 +30,15 @@ namespace Vidka.Core
 		public VidkaClipAudio CurrentAudioClipHover { get; private set; }
 		public long? CurrentClipFrameAbsPos { get; private set; }
 		public TrimDirection TrimHover { get; private set; }
-		public int TrimThreshPixels { get; set; }
-		public IEnumerable<VidkaClipVideoAbstract> CurClipAllUsagesVideo { get; set; }
-		public IEnumerable<VidkaClipAudio> CurClipAllUsagesAudio { get; set; }
+		public int TrimThreshPixels { get; private set; }
+        public IEnumerable<VidkaClipVideoAbstract> CurClipAllUsagesVideo { get; private set; }
+		public IEnumerable<VidkaClipAudio> CurClipAllUsagesAudio { get; private set; }
 		public long CurrentMarkerFrame { get; private set; }
 		public bool OriginalTimelinePlaybackMode { get; private set; }
 		public long MouseDragFrameDelta { get; private set; }
         public bool MouseDragFrameDeltaMTO { get; private set; } // MTO = Main Timeline Only
-        public bool ShowEasingHandles { get; set; }
+        public bool ShowEasingHandles { get; private set; }
+        public bool ShowVideoAudioLinkage { get; private set; }
         public EditorDraggy Draggy { get; private set; }
 		
 		// additional helpers
@@ -69,6 +70,7 @@ namespace Vidka.Core
 			CurrentAudioClipHover = null;
 			TrimHover = TrimDirection.None;
             ShowEasingHandles = false;
+            ShowVideoAudioLinkage = false;
 			CurrentMarkerFrame = 0;
 			MouseDragFrameDelta = 0;
             MouseDragFrameDeltaMTO = false;
@@ -237,6 +239,13 @@ namespace Vidka.Core
             if (ShowEasingHandles != flag)
                 stateChanged = true;
             ShowEasingHandles = flag;
+        }
+
+        public void SetShowVideoAudioLinkage(bool flag)
+        {
+            if (ShowVideoAudioLinkage != flag)
+                stateChanged = true;
+            ShowVideoAudioLinkage = flag;
         }
 
 		public void PleaseShowAllUsages(VidkaProj proj)

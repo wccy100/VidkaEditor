@@ -46,14 +46,15 @@
   <ItemGroup>
     <Compile Include="ClipboardObjectHolder.cs" />
     <Compile Include="DragAndDropManager.cs" />
-    <Compile Include="EditOperationAbstract.cs" />
-    <Compile Include="EditOperationMoveAudio.cs" />
-    <Compile Include="EditOperationSelectOriginalSegment.cs" />
-    <Compile Include="EditOperationMoveVideo.cs" />
-    <Compile Include="EditOperationTrimAudio.cs" />
-    <Compile Include="EditOperationVideoEasings.cs" />
-    <Compile Include="EditOperationTrimVideo.cs" />
-    <Compile Include="EditorDraggy.cs" />
+    <Compile Include="OpsMouse\MouseOpAbstract.cs" />
+    <Compile Include="OpsMouse\MouseOpMoveAudio.cs" />
+    <Compile Include="OpsMouse\MouseOpSelectOriginalSegment.cs" />
+    <Compile Include="OpsMouse\MouseOpMoveVideo.cs" />
+    <Compile Include="OpsMouse\MouseOpTrimAudio.cs" />
+    <Compile Include="OpsMouse\MouseOpLinkVideoAudio.cs" />
+    <Compile Include="OpsMouse\MouseOpVideoEasings.cs" />
+    <Compile Include="OpsMouse\MouseOpTrimVideo.cs" />
+    <Compile Include="UiObj\EditorDraggy.cs" />
     <Compile Include="Error\VidkaErrorLog.cs" />
     <Compile Include="Error\VidkaErrorMessages.cs" />
     <Compile Include="Error\HowTheFuckDidThisHappenException.cs" />
@@ -76,10 +77,23 @@
     <Compile Include="Model\VidkaProjExtensions.cs" />
     <Compile Include="ExternalOps\OpBaseclass.cs" />
     <Compile Include="ExternalOps\MetadataExtraction.cs" />
+    <Compile Include="Ops\DeleteCurSelectedClip.cs" />
     <Compile Include="Ops\ExportToAvi_Segment.cs" />
+    <Compile Include="Ops\PreviewAvsSegmentInMplayer_Vd15s.cs" />
+    <Compile Include="Ops\PreviewAvsSegmentInMplayer_Mp15sfff.cs" />
+    <Compile Include="Ops\PreviewAvsSegmentInMplayer_Mp15s.cs" />
+    <Compile Include="Ops\PreviewAvsSegmentInMplayer_Mp5sfff.cs" />
+    <Compile Include="Ops\PreviewAvsSegmentInMplayer_Mp5s.cs" />
+    <Compile Include="Ops\PreviewAvsSegmentInMplayerAbstract.cs" />
+    <Compile Include="Ops\InsertCurrentFrameStill.cs" />
+    <Compile Include="Ops\InsertSimpleTextClip.cs" />
     <Compile Include="Ops\ShowClipUsage.cs" />
+    <Compile Include="Ops\LinearShuffleByFilename.cs" />
+    <Compile Include="Ops\ToggleLocked.cs" />
     <Compile Include="Ops\TogglePreviewMode.cs" />
     <Compile Include="Ops\ToggleConsoleVisibility.cs" />
+    <Compile Include="Ops\DuplicateCurClip.cs" />
+    <Compile Include="Ops\ToggleMuted.cs" />
     <Compile Include="Ops\ToggleRenderSplitPoint.cs" />
     <Compile Include="Ops\SplitCurClipVideo_FinalizeLeft.cs" />
     <Compile Include="Ops\SplitCurClipVideo_DeleteRight.cs" />
@@ -107,7 +121,7 @@
     <Compile Include="VideoMeta\VideoMetadata.Extensions.cs" />
     <Compile Include="VidkaImaging.cs" />
     <Compile Include="VidkaIO.cs" />
-    <Compile Include="VidkaUiStateObjects.cs" />
+    <Compile Include="UiObj\VidkaUiStateObjects.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

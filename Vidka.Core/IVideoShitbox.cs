@@ -35,5 +35,7 @@ namespace Vidka.Core
         bool ShowConfirmMessage(string title, string message);
         bool ShowInputMessage(string title, string message, string oldAnswer, out string answer);
 		void PleaseUnlockThisFile(string filename);
+
+        void OpenClipProperties(Model.VidkaClip vidkaClip);
     }
 }

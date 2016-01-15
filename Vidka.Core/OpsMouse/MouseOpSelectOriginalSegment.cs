@@ -5,10 +5,11 @@ using System.Text;
 using System.Windows.Forms;
 using Vidka.Core.Error;
 using Vidka.Core.Model;
+using Vidka.Core.UiObj;
 
-namespace Vidka.Core
+namespace Vidka.Core.OpsMouse
 {
-	class EditOperationSelectOriginalSegment : EditOperationAbstract
+	class MouseOpSelectOriginalSegment : MouseOpAbstract
 	{
 		private bool keyboardMode;
 		private long origFrame1;
@@ -16,7 +17,7 @@ namespace Vidka.Core
         private long prevStart, prevEnd, prevEaseL, prevEaseR;
 		private bool isStarted;
 
-        public EditOperationSelectOriginalSegment(IVidkaOpContext iEditor,
+        public MouseOpSelectOriginalSegment(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,
@@ -78,8 +79,8 @@ namespace Vidka.Core
             var clip = uiObjects.CurrentClip;
 			origFrame2 = dimdim.convert_ScreenX2Frame_OriginalTimeline(x, clip.FileLengthFrames, w);
 			if (origFrame1 != origFrame2) {
-				clip.FrameStart = Math.Min(origFrame1, origFrame2);
-				clip.FrameEnd = Math.Max(origFrame1, origFrame2);
+                clip.FrameStart = WhereWouldStartBe(origFrame1, origFrame2);
+				clip.FrameEnd = WhereWouldEndBe(origFrame1, origFrame2, clip);
 				uiObjects.UiStateChanged();
 			}
 			updateVideoPlayerFromFrame2();
@@ -90,8 +91,8 @@ namespace Vidka.Core
 			if (origFrame1 != origFrame2)
 			{
                 var clip = uiObjects.CurrentClip;
-				var newStart = Math.Min(origFrame1, origFrame2);
-				var newEnd = Math.Max(origFrame1, origFrame2);
+                var newStart = WhereWouldStartBe(origFrame1, origFrame2);
+                var newEnd = WhereWouldEndBe(origFrame1, origFrame2, clip);
 				var oldStart = prevStart;
                 var oldEnd = prevEnd;
                 var oldEaseL = prevEaseL;
@@ -170,6 +171,22 @@ namespace Vidka.Core
 			var second = proj.FrameToSec(origFrame2);
 			videoPlayer.SetStillFrame(uiObjects.CurrentVideoClip.FileName, second);
 		}
+
+        private long WhereWouldStartBe(long origFrame1, long origFrame2)
+        {
+            var start2b = Math.Min(origFrame1, origFrame2);
+            if (start2b < 0)
+                start2b = 0;
+            return start2b;
+        }
+
+        private long WhereWouldEndBe(long origFrame1, long origFrame2, VidkaClip clip)
+        {
+            var end = Math.Max(origFrame1, origFrame2);
+            if (end > clip.FileLengthFrames)
+                end = clip.FileLengthFrames;
+            return end;
+        }
 
 	}
 }

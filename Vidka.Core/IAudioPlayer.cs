@@ -13,8 +13,10 @@ namespace Vidka.Core
         void Clear();
 		// ... playback
         void WeAreHereStartPlaying(double curSec);
+        void SynchCurrentAudioClips(double curSec);
         void PauseAll();
 		void StopWhateverYouArePlaying();
 		//void PlayAudioClip(string filename, double clipSecStart, double clipSecEnd);
-	}
+
+    }
 }

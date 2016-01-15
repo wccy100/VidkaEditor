@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Vidka.Core.Model;
+using Vidka.Core.UiObj;
 
 namespace Vidka.Core
 {
@@ -174,9 +175,11 @@ namespace Vidka.Core
             VidkaClipAudio lastAudioClipCollision = null;
 			foreach (var ccc in proj.ClipsAudio)
 			{
-                if (lastCollision_succeeded = calculateCollision_proj(x, ccc.FrameOffset, ccc.LengthFrameCalc))
+                if (calculateCollision_proj(x, ccc.FrameOffset, ccc.LengthFrameCalc))
                     lastAudioClipCollision = ccc;
 			}
+            if (lastCollision_succeeded = (lastAudioClipCollision != null))
+                calculateCollision_proj(x, lastAudioClipCollision.FrameOffset, lastAudioClipCollision.LengthFrameCalc);
             return lastAudioClipCollision;
 		}
 
@@ -448,7 +451,5 @@ namespace Vidka.Core
 		#endregion
 
 
-
-
-	}
+    }
 }

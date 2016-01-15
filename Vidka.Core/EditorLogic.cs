@@ -14,6 +14,8 @@ using Vidka.Core.VideoMeta;
 using Vidka.Core.ExternalOps;
 using Vidka.Core.Properties;
 using Vidka.Core.Ops;
+using Vidka.Core.OpsMouse;
+using Vidka.Core.UiObj;
 
 namespace Vidka.Core
 {
@@ -72,10 +74,10 @@ namespace Vidka.Core
 		
 		// helper and logic classes
 		private PreviewThreadLauncher previewLauncher;
-		private EditOperationAbstract CurEditOp;
+		private MouseOpAbstract CurEditOp;
 		private VidkaIO ioOps;
 		private DragAndDropManager dragAndDropMan;
-		private EditOperationAbstract[] EditOpsAll;
+		private MouseOpAbstract[] EditOpsAll;
         private _VidkaOp[] Ops;
         private VidkaProj Proj_forOriginalPlayback; // fake proj used to playback on the original timeline (when the curtain/OriginalTimelinePlaybackMode is on)
 
@@ -112,35 +114,48 @@ namespace Vidka.Core
 			dragAndDropMan.ThumbOrWaveReady += dragAndDropMan_ThumbOrWaveReady;
 			dragAndDropMan.PleaseUnlockThisFile += dragAndDropMan_PleaseUnlockThisFile;
 
-			EditOpsAll = new EditOperationAbstract[] {
-				new EditOperationTrimVideo(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left, ProjectDimensionsTimelineType.Main),
-				new EditOperationTrimVideo(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right, ProjectDimensionsTimelineType.Main),
-				new EditOperationTrimVideo(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left, ProjectDimensionsTimelineType.Original),
-				new EditOperationTrimVideo(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right, ProjectDimensionsTimelineType.Original),
-				new EditOperationTrimAudio(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left, ProjectDimensionsTimelineType.Audios),
-				new EditOperationTrimAudio(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right, ProjectDimensionsTimelineType.Audios),
-                new EditOperationTrimAudio(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left, ProjectDimensionsTimelineType.Original),
-				new EditOperationTrimAudio(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right, ProjectDimensionsTimelineType.Original),
-				new EditOperationMoveVideo(this, UiObjects, Dimdim, editor, videoPlayer, MetaGenerator),
-				new EditOperationMoveAudio(this, UiObjects, Dimdim, editor, videoPlayer, MetaGenerator),
-				new EditOperationSelectOriginalSegment(this, UiObjects, Dimdim, editor, videoPlayer),
-				new EditOperationVideoEasings(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left),
-				new EditOperationVideoEasings(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right),
+			EditOpsAll = new MouseOpAbstract[] {
+				new MouseOpTrimVideo(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left, ProjectDimensionsTimelineType.Main),
+				new MouseOpTrimVideo(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right, ProjectDimensionsTimelineType.Main),
+				new MouseOpTrimVideo(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left, ProjectDimensionsTimelineType.Original),
+				new MouseOpTrimVideo(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right, ProjectDimensionsTimelineType.Original),
+				new MouseOpTrimAudio(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left, ProjectDimensionsTimelineType.Audios),
+				new MouseOpTrimAudio(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right, ProjectDimensionsTimelineType.Audios),
+                new MouseOpTrimAudio(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left, ProjectDimensionsTimelineType.Original),
+				new MouseOpTrimAudio(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right, ProjectDimensionsTimelineType.Original),
+				new MouseOpMoveVideo(this, UiObjects, Dimdim, editor, videoPlayer, MetaGenerator),
+				new MouseOpMoveAudio(this, UiObjects, Dimdim, editor, videoPlayer, MetaGenerator),
+				new MouseOpSelectOriginalSegment(this, UiObjects, Dimdim, editor, videoPlayer),
+				new MouseOpVideoEasings(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Left),
+				new MouseOpVideoEasings(this, UiObjects, Dimdim, editor, videoPlayer, TrimDirection.Right),
+				new MouseOpLinkVideoAudio(this, UiObjects, Dimdim, editor, videoPlayer),
 			};
 
             Ops = new _VidkaOp[]
             {
                 new ExportToAvi(this),
                 exportToSegment = new ExportToAvi_Segment(this),
+                new PreviewAvsSegmentInMplayer_Mp5s(this),
+                new PreviewAvsSegmentInMplayer_Mp5sfff(this),
+                new PreviewAvsSegmentInMplayer_Mp15s(this),
+                new PreviewAvsSegmentInMplayer_Mp15sfff(this),
+                new PreviewAvsSegmentInMplayer_Vd15s(this),
                 new RebuildProj(this),
                 new SplitCurClipVideo(this),
                 new SplitCurClipVideo_DeleteLeft(this),
                 new SplitCurClipVideo_DeleteRight(this),
                 new SplitCurClipVideo_FinalizeLeft(this),
+                new ToggleMuted(this),
+                new ToggleLocked(this),
                 new ToggleRenderSplitPoint(this),
                 new TogglePreviewMode(this),
                 new ToggleConsoleVisibility(this),
                 new ShowClipUsage(this),
+                new DuplicateCurClip(this),
+                new DeleteCurSelectedClip(this),
+                new InsertSimpleTextClip(this),
+                new InsertCurrentFrameStill(this),
+                new LinearShuffleByFilename(this),
             };
 			setProjToAllEditOps(Proj);
 		}
@@ -159,6 +174,52 @@ namespace Vidka.Core
         /// </summary>
         public void KeyPressed(KeyEventArgs e)
         {
+            // TODO: refactor these maybe
+            if (e.Control && e.KeyCode.IsLRShiftKey())
+                ControlPressed();
+            if (e.Shift && e.KeyCode.IsLRShiftKey())
+                ShiftPressed();
+            //------- commented out because we have created menu shortcuts
+            //if (e.Control && e.KeyCode == Keys.S) // these are controlled from MainForm now
+            //	Logic.SaveTriggered();
+            //else if (e.Control && e.KeyCode == Keys.O)
+            //	Logic.OpenTriggered();
+            //else if (e.Control && e.Shift && e.KeyCode == Keys.E)
+            //	Logic.ExportToAvs();
+            else if (e.Control && e.KeyCode == Keys.Oemplus)
+                ZoomIn(shitbox.Width);
+            else if (e.Control && e.KeyCode == Keys.OemMinus)
+                ZoomOut(shitbox.Width);
+            //else if (e.Alt && e.KeyCode == Keys.Enter)
+            else if (e.KeyCode == Keys.F4)
+                shitbox.OpenClipProperties(UiObjects.CurrentClip);
+            else if (e.Control && e.KeyCode == Keys.Space)
+                PlayPause(onlyLockedClips: true);
+            else if (e.KeyCode == Keys.Space)
+                PlayPause(false);
+            else if (e.KeyCode == Keys.Home)
+                SetFrameMarker_0_ForceRepaint();
+            else if (e.KeyCode == Keys.End)
+                SetFrameMarker_End_ForceRepaint();
+            else if (e.KeyCode == Keys.Enter)
+                EnterPressed();
+            else if (e.KeyCode == Keys.Escape)
+                EscapePressed();
+            else if (e.Control && e.KeyCode == Keys.Z)
+                Undo();
+            else if (e.Control && e.KeyCode == Keys.Y)
+                Redo();
+            else if (e.Control && e.KeyCode == Keys.C)
+                CopyCurClipToClipboard();
+            else if (e.Control && e.KeyCode == Keys.X)
+                CutCurClipToClipboard();
+            else if (e.Control && e.KeyCode == Keys.V)
+                PasteClipFromClipboard();
+
+            // ... to fix that bug when you do split on the "outside" of the original clip and it actually splits somewhere in your project
+            if (UiObjects.OriginalTimelinePlaybackMode)
+                return;
+
             ___UiTransactionBegin();
             if (CurEditOp == null)
             {
@@ -206,9 +267,17 @@ namespace Vidka.Core
                 : Path.GetDirectoryName(CurFileName);
         }
 
+        public void AppendToConsole(VidkaConsoleLogLevel level, string s)
+        {
+            shitbox.AppendToConsole(level, s);
+        }
         public bool DialogConfirm(string title, string question)
         {
             return shitbox.ShowConfirmMessage(title, question);
+        }
+        public void DialogError(string title, string text)
+        {
+            shitbox.ShowErrorMessage(title, text);
         }
 
         // ............. firing simple events that affect the UI (done also by ops) ...............
@@ -229,7 +298,6 @@ namespace Vidka.Core
             if (PleaseSetPlayerAbsPosition != null)
                 PleaseSetPlayerAbsPosition(location);
         }
-
 
         #endregion
 
@@ -904,19 +972,6 @@ namespace Vidka.Core
             previewLauncher.StopPlayback();
         }
 
-		public void PreviewAvsSegmentInMplayer(double secMplayerPreview, bool onlyLockedClips, ExternalPlayerType playerType)
-		{
-			cxzxc("creating mplayer...");
-            var mplayed = new MPlayerPlaybackSegment(Proj);
-            mplayed.ExternalPlayer = playerType;
-            mplayed.WhileYoureAtIt_cropProj(UiObjects.CurrentMarkerFrame, (long)(Proj.FrameRate * secMplayerPreview), onlyLockedClips);
-            mplayed.run();
-			if (mplayed.ResultCode == OpResultCode.FileNotFound)
-				shitbox.AppendToConsole(VidkaConsoleLogLevel.Error, "Error: please make sure mplayer is in your PATH!");
-			else if (mplayed.ResultCode == OpResultCode.OtherError)
-				shitbox.AppendToConsole(VidkaConsoleLogLevel.Error, "Error: " + mplayed.ErrorMessage);
-		}
-
 		/// <summary>
 		/// Navigate to that frame in the damn AVI file and pause the damn WMP
 		/// </summary>
@@ -1227,173 +1282,6 @@ namespace Vidka.Core
             exportToSegment.RenderOneSegment(index);
         }
 
-		public void DuplicateCurClip()
-		{
-			if (UiObjects.CurrentClip == null)
-				return;
-			if (UiObjects.CurrentVideoClip != null)
-			{
-				var toDuplicate = UiObjects.CurrentVideoClip;
-				var clipIndex = Proj.ClipsVideo.IndexOf(toDuplicate);
-				var duplicat = toDuplicate.MakeCopy_VideoClip();
-				AddUndableAction_andFireRedo(new UndoableAction
-				{
-					Redo = () =>
-					{
-						cxzxc("duplicate vclip " + clipIndex);
-						Proj.ClipsVideo.Insert(clipIndex + 1, duplicat);
-						UiObjects.SetActiveVideo(duplicat, Proj);
-					},
-					Undo = () =>
-					{
-						cxzxc("UNDO duplicate vclip " + clipIndex);
-						Proj.ClipsVideo.Remove(duplicat);
-						UiObjects.SetActiveVideo(toDuplicate, Proj);
-					},
-					PostAction = () =>
-					{
-						UiObjects.SetHoverVideo(null);
-					}
-				});
-			}
-            if (UiObjects.CurrentAudioClip != null)
-            {
-                var toDuplicate = UiObjects.CurrentAudioClip;
-                var duplicat = toDuplicate.MakeCopy_AudioClip();
-                duplicat.FrameOffset += toDuplicate.LengthFrameCalc;
-                AddUndableAction_andFireRedo(new UndoableAction
-                {
-                    Redo = () =>
-                    {
-                        cxzxc("duplicate aclip " + Path.GetFileName(duplicat.FileName));
-                        Proj.ClipsAudio.Add(duplicat);
-                        UiObjects.SetActiveAudio(duplicat);
-                    },
-                    Undo = () =>
-                    {
-                        cxzxc("UNDO duplicate aclip " + Path.GetFileName(duplicat.FileName));
-                        Proj.ClipsAudio.Remove(duplicat);
-                        UiObjects.SetActiveAudio(toDuplicate);
-                    },
-                    PostAction = () =>
-                    {
-                        UiObjects.SetHoverVideo(null);
-                        UiObjects.SetHoverAudio(null);
-                    }
-                });
-            }
-		}
-
-		public void DeleteCurSelectedClip()
-		{
-			if (UiObjects.CurrentVideoClip != null)
-			{
-				var toRemove = UiObjects.CurrentVideoClip;
-				var clipIndex = Proj.ClipsVideo.IndexOf(toRemove);
-				AddUndableAction_andFireRedo(new UndoableAction {
-					Redo = () => {
-						cxzxc("delete vclip " + clipIndex);
-						Proj.ClipsVideo.Remove(toRemove);
-					},
-					Undo = () => {
-						cxzxc("UNDO delete vclip " + clipIndex);
-						Proj.ClipsVideo.Insert(clipIndex, toRemove);
-					},
-					PostAction = () => {
-						UiObjects.SetHoverVideo(null);
-						if (Proj.ClipsVideo.Count == 0) {
-							UiObjects.SetActiveVideo(null, Proj);
-							SetFrameMarker_0_ForceRepaint();
-						}
-						else {
-							var highlightIndex = clipIndex;
-							if (highlightIndex >= Proj.ClipsVideo.Count)
-								highlightIndex = Proj.ClipsVideo.Count - 1;
-							var clipToSelect = Proj.ClipsVideo[highlightIndex];
-							var firstFrameOfSelected = Proj.GetVideoClipAbsFramePositionLeft(clipToSelect);
-							UiObjects.SetActiveVideo(clipToSelect, Proj);
-							//UiObjects.SetCurrentMarkerFrame(firstFrameOfSelected);
-							// TODO: don't repaint twice, rather keep track of whether to repaint or not
-							SetFrameMarker_ShowFrameInPlayer(firstFrameOfSelected);
-						}
-						UpdateCanvasWidthFromProjAndDimdim();
-					}
-				});
-			}
-			else if (UiObjects.CurrentAudioClip != null)
-			{
-                var toRemove = UiObjects.CurrentAudioClip;
-                AddUndableAction_andFireRedo(new UndoableAction
-                {
-                    Redo = () =>
-                    {
-                        cxzxc("delete aclip");
-                        Proj.ClipsAudio.Remove(toRemove);
-                    },
-                    Undo = () =>
-                    {
-                        cxzxc("UNDO delete aclip");
-                        Proj.ClipsAudio.Add(toRemove);
-                    },
-                    PostAction = () =>
-                    {
-                        UiObjects.SetHoverVideo(null);
-                        UiObjects.SetHoverAudio(null);
-                        UiObjects.SetActiveAudio(null);
-                        UpdateCanvasWidthFromProjAndDimdim();
-                    }
-                });
-			}
-		}
-
-		public void ToggleCurSelectedClip_IsLocked()
-		{
-			if (UiObjects.CurrentClip == null)
-				return;
-			var clip = UiObjects.CurrentClip;
-			var oldValue = clip.IsLocked;
-			var newValue = !oldValue;
-			AddUndableAction_andFireRedo(new UndoableAction
-			{
-				Redo = () =>
-				{
-					cxzxc((newValue ? "lock": "unlock") + " clip");
-					clip.IsLocked = newValue;
-				},
-				Undo = () =>
-				{
-					cxzxc("UNDO " + (newValue ? "lock" : "unlock") + " clip");
-					clip.IsLocked = oldValue;
-				},
-			});
-		}
-
-		public void ToggleCurSelectedClip_IsMuted()
-		{
-			if (UiObjects.CurrentVideoClip == null && UiObjects.CurrentAudioClip != null) {
-				cxzxc("Does it really makes sense to mute an audio clip? What's the point of your audio clip then? It's like castrating a rooster...");
-				return;
-			}
-			if (UiObjects.CurrentVideoClip == null)
-				return;
-			var clip = UiObjects.CurrentVideoClip;
-			var oldValue = clip.IsMuted;
-			var newValue = !oldValue;
-			AddUndableAction_andFireRedo(new UndoableAction
-			{
-				Redo = () =>
-				{
-					cxzxc((newValue ? "mute" : "unmute") + " clip");
-					clip.IsMuted = newValue;
-				},
-				Undo = () =>
-				{
-					cxzxc("UNDO " + (newValue ? "mute" : "unmute") + " clip");
-					clip.IsMuted = oldValue;
-				},
-			});
-		}
-
 		public void deleteAllNonlockedClips()
 		{
 			var oldClips = Proj.ClipsVideo;
@@ -1418,56 +1306,19 @@ namespace Vidka.Core
 			});
 		}
 
-		public void linearShuffleByFilename()
-		{
-			long frameOffset;
-			var beginIndex = Proj.GetVideoClipIndexAtFrame(UiObjects.CurrentMarkerFrame, out frameOffset);
-			if (beginIndex == -1)
-			{
-				cxzxc("This command only affects clips to the right of marker. Marker outside all possible clips!");
-				return;
-			}
-			var clipsBefore = Proj.ClipsVideo.Take(beginIndex);
-			var clipsAfter = Proj.ClipsVideo.Skip(beginIndex);
-			var clipsAfterGroups = clipsAfter.GroupBy(x => x.FileName);
-			var areAllSame = clipsAfterGroups.Select(x => x.Count()).AreAllTheSame((x, y) => (x == y));
-			if (!areAllSame)
-			{
-				shitbox.ShowErrorMessage("Uneven splits", "Not all videos were split into equal number of segments!\nPlease view console for details, undo, fix the problem and perform linear shuffle again.");
-				cxzxc("--- linear shuffle ---\n" + clipsAfterGroups.Select(x => Path.GetFileName(x.Key) + ": " + x.Count()).StringJoin("\n") + "\n------");
-			}
-
-			var maxLength = clipsAfterGroups.Select(x => x.Count()).Max();
-			var clipsAfterShuffled = new List<VidkaClipVideoAbstract>();
-			for (int i = 0; i < maxLength; i++) {
-				foreach (var group in clipsAfterGroups) {
-					var clip = group.Skip(i).FirstOrDefault();
-					if (clip == null)
-						continue;
-					clipsAfterShuffled.Add(clip);
-				}
-			}
-
-			var newClips = clipsBefore.Union(clipsAfterShuffled).ToList();
-			var oldClips = Proj.ClipsVideo;
-			AddUndableAction_andFireRedo(new UndoableAction
-			{
-				Redo = () =>
-				{
-					cxzxc("Delete all non-locked clips");
-					Proj.ClipsVideo = newClips;
-				},
-				Undo = () =>
-				{
-					cxzxc("UNDO Delete all non-locked clips");
-					Proj.ClipsVideo = oldClips;
-				},
-			});
-		}
-
 		#endregion
 
 		#region ----------------- helpers ------------------------------------
+
+        public void cxzxc(string text) {
+            AppendToConsole(VidkaConsoleLogLevel.Debug, text);
+		}
+        public void iiii(string text) {
+            AppendToConsole(VidkaConsoleLogLevel.Info, text);
+		}
+        public void eeee(string text) {
+            AppendToConsole(VidkaConsoleLogLevel.Error, text);
+		}
 
 		/// <summary>
 		/// Calls setProj for all our EditOps. Call whenever Proj gets reassigned to
@@ -1510,7 +1361,7 @@ namespace Vidka.Core
 		}
 
 		private void ActivateCorrectOp(
-			Func<EditOperationAbstract, bool> trigger
+			Func<MouseOpAbstract, bool> trigger
 			//, Action<EditOperationAbstract> init
 			)
 		{
@@ -1521,64 +1372,6 @@ namespace Vidka.Core
                 if (Debug_outputEditOpLifecycle)
                     iiii("Edit op: " + CurEditOp.Description);
             }
-		}
-
-		/// <summary>
-		/// Debug print to UI console
-		/// </summary>
-		public void cxzxc(string text) {
-			AppendToConsole(VidkaConsoleLogLevel.Debug, text);
-		}
-
-        public void iiii(string text) {
-			AppendToConsole(VidkaConsoleLogLevel.Info, text);
-		}
-
-        public void eeee(string text) {
-			AppendToConsole(VidkaConsoleLogLevel.Error, text);
-		}
-
-
-		public void AppendToConsole(VidkaConsoleLogLevel level, string s) {
-			shitbox.AppendToConsole(level, s);
-		}
-
-		private void AddUndoableAction_insertClipAtMarkerPosition(VidkaClipVideoAbstract newClip)
-		{
-			int insertIndex = 0;
-			long frameOffset = 0;
-			var oldMarkerPos = UiObjects.CurrentMarkerFrame;
-			var targetIndex = Proj.GetVideoClipIndexAtFrame_forceOnLastClip(oldMarkerPos, out frameOffset);
-			VidkaClipVideoAbstract targetClip = null;
-			if (targetIndex != -1)
-			{
-				insertIndex = targetIndex;
-				targetClip = Proj.ClipsVideo[targetIndex];
-				if (frameOffset - targetClip.FrameStartNoEase >= targetClip.LengthFrameCalc / 2) // which half of the clip is the marker on?
-					insertIndex = targetIndex + 1;
-			}
-			AddUndableAction_andFireRedo(new UndoableAction
-			{
-				Redo = () =>
-				{
-					Proj.ClipsVideo.Insert(insertIndex, newClip);
-					UiObjects.SetActiveVideo(newClip, Proj);
-					var newMarkerPos = Proj.GetVideoClipAbsFramePositionLeft(newClip);
-					UiObjects.SetCurrentMarkerFrame(newMarkerPos);
-					if (newClip is VidkaClipTextSimple)
-					{
-						newClip.FileName = VidkaIO.GetAuxillaryProjFile(curFilename, VidkaIO.MakeUniqueFilename_AuxSimpleText());
-						VidkaIO.RebuildAuxillaryFile_SimpleText((VidkaClipTextSimple)newClip, Proj, MetaGenerator);
-					}
-				},
-				Undo = () =>
-				{
-					Proj.ClipsVideo.Remove(newClip);
-					UiObjects.SetCurrentMarkerFrame(oldMarkerPos);
-					if (targetClip != null)
-						UiObjects.SetActiveVideo(targetClip, Proj);
-				},
-			});
 		}
 
         private void AddUndoableAction_insertAudioClipAtMarkerPosition(VidkaClipAudio newClip)
@@ -1659,7 +1452,7 @@ namespace Vidka.Core
 		public void CutCurClipToClipboard()
 		{
             CopyCurClipToClipboard();
-            DeleteCurSelectedClip();
+            InvokeOpByName(DeleteCurSelectedClip.Name);
 		}
 		public void PasteClipFromClipboard()
 		{
@@ -1673,7 +1466,7 @@ namespace Vidka.Core
 			var holder = (ClipboardObjectHolder)obj;
 			if (holder.Type == ClipboardObjectType.VideoClip && holder.VideoClip != null)
 			{
-				AddUndoableAction_insertClipAtMarkerPosition(holder.VideoClip);
+				this.AddUndoableAction_insertClipAtMarkerPosition(holder.VideoClip);
 			}
             if (holder.Type == ClipboardObjectType.AudioClip && holder.AudioClip != null)
             {
@@ -1728,57 +1521,6 @@ namespace Vidka.Core
             }
 			//TODO: audio..
 		}
-
-		public void InsertSimpleTextClip()
-		{
-			var imgFilename = VidkaIO.MakeUniqueFilename_AuxSimpleText();
-			var imgFilenameFull = VidkaIO.GetAuxillaryProjFile(CurFileName, imgFilename);
-			var newClip = new VidkaClipTextSimple() {
-				Text = "Hello :)",
-				ArgbBackgroundColor = Color.Black.ToArgb(),
-				ArgbFontColor = Color.White.ToArgb(),
-				FontSize = 20,
-				FileName = imgFilenameFull,
-				FileLengthSec = Settings.Default.ImageClipLengthSeconds,
-				FileLengthFrames = Proj.SecToFrame(Settings.Default.ImageClipLengthSeconds),
-				FrameStart = 0,
-				FrameEnd = Proj.SecToFrame(Settings.Default.TextClipInitialLengthSeconds),
-			};
-			VidkaIO.RebuildAuxillaryFile_SimpleText(newClip, Proj, MetaGenerator);
-
-			AddUndoableAction_insertClipAtMarkerPosition(newClip);
-		}
-
-        public void InsertCurrentFrameStill()
-        {
-            long frameOffset = 0;
-            var clipIndex = Proj.GetVideoClipIndexAtFrame(UiObjects.CurrentMarkerFrame, out frameOffset);
-			if (clipIndex == -1)
-                return;
-
-            var clip = Proj.ClipsVideo[clipIndex];
-			var secOffset = Proj.FrameToSec(frameOffset);
-            var imgFilename = VidkaIO.MakeUniqueFilename_Frame();
-            var imgFilenameFull = VidkaIO.GetAuxillaryProjFile(CurFileName, imgFilename);
-            var newClip = new VidkaClipImage()
-            {
-                FileName = imgFilenameFull,
-                FileLengthSec = Settings.Default.ImageClipLengthSeconds,
-                FileLengthFrames = Proj.SecToFrame(Settings.Default.ImageClipLengthSeconds),
-                FrameStart = 0,
-                FrameEnd = Proj.SecToFrame(Settings.Default.ImageClipLengthSeconds),
-            };
-
-            // run all the shit
-            iiii("Extracting thumbnail from " + Path.GetFileName(clip.FileName) + " at sec=" + secOffset);
-            VidkaIO.MakeSureFolderExistsForFile(imgFilenameFull);
-            var op = new ThumbnailExtractionSingle(clip.FileName, imgFilenameFull, Proj.Width, Proj.Height, secOffset);
-            iiii("Done.");
-            op.run();
-            MetaGenerator.RequestThumbsOnly(imgFilenameFull, true);
-            
-            AddUndoableAction_insertClipAtMarkerPosition(newClip);
-        }
 
 		#endregion
     }

@@ -10,6 +10,7 @@ using Vidka.Components.Properties;
 using Vidka.Core;
 using Vidka.Core.Model;
 using Vidka.Core.ExternalOps;
+using Vidka.Core.UiObj;
 
 namespace Vidka.Components
 {

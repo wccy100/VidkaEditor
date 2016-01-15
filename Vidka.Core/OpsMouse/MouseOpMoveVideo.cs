@@ -6,10 +6,11 @@ using System.Windows.Forms;
 using Vidka.Core.Error;
 using Vidka.Core.Model;
 using Vidka.Core.ExternalOps;
+using Vidka.Core.UiObj;
 
-namespace Vidka.Core
+namespace Vidka.Core.OpsMouse
 {
-	class EditOperationMoveVideo : EditOperationAbstract
+	class MouseOpMoveVideo : MouseOpAbstract
 	{
 		private MetaGeneratorInOtherThread metaGenerator;
 		private bool copyMode;
@@ -19,7 +20,7 @@ namespace Vidka.Core
 		private int oldIndex;
 		private bool isStarted; // TODO: future plan to only initialize draggy when drag index is different... will avoid flickering... however there is no information about this index without the draggy
 
-        public EditOperationMoveVideo(IVidkaOpContext iEditor,
+        public MouseOpMoveVideo(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,

@@ -148,130 +148,7 @@ namespace Vidka.Components {
 
 		public void VideoShitbox_KeyDown(object sender, KeyEventArgs e)
 		{
-			if (e.Control && e.KeyCode.IsLRShiftKey())
-				Logic.ControlPressed();
-			if (e.Shift && e.KeyCode.IsLRShiftKey())
-				Logic.ShiftPressed();
-			//------- commented out because we have created menu shortcuts
-			//if (e.Control && e.KeyCode == Keys.S) // these are controlled from MainForm now
-			//	Logic.SaveTriggered();
-			//else if (e.Control && e.KeyCode == Keys.O)
-			//	Logic.OpenTriggered();
-			//else if (e.Control && e.Shift && e.KeyCode == Keys.E)
-			//	Logic.ExportToAvs();
-			else if (e.Control && e.KeyCode == Keys.Oemplus)
-				Logic.ZoomIn(Width);
-			else if (e.Control && e.KeyCode == Keys.OemMinus)
-				Logic.ZoomOut(Width);
-			//else if (e.Alt && e.KeyCode == Keys.Enter)
-			else if (e.KeyCode == Keys.F4)
-				OpenClipProperties(Logic.UiObjects.CurrentClip);
-			else if (e.Control && e.KeyCode == Keys.Space)
-				Logic.PlayPause(onlyLockedClips: true);
-			else if (e.KeyCode == Keys.Space)
-				Logic.PlayPause(false);
-			else if (e.Control && e.Shift && e.KeyCode == Keys.B)
-				Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview, true, Core.ExternalOps.ExternalPlayerType.Mplayer);
-			else if (e.Control && e.KeyCode == Keys.B)
-                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview, false, Core.ExternalOps.ExternalPlayerType.Mplayer);
-            else if (e.Control && e.Shift && e.KeyCode == Keys.G)
-                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, true, Core.ExternalOps.ExternalPlayerType.Mplayer);
-            else if (e.Control && e.KeyCode == Keys.G)
-                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, false, Core.ExternalOps.ExternalPlayerType.Mplayer);
-            else if (e.Control && e.KeyCode == Keys.H)
-                Logic.PreviewAvsSegmentInMplayer(Settings.Default.SecondsMplayerPreview2, false, Core.ExternalOps.ExternalPlayerType.VirtualDub);
-            else if (e.KeyCode == Keys.Home)
-				Logic.SetFrameMarker_0_ForceRepaint();
-			else if (e.KeyCode == Keys.End)
-				Logic.SetFrameMarker_End_ForceRepaint();
-			else if (e.KeyCode == Keys.Enter)
-				Logic.EnterPressed();
-			else if (e.KeyCode == Keys.Escape)
-				Logic.EscapePressed();
-			else if (e.Control && e.KeyCode == Keys.Z)
-				Logic.Undo();
-			else if (e.Control && e.KeyCode == Keys.Y)
-				Logic.Redo();
-			else if (e.Control && e.KeyCode == Keys.C)
-				Logic.CopyCurClipToClipboard();
-			else if (e.Control && e.KeyCode == Keys.X)
-				Logic.CutCurClipToClipboard();
-			else if (e.Control && e.KeyCode == Keys.V)
-				Logic.PasteClipFromClipboard();
-			else if (e.Control && e.Shift && e.KeyCode == Keys.D)
-				Logic.DuplicateCurClip();
-			else if (e.KeyCode == Keys.F)
-				Logic.ToggleCurSelectedClip_IsLocked();
-			else if (e.KeyCode == Keys.M)
-				Logic.ToggleCurSelectedClip_IsMuted();
-			else if (e.KeyCode == Keys.Delete)
-				Logic.DeleteCurSelectedClip();
-
-            // TODO: refactor this shit so the only line in this method is the one below...
-            // everything must extend _VidkaOp class
             Logic.KeyPressed(e);
-		}
-
-		private void OpenClipProperties(VidkaClip clip)
-		{
-			if (clip == null)
-				return;
-			VidkaClip newClip = null;
-            Form windowDialog = null;
-            if (clip is VidkaClipVideoAbstract)
-            {
-                var window = new ClipPropertiesWindowVideo {
-                    Text = "Advanced clip properties",
-                };
-                windowDialog = window;
-                if (clip is VidkaClipVideo)
-                {
-                    var vclip = (VidkaClipVideo)clip;
-                    var vclip2 = vclip.MakeCopy_VideoClip();
-                    newClip = vclip2;
-                    window.CommonPropertiesControl.SetParticulars(vclip2);
-                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
-                }
-                else if (clip is VidkaClipImage)
-                {
-                    var vclip = (VidkaClipImage)clip;
-                    var vclip2 = vclip.MakeCopy_VideoClip();
-                    newClip = vclip2;
-                    window.CommonPropertiesControl.SetParticulars(vclip2);
-                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
-                    //window.AddImportantTab("");
-                }
-                else if (clip is VidkaClipTextSimple)
-                {
-                    var vclip = (VidkaClipTextSimple)clip;
-                    var vclip2 = (VidkaClipTextSimple)vclip.MakeCopy_VideoClip();
-                    newClip = vclip2;
-                    window.CommonPropertiesControl.SetParticulars(vclip2);
-                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
-                    var textCreationControl = new SimpleTextSettings();
-                    textCreationControl.SetVideoClip(vclip2);
-                    window.AddImportantTab("Text", textCreationControl);
-                }
-            }
-            else if (clip is VidkaClipAudio)
-            {
-                var window = new ClipPropertiesWindowAudio {
-                    Text = "Advanced clip properties",
-                };
-                windowDialog = window;
-                var aclip = (VidkaClipAudio)clip;
-                var aclip2 = aclip.MakeCopy_AudioClip();
-                newClip = aclip2;
-                window.CommonPropertiesControl.SetParticulars(aclip2);
-            }
-
-            // use this dialog window to edit this clip
-            if (newClip != null && windowDialog != null)
-			{
-                var result = windowDialog.ShowDialog();
-                if (result == System.Windows.Forms.DialogResult.OK)
-					Logic.ReplaceClip(clip, newClip);
-			}
 		}
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -424,6 +301,70 @@ namespace Vidka.Components {
             return true;
         }
 
+        public void OpenClipProperties(VidkaClip clip)
+        {
+            if (clip == null)
+                return;
+            VidkaClip newClip = null;
+            Form windowDialog = null;
+            if (clip is VidkaClipVideoAbstract)
+            {
+                var window = new ClipPropertiesWindowVideo
+                {
+                    Text = "Advanced clip properties",
+                };
+                windowDialog = window;
+                if (clip is VidkaClipVideo)
+                {
+                    var vclip = (VidkaClipVideo)clip;
+                    var vclip2 = vclip.MakeCopy_VideoClip();
+                    newClip = vclip2;
+                    window.CommonPropertiesControl.SetParticulars(vclip2);
+                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+                }
+                else if (clip is VidkaClipImage)
+                {
+                    var vclip = (VidkaClipImage)clip;
+                    var vclip2 = vclip.MakeCopy_VideoClip();
+                    newClip = vclip2;
+                    window.CommonPropertiesControl.SetParticulars(vclip2);
+                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+                    //window.AddImportantTab("");
+                }
+                else if (clip is VidkaClipTextSimple)
+                {
+                    var vclip = (VidkaClipTextSimple)clip;
+                    var vclip2 = (VidkaClipTextSimple)vclip.MakeCopy_VideoClip();
+                    newClip = vclip2;
+                    window.CommonPropertiesControl.SetParticulars(vclip2);
+                    window.CommonCustomAudioControl.SetParticulars(vclip2, Logic.MetaGenerator, Logic.FileMapping, Logic.Proj);
+                    var textCreationControl = new SimpleTextSettings();
+                    textCreationControl.SetVideoClip(vclip2);
+                    window.AddImportantTab("Text", textCreationControl);
+                }
+            }
+            else if (clip is VidkaClipAudio)
+            {
+                var window = new ClipPropertiesWindowAudio
+                {
+                    Text = "Advanced clip properties",
+                };
+                windowDialog = window;
+                var aclip = (VidkaClipAudio)clip;
+                var aclip2 = aclip.MakeCopy_AudioClip();
+                newClip = aclip2;
+                window.CommonPropertiesControl.SetParticulars(aclip2);
+            }
+
+            // use this dialog window to edit this clip
+            if (newClip != null && windowDialog != null)
+            {
+                var result = windowDialog.ShowDialog();
+                if (result == System.Windows.Forms.DialogResult.OK)
+                    Logic.ReplaceClip(clip, newClip);
+            }
+        }
+
 		#endregion
 
 		#region ================================ object exchange ================================
@@ -441,6 +382,7 @@ namespace Vidka.Components {
             vidkaDrawOps = new DrawOpsCollection(new DrawOp[] {
                 new DrawRenderBreakups(Logic, imageMan),
                 new DrawVideoAudioAligns(Logic, imageMan),
+                new DrawVideoAudioLinkage(Logic, imageMan),
             });
             Invalidate();
 		}

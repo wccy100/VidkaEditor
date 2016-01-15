@@ -26,18 +26,18 @@ namespace Vidka.Core.Ops
             clipIndex = Context.Proj.GetVideoClipIndexAtFrame(Context.UiObjects.CurrentMarkerFrame, out frameOffsetStartOfVideo);
             if (clipIndex == -1)
             {
-                Context.cxzxc("No clip here... Cannot split!");
+                cxzxc("No clip here... Cannot split!");
                 return false;
             }
             clip = Context.Proj.GetVideoClipAtIndex(clipIndex);
             if (frameOffsetStartOfVideo == clip.FrameStartNoEase)
             {
-                Context.cxzxc("On the seam... Cannot split!");
+                cxzxc("On the seam... Cannot split!");
                 return false;
             }
             if (clip.IsLocked)
             {
-                Context.cxzxc("Clip locked... Cannot split!\nPress 'F' to unlock.");
+                cxzxc("Clip locked... Cannot split!\nPress 'F' to unlock.");
                 return false;
             }
             return true;

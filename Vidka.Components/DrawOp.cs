@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Vidka.Core;
 using Vidka.Core.ExternalOps;
 using Vidka.Core.Model;
+using Vidka.Core.UiObj;
 
 namespace Vidka.Components
 {

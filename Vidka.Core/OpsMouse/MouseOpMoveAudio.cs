@@ -7,10 +7,11 @@ using System.Windows.Forms;
 using Vidka.Core.Error;
 using Vidka.Core.Model;
 using Vidka.Core.ExternalOps;
+using Vidka.Core.UiObj;
 
-namespace Vidka.Core
+namespace Vidka.Core.OpsMouse
 {
-	class EditOperationMoveAudio : EditOperationAbstract
+	class MouseOpMoveAudio : MouseOpAbstract
 	{
 		private MetaGeneratorInOtherThread metaGenerator;
 		private bool copyMode;
@@ -19,7 +20,7 @@ namespace Vidka.Core
 		private int clipW;
 		private bool isStarted; // TODO: future plan to only initialize draggy when drag index is different... will avoid flickering... however there is no information about this index without the draggy
 
-        public EditOperationMoveAudio(IVidkaOpContext iEditor,
+        public MouseOpMoveAudio(IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,
 			IVideoShitbox editor,
@@ -33,7 +34,7 @@ namespace Vidka.Core
 		}
 
 		public override string Description { get {
-			return copyMode ? "Copy clip" : "Move cip";
+			return copyMode ? "Copy aclip" : "Move aclip";
 		} }
 
 		public override bool TriggerBy_MouseDragStart(MouseButtons button, int x, int y)

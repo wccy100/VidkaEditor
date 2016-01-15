@@ -74,7 +74,9 @@ namespace Vidka.Components
 			var url = filename;
 			if (imgCache.ContainsKey(url))
 			{
-				imgNotUsed.Remove(url);
+                lock (imgNotUsed) {
+				    imgNotUsed.Remove(url);
+                }
 				return imgCache[url];
 			}
 			// otherwise we need to queue it to the search
@@ -88,7 +90,9 @@ namespace Vidka.Components
 			cxzxc("___paintBegin");
 			if (removeUnusedOnNextRepaint)
 			{
-				imgNotUsed.AddRange(imgCache.Keys);
+                lock (imgNotUsed) {
+				    imgNotUsed.AddRange(imgCache.Keys);
+                }
 				removeUnusedOnNextRepaint = false;
 			}
 		}
@@ -107,7 +111,9 @@ namespace Vidka.Components
 				imgCache.Remove(notUsed);
 				img.Dispose();
 			}
-			imgNotUsed.Clear();
+            lock (imgNotUsed) {
+			    imgNotUsed.Clear();
+            }
 			cxzxc("to-add:" + requests_thumb.SelectMany(x => x.Value.Select(y => ""+y)).StringJoin(","));
 			// start loading any new images which we require
 			foreach (var filename in requests_thumb.Keys)

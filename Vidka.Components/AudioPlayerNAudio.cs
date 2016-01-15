@@ -66,6 +66,21 @@ namespace Vidka.Components
             }
         }
 
+        public void SynchCurrentAudioClips(double curSec)
+        {
+            lock (this)
+            {
+                foreach (var device in devicesPlaying)
+                {
+                    if (device.WaveReader == null)
+                        continue;
+                    var syncOffsetSec = curSec - device.WhatIAmPlaying.SecOffset; // would be 0 if curSec == clip.SecOffset
+                    var clipSecStart = device.WhatIAmPlaying.SecFileStart + device.WhatIAmPlaying.SecOffset;
+                    device.WaveReader.CurrentTime = TimeSpan.FromSeconds(clipSecStart + syncOffsetSec + NAUDIO_SYNC_OFFSET);
+                }
+            }
+        }
+
         private void StartPlayingThisClip(AudioClipToPlay clip, double curSec)
         {
             cxzxc(string.Format("start of {0} {1}-{2}", clip.Filename, clip.SecFileStart, clip.SecFileEnd));

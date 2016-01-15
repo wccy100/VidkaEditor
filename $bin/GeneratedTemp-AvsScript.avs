@@ -20,16 +20,15 @@ global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
 #################### all video files ############################
-_plane_travel_avi = DirectShowSource("C:\Users\Mikhail\Videos\travel\_plane_travel.avi", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6482_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6482.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6487_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6487.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6488_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6488.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6483_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6483.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6507_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6507.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP6542_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6542.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP6544_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6544.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP6540_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6540.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP6553_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6553.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP6554_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6554.AVI", audio=True, fps=proj_frameRate, convertfps=true)
 
 
 #################### determine the most frequently used pixel type ############################
-collectpixeltypestat(IMGP6507_AVI, 0)
+collectpixeltypestat(IMGP6554_AVI, 0)
 
 
 global mostFrequentPixelType = "RGB32"
@@ -55,19 +54,19 @@ curStatMax = Max(curStatMax, stat_nRGB)
 
 #################### render ###########################
 
-_plane_travel_avi_0 = NeutralClip(_plane_travel_avi, 168, 188)
-IMGP6482_AVI_1 = NeutralClip(IMGP6482_AVI, 469, 752)
-IMGP6487_AVI_2 = NeutralClip(IMGP6487_AVI, 0, 50)
-IMGP6488_AVI_3 = NeutralClip(IMGP6488_AVI, 30, 80)
-IMGP6483_AVI_4 = NeutralClip(IMGP6483_AVI, 0, 42).MuteThisClip()
+IMGP6542_AVI_0 = NeutralClip(IMGP6542_AVI, 1214, 1228)
+IMGP6544_AVI_1 = NeutralClip(IMGP6544_AVI, 0, 87).MuteThisClip()
+IMGP6540_AVI_2 = NeutralClip(IMGP6540_AVI, 18, 295)
+IMGP6553_AVI_3 = NeutralClip(IMGP6553_AVI, 465, 557)
+IMGP6554_AVI_4 = NeutralClip(IMGP6554_AVI, 0, 156)
 
 
 UnalignedSplice( \
-	_plane_travel_avi_0, \
-	IMGP6482_AVI_1, \
-	IMGP6487_AVI_2, \
-	IMGP6488_AVI_3, \
-	IMGP6483_AVI_4 \
+	IMGP6542_AVI_0, \
+	IMGP6544_AVI_1.MixAudioFromClip(IMGP6540_AVI_2, 0, 88, 0), \
+	IMGP6540_AVI_2.Trim(88, 185), \
+	IMGP6553_AVI_3.MixAudioFromClip(IMGP6540_AVI_2, 185, 278, 0), \
+	IMGP6554_AVI_4 \
 )
 
 

@@ -5,10 +5,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vidka.Core.Model;
+using Vidka.Core.UiObj;
 
-namespace Vidka.Core
+namespace Vidka.Core.OpsMouse
 {
-	abstract class EditOperationAbstract
+	abstract class MouseOpAbstract
 	{
         protected IVidkaOpContext iEditor;
 		protected VidkaUiStateObjects uiObjects;
@@ -17,7 +18,7 @@ namespace Vidka.Core
 		protected IVideoPlayer videoPlayer;
 		protected VidkaProj proj;
 
-		public EditOperationAbstract(
+		public MouseOpAbstract(
             IVidkaOpContext iEditor,
 			VidkaUiStateObjects uiObjects,
 			ProjectDimensions dimdim,

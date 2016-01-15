@@ -20,7 +20,7 @@ namespace Vidka.Core.Ops
 
         public override bool TriggerByKeyPress(KeyEventArgs e)
         {
-            return (e.KeyCode == Keys.S);
+            return (e.KeyCode == Keys.S && !e.Shift && !e.Control);
         }
 
         public override void Run()
@@ -32,7 +32,7 @@ namespace Vidka.Core.Ops
                 return;
             if (clip is VidkaClipTextSimple)
             {
-                Context.cxzxc("Cannot, split text clips. Copy it instead!");
+                cxzxc("Cannot, split text clips. Copy it instead!");
                 return;
             }
             var clip_oldStart = clip.FrameStart;
@@ -45,14 +45,14 @@ namespace Vidka.Core.Ops
             {
                 Undo = () =>
                 {
-                    Context.cxzxc("UNDO split");
+                    cxzxc("UNDO split");
                     Context.Proj.ClipsVideo.Remove(ClipNewOnTheLeft);
                     clip.FrameStart = clip_oldStart;
                     clip.EasingLeft = clip_oldEaseLeft;
                 },
                 Redo = () =>
                 {
-                    Context.cxzxc("split: location=" + frameOffsetStartOfVideo);
+                    cxzxc("split: location=" + frameOffsetStartOfVideo);
                     Context.Proj.ClipsVideo.Insert(clipIndex, ClipNewOnTheLeft);
                     clip.FrameStart = frameOffsetStartOfVideo;
                     clip.EasingLeft = 0;
