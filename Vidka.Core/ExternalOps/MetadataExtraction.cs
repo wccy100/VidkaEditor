@@ -31,7 +31,7 @@ namespace Vidka.Core.ExternalOps {
 			ProcessStartInfo si = new ProcessStartInfo();
 			// Configure the process using the StartInfo properties.
 			si.FileName = FfprobeExecutable;
-			si.Arguments = String.Format("-v quiet -print_format xml -show_format -show_streams -count_frames \"{0}\"", filename, outFilename);
+			si.Arguments = String.Format("-v quiet -print_format xml -show_format -show_streams -count_frames \"{0}\"", filename);
 			si.UseShellExecute = false;
 			si.RedirectStandardOutput = true;
 			si.CreateNoWindow = true;

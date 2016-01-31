@@ -31,6 +31,7 @@ namespace Vidka.Core
         void Fire_ProjectUpdated_AsFarAsMenusAreConcerned();
         void Fire_PleaseTogglePreviewMode();
         void Fire_PleaseToggleConsoleVisibility();
+        int GetHorizontalScrollBarHeight();
 
         /// <summary>Used by ExportToAvi</summary>
         //string GetRawVideoSegmentOutputPath(int index);

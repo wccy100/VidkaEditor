@@ -71,6 +71,14 @@ namespace Vidka.Core.ExternalOps
 			});
 		}
 
+        public void WhenDoneSayYouAreDone(string customMessage)
+        {
+			taskThread.QueueThisUpPlease(() =>
+            {
+                UiConsolePush(VidkaConsoleLogLevel.Info, customMessage ?? "Done.");
+            });
+        }
+
 		public void RequestThumbsAndWave(string filename)
 		{
 			taskThread.QueueThisUpPlease(() =>

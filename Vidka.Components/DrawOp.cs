@@ -14,7 +14,7 @@ namespace Vidka.Components
     public abstract class DrawOp
     {
         protected IVidkaOpContext context;
-        protected ImageCacheManager imageMan;
+        protected ImageCacheManager imgCache;
 
         // misc vars for shortcuts
         protected ProjectDimensions dimdim;
@@ -24,7 +24,7 @@ namespace Vidka.Components
         public DrawOp(IVidkaOpContext context, ImageCacheManager imageMan)
         {
             this.context = context;
-            this.imageMan = imageMan;
+            this.imgCache = imageMan;
             if (context != null)
             {
                 dimdim = context.Dimdim;

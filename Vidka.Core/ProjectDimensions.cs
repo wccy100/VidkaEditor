@@ -38,9 +38,9 @@ namespace Vidka.Core
 			//tlMain = new ProjectDimensionsTimeline(30, 70, ProjectDimensionsTimelineType.Main) { yHalfway = 55 };
             tlMain = new ProjectDimensionsTimeline(40, 65, ProjectDimensionsTimelineType.Main) { yHalfway = 55 };
             tlMainEasing = new ProjectDimensionsTimeline(65, 72, ProjectDimensionsTimelineType.MainEases);
-			tlAudios = new ProjectDimensionsTimeline(75, 90, ProjectDimensionsTimelineType.Audios);
+			tlAudios = new ProjectDimensionsTimeline(75, 85, ProjectDimensionsTimelineType.Audios);
             timelines = new ProjectDimensionsTimeline[] { tlOriginal, tlMain, tlMainEasing, tlAudios };
-			tlAxisHeight = 6;
+			tlAxisHeight = 5;
 		}
 
 		public void setProj(VidkaProj proj) {

@@ -12,6 +12,8 @@ using Vidka.Core.Model;
 using Vidka.Core.ExternalOps;
 using Vidka.Core.VideoMeta;
 using Vidka.Core;
+using Miktemk;
+using Miktemk.Winforms;
 
 namespace Vidka.Components
 {
@@ -193,7 +195,7 @@ namespace Vidka.Components
             }
             lblAudioProperties.Text = (!vclip.CustomAudioLengthSec.HasValue)
                 ? "Audio info: ---"
-                : lblAudioProperties.Text = String.Format("Audio info: {0}", TimeSpan.FromSeconds(vclip.CustomAudioLengthSec ?? 0).ToString_MinuteOrHour());
+                : lblAudioProperties.Text = String.Format("Audio info: {0}", TimeSpan.FromSeconds(vclip.CustomAudioLengthSec ?? 0).ToTsString_MinuteOrHour());
             var waveFilename = fileMapping.AddGetWaveFilenameJpg(vclip.CustomAudioFilename);
             waveImageBox.ImageLocation = (vclip.HasCustomAudio && File.Exists(waveFilename))
                 ? waveFilename
@@ -202,7 +204,7 @@ namespace Vidka.Components
 
         private void callbackWaveReady(string filename, string filenameWave, string filenameWaveJpg)
         {
-            InvokeOrNot_IDontGiveAShit_JustDoIt(() => updateAudioInfo(vclip));
+            this.InvokeOrNot_IDontGiveAShit_JustDoIt(() => updateAudioInfo(vclip));
             //shitboxAlignVideoAudioControl.Invalidate();
         }
 
@@ -211,7 +213,7 @@ namespace Vidka.Components
             if (vclip == null)
                 return;
             vclip.CustomAudioLengthSec = metaXml.AudioDurationSec;
-            InvokeOrNot_IDontGiveAShit_JustDoIt(() => updateAudioInfo(vclip));
+            this.InvokeOrNot_IDontGiveAShit_JustDoIt(() => updateAudioInfo(vclip));
             //shitboxAlignVideoAudioControl.Update_audionDuration(VClip.CustomAudioLengthSec);
         }
 
@@ -223,16 +225,6 @@ namespace Vidka.Components
             txtOffset.Text = "" + vclip.CustomAudioOffset;
             //shitboxAlignVideoAudioControl.Invalidate();
         }
-
-        private void InvokeOrNot_IDontGiveAShit_JustDoIt(Action func) {
-			if (InvokeRequired) {
-				if (IsDisposed)
-					return;
-				Invoke(new MethodInvoker(func));
-				return;
-			}
-			func();
-		}
 
         #endregion
         

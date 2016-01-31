@@ -18,13 +18,13 @@ namespace Vidka.Components.VideoShitboxDrawOps
         }
         public override void Paint(Graphics g, int w, int h)
         {
-            dimdim.IterateOverVisibleVideoClips(context.Proj, w, (vclip, vclipPrev, x1, x2, curFrame, index) =>
+            context.IterateOverVisibleVideoClips(w, (vclip, vclipPrev, x1, x2, curFrame, index) =>
             {
                 if (vclip.IsRenderBreakupPoint)
                 {
                     g.DrawLine(penRenderBreakupLine, x1, 0, x1, h);
                 }
-            });
+            }, (frame, draggy) => { });
         }
 
     }

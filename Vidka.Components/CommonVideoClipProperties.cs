@@ -27,6 +27,7 @@ namespace Vidka.Components
 			VClip = clip;
 			// set all the UI
             txtPostOp.Text = VClip.PostOp;
+            txtLabel.Text = VClip.Label;
             chkIsPixelTypeStandard.Checked = VClip.IsPixelTypeStandard;
             chkIsRenderBreakupPoint.Checked = VClip.IsRenderBreakupPoint;
 		}
@@ -35,6 +36,11 @@ namespace Vidka.Components
 		{
 			VClip.PostOp = txtPostOp.Text;
 		}
+
+        private void txtLabel_TextChanged(object sender, EventArgs e)
+        {
+            VClip.Label = txtLabel.Text;
+        }
 
         private void chkIsPixelTypeStandard_CheckedChanged(object sender, EventArgs e)
         {
@@ -80,7 +86,6 @@ namespace Vidka.Components
         {
             txtPostOp.AppendText(".FadeOutAudioOnly(5)\n");
         }
-
 
 	}
 }

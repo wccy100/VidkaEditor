@@ -16,6 +16,7 @@ using Vidka.Core.Properties;
 using Vidka.Core.Ops;
 using Vidka.Core.OpsMouse;
 using Vidka.Core.UiObj;
+using Miktemk;
 
 namespace Vidka.Core
 {
@@ -297,6 +298,10 @@ namespace Vidka.Core
         public void Fire_PleaseSetPlayerAbsPosition(PreviewPlayerAbsoluteLocation location) {
             if (PleaseSetPlayerAbsPosition != null)
                 PleaseSetPlayerAbsPosition(location);
+        }
+        public int GetHorizontalScrollBarHeight()
+        {
+            return shitbox.GetHorizontalScrollBarHeight();
         }
 
         #endregion
@@ -867,7 +872,7 @@ namespace Vidka.Core
 			var timeSpan = TimeSpan.FromSeconds(secFloor);
 			cxzxc(String.Format("frame={0} ({1}.{2})"
 				, frame
-				, timeSpan.ToString_MinuteOrHour()
+				, timeSpan.ToTsString_MinuteOrHour()
 				, frameRemainder));
 		}
 

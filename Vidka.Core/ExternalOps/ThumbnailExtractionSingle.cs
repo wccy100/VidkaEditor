@@ -42,7 +42,7 @@ namespace Vidka.Core.ExternalOps
 			Process process = new Process();
 			process.StartInfo.FileName = FfmpegExecutable;
             // source: http://blog.roberthallam.org/2010/06/extract-a-single-image-from-a-video-using-ffmpeg/comment-page-1/
-            process.StartInfo.Arguments = String.Format("-ss {0} -i {1} -t 1 -s {2}x{3} -f image2 {4}", secWhen, filename, w, h, outFilename);
+            process.StartInfo.Arguments = String.Format("-ss {0} -i \"{1}\" -t 1 -s {2}x{3} -f image2 \"{4}\"", secWhen, filename, w, h, outFilename);
 			process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 			process.StartInfo.CreateNoWindow = true;
 			runProcessRememberError(process);

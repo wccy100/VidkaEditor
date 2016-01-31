@@ -20,15 +20,13 @@ global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
 #################### all video files ############################
-IMGP6542_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6542.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6544_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6544.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6540_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6540.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6553_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6553.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP6554_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_09_01_italy\2015_12_17_iseo\day2-rupestri\IMGP6554.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+_mappopulonia_avi = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\_map-populonia.avi", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4131_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4131.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4147_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4147.AVI", audio=True, fps=proj_frameRate, convertfps=true)
 
 
 #################### determine the most frequently used pixel type ############################
-collectpixeltypestat(IMGP6554_AVI, 0)
+collectpixeltypestat(IMGP4147_AVI, 0)
 
 
 global mostFrequentPixelType = "RGB32"
@@ -54,22 +52,24 @@ curStatMax = Max(curStatMax, stat_nRGB)
 
 #################### render ###########################
 
-IMGP6542_AVI_0 = NeutralClip(IMGP6542_AVI, 1214, 1228)
-IMGP6544_AVI_1 = NeutralClip(IMGP6544_AVI, 0, 87).MuteThisClip()
-IMGP6540_AVI_2 = NeutralClip(IMGP6540_AVI, 18, 295)
-IMGP6553_AVI_3 = NeutralClip(IMGP6553_AVI, 465, 557)
-IMGP6554_AVI_4 = NeutralClip(IMGP6554_AVI, 0, 156)
+_mappopulonia_avi_0 = NeutralClip(_mappopulonia_avi, 0, 101)
+IMGP4131_AVI_1 = NeutralClip(IMGP4131_AVI, 403, 467)
+IMGP4131_AVI_2 = NeutralClip(IMGP4131_AVI, 728, 819)
+IMGP4131_AVI_3 = NeutralClip(IMGP4131_AVI, 1106, 1216)
+IMGP4131_AVI_4 = NeutralClip(IMGP4131_AVI, 1334, 1413)
 
 
 UnalignedSplice( \
-	IMGP6542_AVI_0, \
-	IMGP6544_AVI_1.MixAudioFromClip(IMGP6540_AVI_2, 0, 88, 0), \
-	IMGP6540_AVI_2.Trim(88, 185), \
-	IMGP6553_AVI_3.MixAudioFromClip(IMGP6540_AVI_2, 185, 278, 0), \
-	IMGP6554_AVI_4 \
+	_mappopulonia_avi_0, \
+	IMGP4131_AVI_1, \
+	IMGP4131_AVI_2, \
+	IMGP4131_AVI_3, \
+	IMGP4131_AVI_4 \
 )
 
 
+voiceover=BlankClip(last,0) ++BlankClip(last, 333).AudioDub(DirectShowSource("C:\Users\Mikhail\Videos\travel\buratino-banjo.mp3", fps=proj_frameRate, convertfps=true).ResampleAudio(44100)).Trim(199, 333)
+MixAudio(last,voiceover, clip1_factor=1, clip2_factor=1)
 
 #All these things we can chain outside on the NeutralClip function...
 # - FadeIn2 adds 2 frames, FadeIn adds 1 frame, FadeIn0 adds no frames (so use that one I guess).

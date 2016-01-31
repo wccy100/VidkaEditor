@@ -21,7 +21,6 @@ namespace Vidka.Components
 		#endregion
 
 		private ImageCacheManager imageMan;
-		private EditorDrawOps drawOps;
         private VidkaClipVideoAbstract vclip, vclipFullToDraw;
         private VidkaClipAudio aclipToDraw;
 		private ProjectDimensions dimdim;
@@ -35,7 +34,6 @@ namespace Vidka.Components
 		{
 			sampleProj = new VidkaProj();
 			dimdim = new ProjectDimensions(sampleProj);
-			drawOps = new EditorDrawOps();
 
 			InitializeComponent();
 		}
@@ -96,10 +94,10 @@ namespace Vidka.Components
 
 			imageMan.___paintBegin();
 
-			drawOps.setParameters2(e.Graphics, imageMan, dimdim, fileMapping, null, sampleProj, Width, Height);
-
-            drawOps.AlignVideoAudio_drawVideo(vclipFullToDraw);
-            drawOps.AlignVideoAudio_drawAudio(aclipToDraw, vclip.CustomAudioOffset);
+            // TODO: this was commented out during VideoShitboxDrawOps refactoring. - Jan 27, 2016
+            // if you really care (not sure why though... this one kept crashing all the friggin time) use draw ops here... should be easier at any rate
+            //drawOps.AlignVideoAudio_drawVideo(vclipFullToDraw);
+            //drawOps.AlignVideoAudio_drawAudio(aclipToDraw, vclip.CustomAudioOffset);
 
 			imageMan.___paintEnd();
 		}

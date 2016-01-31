@@ -15,6 +15,7 @@ using Vidka.Core.Model;
 using System.Windows;
 using Vidka.Components.Properties;
 using Vidka.Components.VideoShitboxDrawOps;
+using Miktemk.Winforms;
 
 namespace Vidka.Components {
 
@@ -25,8 +26,7 @@ namespace Vidka.Components {
 		private bool isControlLoaded = false;
 		public EditorLogic Logic { get; private set; }
 		private ImageCacheManager imageMan;
-		private EditorDrawOps drawOps;
-        private DrawOpsCollection vidkaDrawOps; //TODO: get rid of EditorDrawOps drawOps class completely and replace it with vidkaDrawOps by placing all ops into the VideoShitboxDrawOps folder
+        private DrawOpsCollection vidkaDrawOps;
         private bool mouseDown;
 		private int prevDragX = 0; // for drag/drop files
 		private int mouseDownX, mouseDownY;
@@ -41,7 +41,6 @@ namespace Vidka.Components {
 			imageMan.ImagesReady += imageMan_ImagesReady;
 			mouseDown = false;
 			ConsoleSingleton = this;
-			drawOps = new EditorDrawOps();
 		}
 
 		private void VideoShitbox_Load(object sender, EventArgs e) {
@@ -222,16 +221,24 @@ namespace Vidka.Components {
 		}
 
 		public void UpdateCanvasWidth(int w) {
-			InvokeOrNot_IDontGiveAShit_JustDoIt(() => {
+			this.InvokeOrNot_IDontGiveAShit_JustDoIt(() => {
 				this.AutoScrollMinSize = new Size(w, 50); // +100???
 			});
 		}
 
 		public void UpdateCanvasHorizontalScroll(int scrollX) {
-			InvokeOrNot_IDontGiveAShit_JustDoIt(() => {
+            this.InvokeOrNot_IDontGiveAShit_JustDoIt(() =>
+            {
 				this.AutoScrollPosition = new Point(scrollX, 0);
 			});
 		}
+
+        public int GetHorizontalScrollBarHeight()
+        {
+            return this.HorizontalScroll.Visible
+                ? SystemInformation.HorizontalScrollBarHeight
+                : 0;
+        }
 
 		public string OpenProjectSaveDialog()
 		{
@@ -255,7 +262,7 @@ namespace Vidka.Components {
 
 		public void AppendToConsole(VidkaConsoleLogLevel level, string text)
 		{
-			InvokeOrNot_IDontGiveAShit_JustDoIt(() =>
+            this.InvokeOrNot_IDontGiveAShit_JustDoIt(() =>
 			{
 				if (txtConsole == null)
 					return;
@@ -379,10 +386,21 @@ namespace Vidka.Components {
 			Logic = logic;
 			if (isControlLoaded)
 				Logic.UiInitialized();
+            // .... these are all the classes that draw shit on in the VideoShitbox control
             vidkaDrawOps = new DrawOpsCollection(new DrawOp[] {
+                new Draw0Canvas(Logic, imageMan),
+                new Draw0Axis(Logic, imageMan),
+                new DrawVideoClips(Logic, imageMan),
+                new DrawAudioClips(Logic, imageMan),
                 new DrawRenderBreakups(Logic, imageMan),
                 new DrawVideoAudioAligns(Logic, imageMan),
                 new DrawVideoAudioLinkage(Logic, imageMan),
+                new DrawVideoHover(Logic, imageMan),
+                new DrawAudioHover(Logic, imageMan),
+                new DrawCurFrameMarker(Logic, imageMan),
+                new DrawOriginalVideo(Logic, imageMan),
+                new DrawOriginalAudio(Logic, imageMan),
+                new DrawDraggySeparately(Logic, imageMan),
             });
             Invalidate();
 		}
@@ -402,40 +420,6 @@ namespace Vidka.Components {
 			repaintCount++;
 			//cxzxc("y repaint 2x:" + repaintCount);
 
-			drawOps.setParameters(e.Graphics, Logic, imageMan, Width, Height);
-
-			//prepare canvas: paint strips for timelines, etc
-			drawOps.PrepareCanvas();
-
-			drawOps.DrawTimeAxis();
-
-			// TODO: buffer an off-screen image of the entire project
-			drawOps.DrawProjectVideoTimeline();
-
-			drawOps.DrawProjectAudioTimeline();
-
-			// draw hover clip outline
-			if (Logic.UiObjects.CurrentVideoClipHover != null)
-				drawOps.OutlineClipVideoHover();
-			if (Logic.UiObjects.CurrentAudioClipHover != null)
-				drawOps.OutlineClipAudioHover();
-
-			if (Logic.UiObjects.OriginalTimelinePlaybackMode) {
-				drawOps.DrawCurtainForOriginalPlayback();
-			}
-			else {
-				drawOps.DrawCurrentFrameMarker();
-			}
-
-			if (Logic.UiObjects.CurrentVideoClip != null) {
-				drawOps.DrawCurrentClipVideoOnOriginalTimeline();
-			}
-			if (Logic.UiObjects.CurrentAudioClip != null) {
-				drawOps.DrawCurrentClipAudioOnOriginalTimeline();
-			}
-
-			drawOps.DrawDraggySeparately();
-
             if (vidkaDrawOps != null)
                 vidkaDrawOps.Paint(e.Graphics, Width, Height);
 
@@ -451,16 +435,6 @@ namespace Vidka.Components {
 
 
 		#region ---------------- helpers -------------------
-
-		private void InvokeOrNot_IDontGiveAShit_JustDoIt(Action func) {
-			if (InvokeRequired) {
-				if (IsDisposed)
-					return;
-				Invoke(new MethodInvoker(func));
-				return;
-			}
-			func();
-		}
 
 		/// <summary>
 		/// Debug print to UI console

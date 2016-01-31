@@ -38,6 +38,8 @@
             this.btnFadeIn5 = new System.Windows.Forms.Button();
             this.btnFadeoutAudio5 = new System.Windows.Forms.Button();
             this.chkIsRenderBreakupPoint = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.txtLabel = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // txtPostOp
@@ -142,10 +144,29 @@
             this.chkIsRenderBreakupPoint.UseVisualStyleBackColor = true;
             this.chkIsRenderBreakupPoint.CheckedChanged += new System.EventHandler(this.chkIsRenderBreakupPoint_CheckedChanged);
             // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(13, 683);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(86, 32);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Label";
+            // 
+            // txtLabel
+            // 
+            this.txtLabel.Location = new System.Drawing.Point(105, 680);
+            this.txtLabel.Name = "txtLabel";
+            this.txtLabel.Size = new System.Drawing.Size(693, 38);
+            this.txtLabel.TabIndex = 9;
+            this.txtLabel.TextChanged += new System.EventHandler(this.txtLabel_TextChanged);
+            // 
             // CommonVideoClipProperties
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(16F, 31F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.Controls.Add(this.txtLabel);
+            this.Controls.Add(this.label1);
             this.Controls.Add(this.chkIsRenderBreakupPoint);
             this.Controls.Add(this.btnFadeoutAudio5);
             this.Controls.Add(this.btnFadeIn5);
@@ -157,7 +178,7 @@
             this.Controls.Add(this.btnRotate180);
             this.Controls.Add(this.txtPostOp);
             this.Name = "CommonVideoClipProperties";
-            this.Size = new System.Drawing.Size(1216, 705);
+            this.Size = new System.Drawing.Size(1216, 781);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -175,5 +196,7 @@
         private System.Windows.Forms.Button btnFadeIn5;
         private System.Windows.Forms.Button btnFadeoutAudio5;
         private System.Windows.Forms.CheckBox chkIsRenderBreakupPoint;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox txtLabel;
 	}
 }

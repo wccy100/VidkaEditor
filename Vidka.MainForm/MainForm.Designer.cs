@@ -54,13 +54,13 @@
             this.deleteAllNonlockedClipsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.linearShuffleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.viewOnGithubToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.whereIsTheCurrentFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.whereIsTheCurrentFileToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            this.associatevidkaFilesWithThisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.txtConsole = new System.Windows.Forms.RichTextBox();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.whereIsTheLastAVSToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.associatevidkaFilesWithThisToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewOnGithubToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.txtConsole = new System.Windows.Forms.RichTextBox();
             this.vidkaFastPreviewPlayer = new Vidka.Components.VidkaFastPreviewPlayer();
             this.videoShitbox = new Vidka.Components.VideoShitbox();
             this.vidkaPreviewPlayer = new Vidka.Components.VidkaPreviewPlayer();
@@ -78,7 +78,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(1924, 52);
+            this.menuStrip1.Size = new System.Drawing.Size(1924, 49);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -95,7 +95,7 @@
             this.toolStripSeparator2,
             this.quitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(75, 48);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(75, 45);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // newToolStripMenuItem
@@ -174,7 +174,7 @@
             this.toggleFastModeToolStripMenuItem,
             this.whereIsThisClipUsedToolStripMenuItem});
             this.viewToolStripMenuItem.Name = "viewToolStripMenuItem";
-            this.viewToolStripMenuItem.Size = new System.Drawing.Size(94, 48);
+            this.viewToolStripMenuItem.Size = new System.Drawing.Size(94, 45);
             this.viewToolStripMenuItem.Text = "View";
             // 
             // toggleConsoleToolStripMenuItem
@@ -207,7 +207,7 @@
             this.simpleTextClipToolStripMenuItem,
             this.currentFrameStillToolStripMenuItem});
             this.insertToolStripMenuItem.Name = "insertToolStripMenuItem";
-            this.insertToolStripMenuItem.Size = new System.Drawing.Size(104, 48);
+            this.insertToolStripMenuItem.Size = new System.Drawing.Size(104, 45);
             this.insertToolStripMenuItem.Text = "Insert";
             // 
             // simpleTextClipToolStripMenuItem
@@ -233,7 +233,7 @@
             this.deleteAllNonlockedClipsToolStripMenuItem,
             this.linearShuffleToolStripMenuItem});
             this.opsToolStripMenuItem.Name = "opsToolStripMenuItem";
-            this.opsToolStripMenuItem.Size = new System.Drawing.Size(84, 48);
+            this.opsToolStripMenuItem.Size = new System.Drawing.Size(84, 45);
             this.opsToolStripMenuItem.Text = "Ops";
             // 
             // rebuildAuxillaryFilesToolStripMenuItem
@@ -279,15 +279,8 @@
             this.associatevidkaFilesWithThisToolStripMenuItem,
             this.viewOnGithubToolStripMenuItem});
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 48);
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(92, 45);
             this.helpToolStripMenuItem.Text = "Help";
-            // 
-            // viewOnGithubToolStripMenuItem
-            // 
-            this.viewOnGithubToolStripMenuItem.Name = "viewOnGithubToolStripMenuItem";
-            this.viewOnGithubToolStripMenuItem.Size = new System.Drawing.Size(514, 46);
-            this.viewOnGithubToolStripMenuItem.Text = "View on Github";
-            this.viewOnGithubToolStripMenuItem.Click += new System.EventHandler(this.viewOnGithubToolStripMenuItem_Click);
             // 
             // whereIsTheCurrentFileToolStripMenuItem
             // 
@@ -303,12 +296,31 @@
             this.whereIsTheCurrentFileToolStripMenuItem1.Text = "Where is the current media file?";
             this.whereIsTheCurrentFileToolStripMenuItem1.Click += new System.EventHandler(this.whereIsTheCurrentFileToolStripMenuItem1_Click);
             // 
+            // whereIsTheLastAVSToolStripMenuItem
+            // 
+            this.whereIsTheLastAVSToolStripMenuItem.Name = "whereIsTheLastAVSToolStripMenuItem";
+            this.whereIsTheLastAVSToolStripMenuItem.Size = new System.Drawing.Size(514, 46);
+            this.whereIsTheLastAVSToolStripMenuItem.Text = "Where is the last AVS?";
+            this.whereIsTheLastAVSToolStripMenuItem.Click += new System.EventHandler(this.whereIsTheLastAVSToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(511, 6);
+            // 
             // associatevidkaFilesWithThisToolStripMenuItem
             // 
             this.associatevidkaFilesWithThisToolStripMenuItem.Name = "associatevidkaFilesWithThisToolStripMenuItem";
             this.associatevidkaFilesWithThisToolStripMenuItem.Size = new System.Drawing.Size(514, 46);
             this.associatevidkaFilesWithThisToolStripMenuItem.Text = "Associate .vidka files with this";
             this.associatevidkaFilesWithThisToolStripMenuItem.Click += new System.EventHandler(this.associatevidkaFilesWithThisToolStripMenuItem_Click);
+            // 
+            // viewOnGithubToolStripMenuItem
+            // 
+            this.viewOnGithubToolStripMenuItem.Name = "viewOnGithubToolStripMenuItem";
+            this.viewOnGithubToolStripMenuItem.Size = new System.Drawing.Size(514, 46);
+            this.viewOnGithubToolStripMenuItem.Text = "View on Github";
+            this.viewOnGithubToolStripMenuItem.Click += new System.EventHandler(this.viewOnGithubToolStripMenuItem_Click);
             // 
             // txtConsole
             // 
@@ -320,18 +332,6 @@
             this.txtConsole.TabIndex = 3;
             this.txtConsole.Text = "";
             this.txtConsole.TextChanged += new System.EventHandler(this.txtConsole_TextChanged);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(511, 6);
-            // 
-            // whereIsTheLastAVSToolStripMenuItem
-            // 
-            this.whereIsTheLastAVSToolStripMenuItem.Name = "whereIsTheLastAVSToolStripMenuItem";
-            this.whereIsTheLastAVSToolStripMenuItem.Size = new System.Drawing.Size(514, 46);
-            this.whereIsTheLastAVSToolStripMenuItem.Text = "Where is the last AVS?";
-            this.whereIsTheLastAVSToolStripMenuItem.Click += new System.EventHandler(this.whereIsTheLastAVSToolStripMenuItem_Click);
             // 
             // vidkaFastPreviewPlayer
             // 
@@ -371,6 +371,7 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "MainForm";
+            this.Text = "Vidka Video Editor";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainForm_FormClosing);
             this.Load += new System.EventHandler(this.MainForm_Load);
             this.ResizeEnd += new System.EventHandler(this.MainForm_ResizeEnd);

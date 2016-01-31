@@ -75,8 +75,8 @@ namespace Vidka.Components
                     if (device.WaveReader == null)
                         continue;
                     var syncOffsetSec = curSec - device.WhatIAmPlaying.SecOffset; // would be 0 if curSec == clip.SecOffset
-                    var clipSecStart = device.WhatIAmPlaying.SecFileStart + device.WhatIAmPlaying.SecOffset;
-                    device.WaveReader.CurrentTime = TimeSpan.FromSeconds(clipSecStart + syncOffsetSec + NAUDIO_SYNC_OFFSET);
+                    //var clipSecStart = device.WhatIAmPlaying.SecFileStart + device.WhatIAmPlaying.SecOffset;
+                    device.WaveReader.CurrentTime = TimeSpan.FromSeconds(device.WhatIAmPlaying.SecFileStart + syncOffsetSec + NAUDIO_SYNC_OFFSET);
                 }
             }
         }

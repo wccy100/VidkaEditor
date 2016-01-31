@@ -31,6 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Miktemk">
+      <HintPath>..\packages\miktemk\Miktemk.dll</HintPath>
+    </Reference>
+    <Reference Include="Miktemk.Winforms">
+      <HintPath>..\packages\miktemk\Miktemk.Winforms.dll</HintPath>
+    </Reference>
     <Reference Include="NAudio">
       <HintPath>..\packages\NAudio.1.7.3\lib\net35\NAudio.dll</HintPath>
     </Reference>
@@ -71,7 +77,6 @@
     <Compile Include="DialogInput.Designer.cs">
       <DependentUpon>DialogInput.cs</DependentUpon>
     </Compile>
-    <Compile Include="EditorDrawOps.cs" />
     <Compile Include="ImageCacheManager.cs" />
     <Compile Include="IVidkaMainForm.cs" />
     <Compile Include="PPP.cs" />
@@ -116,6 +121,17 @@
     </Compile>
     <Compile Include="DrawOpsCollection.cs" />
     <Compile Include="DrawOp.cs" />
+    <Compile Include="VideoShitboxDrawOps\CommonDrawOps.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawDraggySeparately.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawOriginalAudio.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawOriginalVideo.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawAudioClips.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawAudioHover.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawVideoHover.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawCurFrameMarker.cs" />
+    <Compile Include="VideoShitboxDrawOps\Draw0Axis.cs" />
+    <Compile Include="VideoShitboxDrawOps\Draw0Canvas.cs" />
+    <Compile Include="VideoShitboxDrawOps\DrawVideoClips.cs" />
     <Compile Include="VideoShitboxDrawOps\DrawVideoAudioLinkage.cs" />
     <Compile Include="VideoShitboxDrawOps\DrawVideoAudioAligns.cs" />
     <Compile Include="VideoShitboxDrawOps\DrawRenderBreakups.cs" />

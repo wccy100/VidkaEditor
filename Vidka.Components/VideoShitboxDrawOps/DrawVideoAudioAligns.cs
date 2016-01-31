@@ -32,10 +32,10 @@ namespace Vidka.Components.VideoShitboxDrawOps
             var isTrimming = context.UiObjects.CurrentAudioClipHover != null
                 && context.UiObjects.TrimHover != TrimDirection.None
                 && context.UiObjects.MouseDragFrameDelta != 0;
-            dimdim.IterateOverVisibleVideoClips(context.Proj, w, (vclip, vclipPrev, x1, x2, curFrameVideo, index) =>
+            context.IterateOverVisibleVideoClips(w, (vclip, vclipPrev, x1, x2, curFrameVideo, index) =>
             {
                 var curFrameVideoRight = curFrameVideo + vclip.LengthFrameCalc;
-                dimdim.IterateOverVisibleAudioClips(context.Proj, w, (aclip, ax1, ax2, frameAudio1, frameAudio2) =>
+                context.IterateOverVisibleAudioClips(w, (aclip, ax1, ax2, frameAudio1, frameAudio2) =>
                 {
                     if (curFrameVideo == frameAudio1 || curFrameVideo == frameAudio2)
                         g.DrawLine(penRenderBreakupLine, x1, y2Video, x1, y1Audio);
@@ -69,7 +69,7 @@ namespace Vidka.Components.VideoShitboxDrawOps
                     if (curFrameVideoRight == frameAudio1 || curFrameVideoRight == frameAudio2)
                         g.DrawLine(penRenderBreakupLine, x2, y2Video, x2, y1Audio);
                 }
-            });
+            }, (frame, dragg) => { });
         }
 
     }

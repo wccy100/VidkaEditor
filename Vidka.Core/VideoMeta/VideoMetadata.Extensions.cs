@@ -15,7 +15,7 @@ namespace Vidka.Core.VideoMeta
 		private ffprobe xml;
 		private ffprobeStream videoStream;
 		private ffprobeStream audioStream;
-		private ffprobeFormat format;
+		//private ffprobeFormat format;
 
 		public VideoMetadataUseful(ffprobe xml) {
 			this.xml = xml;
@@ -23,8 +23,7 @@ namespace Vidka.Core.VideoMeta
 				videoStream = xml.streams.FirstOrDefault(x => x.codec_type == "video");
 				audioStream = xml.streams.FirstOrDefault(x => x.codec_type == "audio");
 			}
-			format = (ffprobeFormat)xml.format;
-			
+			//format = (ffprobeFormat)xml.format;
 		}
 
 		//public double VideoDurationSec {
@@ -69,11 +68,11 @@ namespace Vidka.Core.VideoMeta
 			}
 		}
 
-		public string Filename {
-			get {
-				return (format == null) ? "" : format.filename;
-			}
-		}
+        //public string Filename {
+        //    get {
+        //        return (format == null) ? "" : format.filename;
+        //    }
+        //}
 
 		public bool HasAudio {
 			get {

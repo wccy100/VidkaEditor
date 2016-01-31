@@ -38,7 +38,7 @@ namespace Vidka.Components.VideoShitboxDrawOps
 
             if (uiObjects.ShowVideoAudioLinkage && uiObjects.CurrentVideoClip != null)
             {
-                dimdim.GetVClipScreenPosition(uiObjects.CurrentVideoClip, context.Proj, h, ref rect);
+                context.GetVClipScreenPosition(uiObjects.CurrentVideoClip, h, ref rect);
                 if (uiObjects.CurrentAudioClipHover != null)
                 {
                     var xAudio = dimdim.convert_Frame2ScreenX(uiObjects.CurrentAudioClipHover.FrameOffset);
@@ -49,8 +49,7 @@ namespace Vidka.Components.VideoShitboxDrawOps
                 drawTarget(g, rect.X + rect.Width / 2, rect.Y + rect.Height);
             }
 
-            var draggy = context.UiObjects.Draggy;
-            dimdim.IterateOverVisibleVideoClips(context.Proj, w, (vclip, vclipPrev, x1, x2, curFrameVideo, index) =>
+            context.IterateOverVisibleVideoClips(w, (vclip, vclipPrev, x1, x2, curFrameVideo, index) =>
             {
                 foreach (var aclipLink in vclip.AudioClipLinks)
                 {
@@ -62,11 +61,11 @@ namespace Vidka.Components.VideoShitboxDrawOps
                         : penVideoAudioLinkageBad;
                     var audioX = dimdim.convert_Frame2ScreenX(aclipLink.AudioClip.FrameOffset);
                     var audioW = dimdim.convert_FrameToAbsX(aclipLink.AudioClip.LengthFrameCalc);
-                    var xChain = (Math.Max(x1, audioX) + Math.Min(x2, audioX + audioW))/2;
+                    var xChain = (Math.Max(x1, audioX) + Math.Min(x2, audioX + audioW)) / 2;
                     var xChainBent = xChain - dimdim.convert_FrameToAbsX(deltaFrames);
                     g.DrawLine(pen, xChain, y2Video, xChainBent, y1Audio);
                 }
-            });
+            }, (frame, draggy) => { });
         }
 
         private void drawTarget(Graphics g, int x, int y)

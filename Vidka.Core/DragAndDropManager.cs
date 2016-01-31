@@ -385,6 +385,7 @@ namespace Vidka.Core
 				// recurse, bitch
 				QueueUpTheWholeFolder(dirname);
 			}
+            metaGenerator.WhenDoneSayYouAreDone(Path.GetFileName(folder));
 		}
     }
 

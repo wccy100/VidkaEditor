@@ -9,6 +9,7 @@ using System.IO;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.ComponentModel;
+using System.Globalization;
 
 namespace Vidka.Core.ExternalOps
 {
@@ -96,7 +97,7 @@ namespace Vidka.Core.ExternalOps
 			process.StartInfo.FileName = FfmpegExecutable;
 			// make img 64x36 every 0.5 sec
 			// source: https://trac.ffmpeg.org/wiki/Create%20a%20thumbnail%20image%20every%20X%20seconds%20of%20the%20video
-			process.StartInfo.Arguments = String.Format("-i \"{0}\" -y -f image2 -vf \"scale={2},fps=fps=1/{3}\" {1}/out%d.jpg", filename, TempFolder, ThumbW + ":" + ThumbH, ThumbIntervalSec);
+            process.StartInfo.Arguments = String.Format("-i \"{0}\" -y -f image2 -vf \"scale={2},fps=fps=1/{3}\" \"{1}/out%d.jpg\"", filename, TempFolder, ThumbW + ":" + ThumbH, ThumbIntervalSec.ToString(CultureInfo.InvariantCulture));
 			process.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
 			process.StartInfo.CreateNoWindow = true;
 

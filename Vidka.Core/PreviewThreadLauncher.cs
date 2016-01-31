@@ -83,7 +83,7 @@ namespace Vidka.Core
 				// ... set up ticker
 				ticker.Interval = (int)(1000 * proj.FrameToSec(1)); // 1 tick per frame... its a hack but im too lazy
 				ticker.Start();
-				editor.AppendToConsole(VidkaConsoleLogLevel.Debug, "StartPlayback");
+				cxzxc("StartPlayback");
 			}
 		}
 
@@ -135,11 +135,12 @@ namespace Vidka.Core
 					else
 					{
 						StartPlaybackOfClip(clip);
-						editor.AppendToConsole(VidkaConsoleLogLevel.Debug, "Next clip: " + mutex.CurClipIndex);
+						cxzxc("Next clip: " + mutex.CurClipIndex);
 					}
 				}
                 var curAbsSec = mutex.Proj.FrameToSec(frameMarkerPosition);
                 playerAudio.WeAreHereStartPlaying(curAbsSec);
+                //cxzxc("curAbsSec=" + curAbsSec);
 			}
 
 		}
@@ -174,7 +175,7 @@ namespace Vidka.Core
 				player.StopWhateverYouArePlaying();
                 playerAudio.StopWhateverYouArePlaying();
                 playerAudio.Clear();
-				editor.AppendToConsole(VidkaConsoleLogLevel.Debug, "StopPlayback");
+				cxzxc("StopPlayback");
 			}
 
 			//curThread
@@ -192,5 +193,10 @@ namespace Vidka.Core
 		public bool IsPlaying { get { return mutex.IsPlaying; } }
 
 
+
+        private void cxzxc(string p)
+        {
+            editor.AppendToConsole(VidkaConsoleLogLevel.Debug, p);
+        }
     }
 }

@@ -134,6 +134,7 @@ namespace Vidka.Core.Model
         public long EasingRight { get; set; }
         public bool IsPixelTypeStandard { get; set; }
         public bool IsRenderBreakupPoint { get; set; }
+        public string Label { get; set; }
 
         [XmlIgnore]
 		public virtual bool HasAudio { get { return false; } }

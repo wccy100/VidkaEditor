@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vidka.Core;
 using Vidka.Core.Model;
+using Vidka.Core.UiObj;
 
 namespace Vidka.Components
 {
@@ -15,34 +16,54 @@ namespace Vidka.Components
     public static partial class Utils
 	{
         public static void IterateOverVisibleVideoClips(
-            this ProjectDimensions dimdim,
-            VidkaProj proj,
+            this IVidkaOpContext context,
             int Width,
-            Action<VidkaClipVideoAbstract, VidkaClipVideoAbstract, int, int, long, int> callback)
+            Action<VidkaClipVideoAbstract, VidkaClipVideoAbstract, int, int, long, int> callback,
+            Action<long, EditorDraggy> callbackDraggy)
         {
+            var dimdim = context.Dimdim;
+            var proj = context.Proj;
+            var draggy = context.UiObjects.Draggy;
+
             long curFrame = 0;
             int index = 0;
+            int draggyVideoShoveIndex = dimdim.GetVideoClipDraggyShoveIndex(draggy);
+
             VidkaClipVideoAbstract vclipPrev = null;
             foreach (var vclip in proj.ClipsVideo)
             {
                 if (dimdim.isEvenOnTheScreen(curFrame, curFrame + vclip.LengthFrameCalc, Width))
                 {
+                    if (draggy.Mode == EditorDraggyMode.VideoTimeline && draggyVideoShoveIndex == index)
+                    {
+                        callbackDraggy(curFrame, draggy);
+                        curFrame += draggy.FrameLength;
+                    }
                     int x1 = dimdim.convert_Frame2ScreenX(curFrame);
                     int x2 = dimdim.convert_Frame2ScreenX(curFrame + vclip.LengthFrameCalc);
-                    callback(vclip, vclipPrev, x1, x2, curFrame, index);
+                    if (draggy.VideoClip != vclip)
+                    {
+                        callback(vclip, vclipPrev, x1, x2, curFrame, index);
+                    }
                 }
-                curFrame += vclip.LengthFrameCalc;
+                //if (draggy != null && draggy.VideoClip != vclip)
+                if (draggy.VideoClip != vclip)
+                    curFrame += vclip.LengthFrameCalc;
                 index++;
                 vclipPrev = vclip;
             }
+            if (draggy.Mode == EditorDraggyMode.VideoTimeline && draggyVideoShoveIndex == index)
+                callbackDraggy(curFrame, draggy);
         }
 
         public static void IterateOverVisibleAudioClips(
-            this ProjectDimensions dimdim,
-            VidkaProj proj,
+            this IVidkaOpContext context,
             int Width,
             Action<VidkaClipAudio, int, int, long, long> callback)
         {
+            var dimdim = context.Dimdim;
+            var proj = context.Proj;
+
             foreach (var aclip in proj.ClipsAudio)
             {
                 var frame1 = aclip.FrameOffset;
@@ -57,12 +78,13 @@ namespace Vidka.Components
         }
 
         public static void GetVClipScreenPosition(
-            this ProjectDimensions dimdim,
+            this IVidkaOpContext context,
             VidkaClipVideoAbstract vclip,
-            VidkaProj proj,
             int h,
             ref Rectangle rect)
         {
+            var dimdim = context.Dimdim;
+            var proj = context.Proj;
             var frameAbs = proj.GetVideoClipAbsFramePositionLeft(vclip);
             var y1 = dimdim.getY_main1(h);
             var y2 = dimdim.getY_main2(h);

@@ -37,5 +37,7 @@ namespace Vidka.Core
 		void PleaseUnlockThisFile(string filename);
 
         void OpenClipProperties(Model.VidkaClip vidkaClip);
+
+        int GetHorizontalScrollBarHeight();
     }
 }
