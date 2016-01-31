@@ -54,5 +54,7 @@ Vidka.CreateFileAssociation/bin/*
 Vidka.CreateFileAssociation/obj/*
 Vidka.MainForm/bin/*
 Vidka.MainForm/obj/*
+ZNotBackwardsCompatibleFixers/FixVidkaDataFilenames/bin/*
+ZNotBackwardsCompatibleFixers/FixVidkaDataFilenames/obj/*
 
 
