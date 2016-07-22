@@ -12,7 +12,7 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="FileExtensionsVideo" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">.avi|.mp4|.mov|.mts|.mkv</Value>
+      <Value Profile="(Default)">.avi|.mp4|.mov|.mts|.mkv|.m4v</Value>
     </Setting>
     <Setting Name="FileExtensionsAudio" Type="System.String" Scope="Application">
       <Value Profile="(Default)">.wav|.mp3|.ogg</Value>

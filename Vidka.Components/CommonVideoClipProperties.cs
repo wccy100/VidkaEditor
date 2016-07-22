@@ -18,6 +18,7 @@ namespace Vidka.Components
 		public CommonVideoClipProperties()
 		{
 			InitializeComponent();
+
 		}
 
 		public VidkaClipVideoAbstract VClip { get; private set; }
@@ -69,7 +70,7 @@ namespace Vidka.Components
 
 		private void btnFill_Click(object sender, EventArgs e)
 		{
-            VideoShitbox.ConsoleSingleton.cxzxc("");
+            VideoShitbox.ConsoleSingleton.cxzxc("todo: fill");
 		}
 
         private void btnFadeIn5_Click(object sender, EventArgs e)

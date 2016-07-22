@@ -422,11 +422,20 @@ namespace Vidka.Core.Model
                     nonUnique.VarName += "__" + VidkaIO.MakeGuidWord();
             }
 
-            return new RenderableProject {
+            return new RenderableProject
+            {
                 Files = fileList,
                 Clips = arrClips2,
                 MaxLengthOfImageClip = maxLengthOfImageClip,
                 StatVideos = statVideos,
+                AudioClips = proj.ClipsAudio.Select(x => new AudioClipRenderable
+                {
+                    FileName = x.FileName,
+                    FrameStart = x.FrameStart,
+                    FrameEnd = x.FrameEnd,
+                    FrameOffset = x.FrameOffset,
+                    PostOp = x.PostOp,
+                }),
             };
         }
 

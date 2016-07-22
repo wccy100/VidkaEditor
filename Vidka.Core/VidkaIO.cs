@@ -107,14 +107,13 @@ namespace Vidka.Core
                     clip.VideoFile.VarName, clip.LengthFrameCalc));
             }
 
-            //TODO: 12dsakddsadas I guess audio clips do not make part of RenderableProject
-            foreach (var clip in Proj.ClipsAudio)
+            foreach (var clip in renderableProj.AudioClips)
             {
                 sbPostOp.Clear();
                 sbPostOp.Append((clip.PostOp ?? "").Replace("\n", ""));
                 sbAudio.Append(String.Format(@"
-voiceover=BlankClip(last,{0}) ++BlankClip(last, {1}).AudioDub(DirectShowSource(""{2}"", fps=proj_frameRate, convertfps=true).ResampleAudio(44100)).Trim({3}, {4}){5}
-MixAudio(last,voiceover, clip1_factor=1, clip2_factor=1)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.FrameStart, clip.FrameEnd, sbPostOp.ToString()));
+voiceover=BlankClip(last,{0}) ++BlankClip(last, {1}).AudioDub(DirectShowSource(""{2}"", fps=proj_frameRate, convertfps=true).ResampleAudio(44100)).Trim({3}, {1}){4}
+MixAudio(last,voiceover, clip1_factor=1, clip2_factor=1)", clip.FrameOffset, clip.FrameEnd, clip.FileName, clip.FrameStart, sbPostOp.ToString()));
             }
 
 			var templateFile = GetFileFromThisAppDirectory(TEMPLATE_AVS);

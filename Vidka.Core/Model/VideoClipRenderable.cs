@@ -23,6 +23,7 @@ namespace Vidka.Core.Model
         public IEnumerable<VideoClipRenderable> Clips { get; set; }
         public IEnumerable<VideoClipRenderable> StatVideos { get; set; }
         public long MaxLengthOfImageClip { get; set; }
+        public IEnumerable<AudioClipRenderable> AudioClips { get; set; }
     }
 
     /// <summary>
@@ -73,6 +74,15 @@ namespace Vidka.Core.Model
         {
             MixesAudioFromVideo = new List<VideoEasingAudioToMix>();
         }
+    }
+
+    public class AudioClipRenderable
+    {
+        public string FileName { get; set; }
+        public long FrameStart { get; set; }
+        public long FrameEnd { get; set; }
+        public long FrameOffset { get; set; }
+        public string PostOp { get; set; }
     }
 
     public class VideoEasingAudioToMix

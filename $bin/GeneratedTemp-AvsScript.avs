@@ -20,13 +20,33 @@ global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
 #################### all video files ############################
-_mappopulonia_avi = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\_map-populonia.avi", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP4131_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4131.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP4147_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4147.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+_costaetruschimap_avi = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\_costa-etruschi-map.avi", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4188_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4188.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+_plane_travel_avi = DirectShowSource("C:\Users\Mikhail\Videos\travel\_plane_travel.avi", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4184_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4184.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4183_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4183.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4187_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4187.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4191_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4191.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4200_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4200.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4195_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4195.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4189_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4189.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4190_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4190.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4203_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4203.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4193_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4193.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4201_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4201.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4202_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4202.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4192_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4192.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4196_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4196.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4197_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4197.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4199_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4199.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+_20150321_172617_mp4 = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\20150321_172617.mp4", audio=True, fps=proj_frameRate, convertfps=true)
+_20150321_165336_mp4 = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\20150321_165336.mp4", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4207_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4207.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP4208_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4208.AVI", audio=True, fps=proj_frameRate, convertfps=true)
 
 
 #################### determine the most frequently used pixel type ############################
-collectpixeltypestat(IMGP4147_AVI, 0)
+collectpixeltypestat(IMGP4188_AVI, 0)
 
 
 global mostFrequentPixelType = "RGB32"
@@ -52,23 +72,75 @@ curStatMax = Max(curStatMax, stat_nRGB)
 
 #################### render ###########################
 
-_mappopulonia_avi_0 = NeutralClip(_mappopulonia_avi, 0, 101)
-IMGP4131_AVI_1 = NeutralClip(IMGP4131_AVI, 403, 467)
-IMGP4131_AVI_2 = NeutralClip(IMGP4131_AVI, 728, 819)
-IMGP4131_AVI_3 = NeutralClip(IMGP4131_AVI, 1106, 1216)
-IMGP4131_AVI_4 = NeutralClip(IMGP4131_AVI, 1334, 1413)
+_costaetruschimap_avi_0 = NeutralClip(_costaetruschimap_avi, 0, 105)
+IMGP4188_AVI_1 = NeutralClip(IMGP4188_AVI, 0, 266)
+_plane_travel_avi_2 = NeutralClip(_plane_travel_avi, 126, 159)
+IMGP4184_AVI_3 = NeutralClip(IMGP4184_AVI, 0, 64).MuteThisClip()
+IMGP4183_AVI_4 = NeutralClip(IMGP4183_AVI, 0, 61).MuteThisClip()
+IMGP4187_AVI_5 = NeutralClip(IMGP4187_AVI, 0, 70).MuteThisClip()
+IMGP4191_AVI_6 = NeutralClip(IMGP4191_AVI, 0, 600)
+IMGP4200_AVI_7 = NeutralClip(IMGP4200_AVI, 0, 125).MuteThisClip()
+IMGP4195_AVI_8 = NeutralClip(IMGP4195_AVI, 0, 67).MuteThisClip()
+IMGP4189_AVI_9 = NeutralClip(IMGP4189_AVI, 0, 46).MuteThisClip()
+IMGP4190_AVI_10 = NeutralClip(IMGP4190_AVI, 84, 134).MuteThisClip()
+IMGP4203_AVI_11 = NeutralClip(IMGP4203_AVI, 43, 143).MuteThisClip()
+IMGP4191_AVI_12 = NeutralClip(IMGP4191_AVI, 601, 999)
+IMGP4193_AVI_13 = NeutralClip(IMGP4193_AVI, 69, 291)
+_plane_travel_avi_14 = NeutralClip(_plane_travel_avi, 159, 188)
+IMGP4201_AVI_15 = NeutralClip(IMGP4201_AVI, 0, 185)
+IMGP4202_AVI_16 = NeutralClip(IMGP4202_AVI, 42, 607)
+IMGP4192_AVI_17 = NeutralClip(IMGP4192_AVI, 10, 78)
+IMGP4196_AVI_18 = NeutralClip(IMGP4196_AVI, 119, 187)
+IMGP4197_AVI_19 = NeutralClip(IMGP4197_AVI, 49, 130)
+IMGP4199_AVI_20 = NeutralClip(IMGP4199_AVI, 196, 331)
+IMGP4196_AVI_21 = NeutralClip(IMGP4196_AVI, 444, 517)
+IMGP4197_AVI_22 = NeutralClip(IMGP4197_AVI, 366, 420)
+IMGP4199_AVI_23 = NeutralClip(IMGP4199_AVI, 450, 549)
+_20150321_172617_mp4_24 = NeutralClip(_20150321_172617_mp4, 0, 194)
+_20150321_165336_mp4_25 = NeutralClip(_20150321_165336_mp4, 0, 165)
+_20150321_165336_mp4_26 = NeutralClip(_20150321_165336_mp4, 839, 974)
+IMGP4207_AVI_27 = NeutralClip(IMGP4207_AVI, 1143, 1844)
+IMGP4208_AVI_28 = NeutralClip(IMGP4208_AVI, 15, 177)
+IMGP4208_AVI_29 = NeutralClip(IMGP4208_AVI, 355, 608)
+_plane_travel_avi_30 = NeutralClip(_plane_travel_avi, 126, 159)
 
 
 UnalignedSplice( \
-	_mappopulonia_avi_0, \
-	IMGP4131_AVI_1, \
-	IMGP4131_AVI_2, \
-	IMGP4131_AVI_3, \
-	IMGP4131_AVI_4 \
+	_costaetruschimap_avi_0, \
+	IMGP4188_AVI_1, \
+	_plane_travel_avi_2, \
+	IMGP4184_AVI_3.MixAudioFromClip(IMGP4191_AVI_6, 0, 65, 0), \
+	IMGP4183_AVI_4.MixAudioFromClip(IMGP4191_AVI_6, 65, 127, 0), \
+	IMGP4187_AVI_5.MixAudioFromClip(IMGP4191_AVI_6, 127, 198, 0), \
+	IMGP4191_AVI_6.Trim(198, 475), \
+	IMGP4200_AVI_7.MixAudioFromClip(IMGP4191_AVI_6, 475, 601, 0), \
+	IMGP4195_AVI_8.MixAudioFromClip(IMGP4191_AVI_12, 0, 68, 0), \
+	IMGP4189_AVI_9.MixAudioFromClip(IMGP4191_AVI_12, 68, 115, 0), \
+	IMGP4190_AVI_10.MixAudioFromClip(IMGP4191_AVI_12, 115, 166, 0), \
+	IMGP4203_AVI_11.MixAudioFromClip(IMGP4191_AVI_12, 166, 267, 0), \
+	IMGP4191_AVI_12.Trim(267, 399), \
+	IMGP4193_AVI_13, \
+	_plane_travel_avi_14, \
+	IMGP4201_AVI_15, \
+	IMGP4202_AVI_16.Trim(0, 210), \
+	IMGP4192_AVI_17.MixAudioFromClip(IMGP4202_AVI_16, 210, 279, 0), \
+	IMGP4196_AVI_18.MixAudioFromClip(IMGP4202_AVI_16, 279, 348, 0), \
+	IMGP4197_AVI_19.MixAudioFromClip(IMGP4202_AVI_16, 348, 430, 0), \
+	IMGP4199_AVI_20.MixAudioFromClip(IMGP4202_AVI_16, 430, 566, 0), \
+	IMGP4196_AVI_21, \
+	IMGP4197_AVI_22, \
+	IMGP4199_AVI_23, \
+	_20150321_172617_mp4_24, \
+	_20150321_165336_mp4_25, \
+	_20150321_165336_mp4_26, \
+	IMGP4207_AVI_27, \
+	IMGP4208_AVI_28, \
+	IMGP4208_AVI_29, \
+	_plane_travel_avi_30 \
 )
 
 
-voiceover=BlankClip(last,0) ++BlankClip(last, 333).AudioDub(DirectShowSource("C:\Users\Mikhail\Videos\travel\buratino-banjo.mp3", fps=proj_frameRate, convertfps=true).ResampleAudio(44100)).Trim(199, 333)
+voiceover=BlankClip(last,0) ++BlankClip(last, 334).AudioDub(DirectShowSource("C:\Users\Mikhail\Videos\travel\buratino-banjo.mp3", fps=proj_frameRate, convertfps=true).ResampleAudio(44100)).Trim(192, 334)
 MixAudio(last,voiceover, clip1_factor=1, clip2_factor=1)
 
 #All these things we can chain outside on the NeutralClip function...
