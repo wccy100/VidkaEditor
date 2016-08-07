@@ -36,7 +36,9 @@ namespace Vidka.CreateFileAssociation
 
 			// Delete the key instead of trying to change it
 			CurrentUser = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\" + Extension, true);
-			CurrentUser.DeleteSubKey("UserChoice", false);
+            if (CurrentUser == null)
+                CurrentUser = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts", true).CreateSubKey(Extension);
+            CurrentUser.DeleteSubKey("UserChoice", false);
 			CurrentUser.Close();
 
 			// Tell explorer the file association has been changed
