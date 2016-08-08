@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vidka.Components", "Vidka.Components\Vidka.Components.csproj", "{E5557BD6-ACB6-400F-B4D9-CDE7CC2DBE13}"
 EndProject
@@ -16,6 +16,10 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NotBackwardsCompatibleFixers", "NotBackwardsCompatibleFixers", "{157607B9-27C0-491A-A1C7-091C88C7EA99}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FixVidkaDataFilenames", "ZNotBackwardsCompatibleFixers\FixVidkaDataFilenames\FixVidkaDataFilenames.csproj", "{719B1021-5874-4033-B84B-9E39A0D64290}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miktemk", "..\MiktemkCommons\Miktemk\Miktemk.csproj", "{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miktemk.Winforms", "..\MiktemkCommons\Miktemk.Winforms\Miktemk.Winforms.csproj", "{33087666-6914-4403-8F66-6C47A7049952}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -89,6 +93,38 @@ Global
 		{719B1021-5874-4033-B84B-9E39A0D64290}.Release|ARM.ActiveCfg = Release|Any CPU
 		{719B1021-5874-4033-B84B-9E39A0D64290}.Release|x64.ActiveCfg = Release|Any CPU
 		{719B1021-5874-4033-B84B-9E39A0D64290}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Debug|ARM.Build.0 = Debug|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Debug|x86.Build.0 = Debug|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Release|ARM.ActiveCfg = Release|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Release|ARM.Build.0 = Release|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Release|x64.Build.0 = Release|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}.Release|x86.Build.0 = Release|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Debug|ARM.Build.0 = Debug|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Debug|x64.Build.0 = Debug|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Debug|x86.Build.0 = Debug|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Release|ARM.ActiveCfg = Release|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Release|ARM.Build.0 = Release|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Release|x64.ActiveCfg = Release|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Release|x64.Build.0 = Release|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Release|x86.ActiveCfg = Release|Any CPU
+		{33087666-6914-4403-8F66-6C47A7049952}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
