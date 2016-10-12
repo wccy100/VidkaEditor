@@ -12,7 +12,7 @@ namespace Vidka.Core.Properties {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "12.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "14.0.0.0")]
     internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
@@ -70,7 +70,8 @@ namespace Vidka.Core.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"-ovc xvid -xvidencopts bitrate=16000:me_quality=1:rc_reaction_delay_factor=100:rc_averaging_period=16:rc_buffer=100:quant_type=h263:min_iquant=1:max_iquant=31:min_pquant=1:max_pquant=31:min_bquant=1:max_bquant=31:max_key_interval=250:quant_type=h263:max_bframes=2:bquant_ratio=150:bquant_offset=100:bf_threshold=0:vhq=2:bvhq=1:curve_compression_high=0:curve_compression_low=0:overflow_control_strength=10:max_overflow_improvement=10:max_overflow_degradation=10:trellis:noqpel:nogmc:nocartoon:chroma_opt:chroma_me:nointerlacing:par=ext:par_width=1:par_height=1:closed_gop:nopacked:threads=8 -vf scale,format=i420 -forcedsubsonly -nosub -oac mp3lame -mc 0 ""{file-avs}"" -of avi -o ""{file-video}""")]
+        [global::System.Configuration.DefaultSettingValueAttribute("-ovc x264 -x264encopts preset=slow:tune=film:crf=22 -of lavf -of avi -o  \"{file-v" +
+            "ideo}\" -forcedsubsonly -oac mp3lame \"{file-avs}\" -vf scale,format=i420")]
         public string mencoderArguments {
             get {
                 return ((string)(this["mencoderArguments"]));

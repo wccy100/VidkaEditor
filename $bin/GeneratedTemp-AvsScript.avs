@@ -20,13 +20,26 @@ global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
 #################### all video files ############################
-IMGP4005_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_15_orvieto\IMGP4005.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP3999_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_15_orvieto\IMGP3999.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP4147_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_02_italia\2015_03_21_etruschi\IMGP4147.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP0035_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0035.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP0026_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0026.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP0027_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0027.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP0028_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0028.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP0029_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0029.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP0031_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0031.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP0039_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0039.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP0041_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0041.AVI", audio=True, fps=proj_frameRate, convertfps=true)
 
 
 #################### determine the most frequently used pixel type ############################
-collectpixeltypestat(IMGP4147_AVI, 0)
+collectpixeltypestat(IMGP0035_AVI, 5865)
+collectpixeltypestat(IMGP0026_AVI, 4743)
+collectpixeltypestat(IMGP0027_AVI, 2284)
+collectpixeltypestat(IMGP0028_AVI, 2181)
+collectpixeltypestat(IMGP0028_AVI, 752)
+collectpixeltypestat(IMGP0029_AVI, 4456)
+collectpixeltypestat(IMGP0031_AVI, 2886)
+collectpixeltypestat(IMGP0039_AVI, 2306)
+collectpixeltypestat(IMGP0041_AVI, 10670)
 
 
 global mostFrequentPixelType = "RGB32"
@@ -52,13 +65,27 @@ curStatMax = Max(curStatMax, stat_nRGB)
 
 #################### render ###########################
 
-IMGP4005_AVI_0 = NeutralClip(IMGP4005_AVI, 877, 939)
-IMGP3999_AVI_1 = NeutralClip(IMGP3999_AVI, 128, 214)
+IMGP0035_AVI_0 = NeutralClip(IMGP0035_AVI, 1881, 7745).FlipHorizontal().FlipVertical()
+IMGP0026_AVI_1 = NeutralClip(IMGP0026_AVI, 203, 4945)
+IMGP0027_AVI_2 = NeutralClip(IMGP0027_AVI, 146, 2429)
+IMGP0028_AVI_3 = NeutralClip(IMGP0028_AVI, 237, 2417)
+IMGP0028_AVI_4 = NeutralClip(IMGP0028_AVI, 2418, 3169)
+IMGP0029_AVI_5 = NeutralClip(IMGP0029_AVI, 125, 4580)
+IMGP0031_AVI_6 = NeutralClip(IMGP0031_AVI, 200, 3085)
+IMGP0039_AVI_7 = NeutralClip(IMGP0039_AVI, 195, 2500)
+IMGP0041_AVI_8 = NeutralClip(IMGP0041_AVI, 102, 10771)
 
 
 UnalignedSplice( \
-	IMGP4005_AVI_0, \
-	IMGP3999_AVI_1 \
+	IMGP0035_AVI_0, \
+	IMGP0026_AVI_1, \
+	IMGP0027_AVI_2, \
+	IMGP0028_AVI_3, \
+	IMGP0028_AVI_4, \
+	IMGP0029_AVI_5, \
+	IMGP0031_AVI_6, \
+	IMGP0039_AVI_7, \
+	IMGP0041_AVI_8 \
 )
 
 
