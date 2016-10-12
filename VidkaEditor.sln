@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vidka.Components", "Vidka.Components\Vidka.Components.csproj", "{E5557BD6-ACB6-400F-B4D9-CDE7CC2DBE13}"
 EndProject
@@ -20,6 +20,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miktemk", "..\MiktemkCommons\Miktemk\Miktemk.csproj", "{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miktemk.Winforms", "..\MiktemkCommons\Miktemk.Winforms\Miktemk.Winforms.csproj", "{33087666-6914-4403-8F66-6C47A7049952}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VidkaEditor", "VidkaEditor\VidkaEditor.csproj", "{F8519156-E09F-47FC-8302-74398BF04AB8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Miktemk.Wpf", "..\MiktemkCommons\Miktemk.Wpf\Miktemk.Wpf.csproj", "{DA6804E9-85DE-43C1-854E-6ABB3C85D970}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,6 +129,38 @@ Global
 		{33087666-6914-4403-8F66-6C47A7049952}.Release|x64.Build.0 = Release|Any CPU
 		{33087666-6914-4403-8F66-6C47A7049952}.Release|x86.ActiveCfg = Release|Any CPU
 		{33087666-6914-4403-8F66-6C47A7049952}.Release|x86.Build.0 = Release|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Debug|ARM.Build.0 = Debug|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Debug|x64.Build.0 = Debug|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Debug|x86.Build.0 = Debug|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Release|ARM.ActiveCfg = Release|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Release|ARM.Build.0 = Release|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Release|x64.ActiveCfg = Release|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Release|x64.Build.0 = Release|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Release|x86.ActiveCfg = Release|Any CPU
+		{F8519156-E09F-47FC-8302-74398BF04AB8}.Release|x86.Build.0 = Release|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Debug|ARM.Build.0 = Debug|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Debug|x64.Build.0 = Debug|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Debug|x86.Build.0 = Debug|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Release|ARM.ActiveCfg = Release|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Release|ARM.Build.0 = Release|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Release|x64.ActiveCfg = Release|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Release|x64.Build.0 = Release|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Release|x86.ActiveCfg = Release|Any CPU
+		{DA6804E9-85DE-43C1-854E-6ABB3C85D970}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
