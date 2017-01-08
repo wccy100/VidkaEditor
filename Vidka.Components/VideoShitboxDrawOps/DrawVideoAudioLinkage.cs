@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -36,6 +37,7 @@ namespace Vidka.Components.VideoShitboxDrawOps
             if (context.Proj.ClipsAudio.Count == 0)
                 return;
 
+            // .... render current editing (aka what is being drawin in the current MouseOpLinkVideoAudio)
             if (uiObjects.ShowVideoAudioLinkage && uiObjects.CurrentVideoClip != null)
             {
                 context.GetVClipScreenPosition(uiObjects.CurrentVideoClip, h, ref rect);
@@ -45,15 +47,17 @@ namespace Vidka.Components.VideoShitboxDrawOps
                     var wAudio = dimdim.convert_FrameToAbsX(uiObjects.CurrentAudioClipHover.LengthFrameCalc);
                     g.DrawLine(penVideoAudioLinkageBad, rect.X + rect.Width / 2, rect.Y + rect.Height, xAudio + wAudio/2, y1Audio);
                     drawTarget(g, xAudio + wAudio / 2, y1Audio);
+                    Debug.WriteLine($"uiObjects.CurrentAudioClipHover");
                 }
                 drawTarget(g, rect.X + rect.Width / 2, rect.Y + rect.Height);
             }
 
+            // .... render existing links
             context.IterateOverVisibleVideoClips(w, (vclip, vclipPrev, x1, x2, curFrameVideo, index) =>
             {
                 foreach (var aclipLink in vclip.AudioClipLinks)
                 {
-                    var aclipWhereabouts = curFrameVideo - vclip.FrameStart + aclipLink.SynchFrames;
+                    var aclipWhereabouts = curFrameVideo - vclip.FrameStart - vclip.EasingLeft + aclipLink.SynchFrames;
                     var offsetShouldBe = aclipWhereabouts + aclipLink.AudioClip.FrameStart;
                     var deltaFrames = offsetShouldBe - aclipLink.AudioClip.FrameOffset;
                     var pen = (deltaFrames == 0)

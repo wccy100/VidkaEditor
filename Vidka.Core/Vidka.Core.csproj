@@ -47,6 +47,7 @@
     <Compile Include="ClipboardObjectHolder.cs" />
     <Compile Include="DragAndDropManager.cs" />
     <Compile Include="OpsMouse\MouseOpAbstract.cs" />
+    <Compile Include="Ops\RemoveLinkVideoAudio.cs" />
     <Compile Include="OpsMouse\MouseOpMoveAudio.cs" />
     <Compile Include="OpsMouse\MouseOpSelectOriginalSegment.cs" />
     <Compile Include="OpsMouse\MouseOpMoveVideo.cs" />

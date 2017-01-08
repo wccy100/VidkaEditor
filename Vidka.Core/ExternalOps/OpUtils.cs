@@ -21,23 +21,5 @@ namespace Vidka.Core.ExternalOps
             process.StartInfo.WindowStyle = ProcessWindowStyle.Normal;
             process.Start();
         }
-
-        public static void OpenWinExplorerAndSelectThisFile(string filename)
-        {
-            string args = string.Format("/e, /select, \"{0}\"", filename);
-            ProcessStartInfo info = new ProcessStartInfo();
-            info.FileName = ExplorerExecutable;
-            info.Arguments = args;
-            Process.Start(info);
-        }
-
-        public static void OpenWinExplorerAndSelectNothing(string filename)
-        {
-            string args = string.Format("\"{0}\"", filename);
-            ProcessStartInfo info = new ProcessStartInfo();
-            info.FileName = ExplorerExecutable;
-            info.Arguments = args;
-            Process.Start(info);
-        }
     }
 }

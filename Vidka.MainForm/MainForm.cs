@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Miktemk;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -264,7 +265,7 @@ namespace Vidka.MainForm
 				return;
 			}
 
-            OpUtils.OpenWinExplorerAndSelectThisFile(logic.CurFileName);
+            UtilsOp.OpenWinExplorerAndSelectThisFile(logic.CurFileName);
             //var folder = Path.GetDirectoryName(logic.CurFileName);
             //Process.Start(folder);
 		}
@@ -273,7 +274,7 @@ namespace Vidka.MainForm
 		{
 			if (logic.CurMediaFileName == null)
 				return;
-            OpUtils.OpenWinExplorerAndSelectThisFile(logic.CurMediaFileName);
+            UtilsOp.OpenWinExplorerAndSelectThisFile(logic.CurMediaFileName);
             //var folder = Path.GetDirectoryName(logic.CurMediaFileName);
             //Process.Start(folder);
 		}
@@ -286,7 +287,7 @@ namespace Vidka.MainForm
                 MessageBox.Show("File does nota exista", "Fail", MessageBoxButtons.OK, MessageBoxIcon.Asterisk);
                 return;
             }
-            OpUtils.OpenWinExplorerAndSelectThisFile(tmpAvs);
+            UtilsOp.OpenWinExplorerAndSelectThisFile(tmpAvs);
         }
 
 		private void associatevidkaFilesWithThisToolStripMenuItem_Click(object sender, EventArgs e)

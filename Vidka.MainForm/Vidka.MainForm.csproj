@@ -154,6 +154,10 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\MiktemkCommons\Miktemk\Miktemk.csproj">
+      <Project>{DB69C87C-B374-4CD7-B0CF-FAA5541B2DF6}</Project>
+      <Name>Miktemk</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Vidka.Components\Vidka.Components.csproj">
       <Project>{e5557bd6-acb6-400f-b4d9-cde7cc2dbe13}</Project>
       <Name>Vidka.Components</Name>

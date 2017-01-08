@@ -10,6 +10,7 @@ using Vidka.Core.ExternalOps;
 using Vidka.Core.Properties;
 using Vidka.Core.Model;
 using System.IO;
+using Miktemk;
 
 namespace Vidka.Core.Ops
 {
@@ -46,7 +47,7 @@ namespace Vidka.Core.Ops
                 {
                     aviFilenames[i] = GetSegmentVideoSegmentOutputPath(i);
                     if (i == 0)
-                        OpUtils.OpenWinExplorerAndSelectNothing(Path.GetDirectoryName(aviFilenames[i]));
+                        UtilsOp.OpenWinExplorerAndSelectNothing(Path.GetDirectoryName(aviFilenames[i]));
                     RenderToAvi(Context.CurFileName, subProjs[i], aviFilenames[i], Settings.Default.mencoderArguments);
                 }
             }

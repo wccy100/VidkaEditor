@@ -20,26 +20,31 @@ global stat_nYV411 = 0
 global mostFrequentPixelType = "???"
 
 #################### all video files ############################
-IMGP0035_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0035.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP0026_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0026.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP0027_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0027.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP0028_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0028.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP0029_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0029.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP0031_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0031.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP0039_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0039.AVI", audio=True, fps=proj_frameRate, convertfps=true)
-IMGP0041_AVI = DirectShowSource("C:\Users\Mikhail\Videos\workouts\montenegro1\IMGP0041.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5410_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\115_0508-cagliari\IMGP5410.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5608_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\116_0513-cagliari\IMGP5608.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5610_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\116_0513-cagliari\IMGP5610.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+_plane_travel_avi = DirectShowSource("C:\Users\Mikhail\Videos\travel\_plane_travel.avi", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5389_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5389.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5407_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5407.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5408_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5408.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5409_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5409.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5390_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5390.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5400_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5400.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5405_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5405.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5399_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5399.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5403_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5403.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5404_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\114_0507-cagliari\IMGP5404.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5412_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\115_0508-cagliari\IMGP5412.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+textc601d4844cf94afd8b0bebf157ec1eba_jpg = ImageSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\.vidkacompile\text-c601d4844cf94afd8b0bebf157ec1eba.jpg", start=0, end=18, fps=proj_frameRate)
+IMGP5423_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\115_0508-cagliari\IMGP5423.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5425_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\115_0508-cagliari\IMGP5425.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5424_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\115_0508-cagliari\IMGP5424.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5426_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\115_0508-cagliari\IMGP5426.AVI", audio=True, fps=proj_frameRate, convertfps=true)
+IMGP5614_AVI = DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\116_0513-cagliari\IMGP5614.AVI", audio=True, fps=proj_frameRate, convertfps=true)
 
 
 #################### determine the most frequently used pixel type ############################
-collectpixeltypestat(IMGP0035_AVI, 5865)
-collectpixeltypestat(IMGP0026_AVI, 4743)
-collectpixeltypestat(IMGP0027_AVI, 2284)
-collectpixeltypestat(IMGP0028_AVI, 2181)
-collectpixeltypestat(IMGP0028_AVI, 752)
-collectpixeltypestat(IMGP0029_AVI, 4456)
-collectpixeltypestat(IMGP0031_AVI, 2886)
-collectpixeltypestat(IMGP0039_AVI, 2306)
-collectpixeltypestat(IMGP0041_AVI, 10670)
+collectpixeltypestat(IMGP5614_AVI, 0)
 
 
 global mostFrequentPixelType = "RGB32"
@@ -65,30 +70,56 @@ curStatMax = Max(curStatMax, stat_nRGB)
 
 #################### render ###########################
 
-IMGP0035_AVI_0 = NeutralClip(IMGP0035_AVI, 1881, 7745).FlipHorizontal().FlipVertical()
-IMGP0026_AVI_1 = NeutralClip(IMGP0026_AVI, 203, 4945)
-IMGP0027_AVI_2 = NeutralClip(IMGP0027_AVI, 146, 2429)
-IMGP0028_AVI_3 = NeutralClip(IMGP0028_AVI, 237, 2417)
-IMGP0028_AVI_4 = NeutralClip(IMGP0028_AVI, 2418, 3169)
-IMGP0029_AVI_5 = NeutralClip(IMGP0029_AVI, 125, 4580)
-IMGP0031_AVI_6 = NeutralClip(IMGP0031_AVI, 200, 3085)
-IMGP0039_AVI_7 = NeutralClip(IMGP0039_AVI, 195, 2500)
-IMGP0041_AVI_8 = NeutralClip(IMGP0041_AVI, 102, 10771)
+IMGP5410_AVI_0 = NeutralClip(IMGP5410_AVI, 0, 198)
+IMGP5608_AVI_1 = NeutralClip(IMGP5608_AVI, 0, 50).MuteThisClip()
+IMGP5610_AVI_2 = NeutralClip(IMGP5610_AVI, 20, 863)
+_plane_travel_avi_3 = NeutralClip(_plane_travel_avi, 159, 188)
+IMGP5389_AVI_4 = NeutralClip(IMGP5389_AVI, 0, 141)
+IMGP5407_AVI_5 = NeutralClip(IMGP5407_AVI, 0, 39)
+IMGP5408_AVI_6 = NeutralClip(IMGP5408_AVI, 31, 60)
+IMGP5409_AVI_7 = NeutralClip(IMGP5409_AVI, 0, 49)
+IMGP5390_AVI_8 = NeutralClip(IMGP5390_AVI, 0, 133)
+IMGP5390_AVI_9 = NeutralClip(IMGP5390_AVI, 1193, 1290)
+IMGP5400_AVI_10 = NeutralClip(IMGP5400_AVI, 0, 268).MuteThisClip()
+IMGP5405_AVI_11 = NeutralClip(IMGP5405_AVI, 0, 141)
+IMGP5399_AVI_12 = NeutralClip(IMGP5399_AVI, 0, 54).MuteThisClip()
+IMGP5403_AVI_13 = NeutralClip(IMGP5403_AVI, 0, 51).MuteThisClip()
+IMGP5404_AVI_14 = NeutralClip(IMGP5404_AVI, 0, 41).MuteThisClip()
+IMGP5412_AVI_15 = NeutralClip(IMGP5412_AVI, 0, 1075)
+textc601d4844cf94afd8b0bebf157ec1eba_jpg_16 = NeutralClipImage(textc601d4844cf94afd8b0bebf157ec1eba_jpg, 18)
+IMGP5423_AVI_17 = NeutralClip(IMGP5423_AVI, 0, 73)
+IMGP5425_AVI_18 = NeutralClip(IMGP5425_AVI, 0, 415)
+IMGP5424_AVI_19 = NeutralClip(IMGP5424_AVI, 229, 295)
+IMGP5426_AVI_20 = NeutralClip(IMGP5426_AVI, 0, 137)
 
 
 UnalignedSplice( \
-	IMGP0035_AVI_0, \
-	IMGP0026_AVI_1, \
-	IMGP0027_AVI_2, \
-	IMGP0028_AVI_3, \
-	IMGP0028_AVI_4, \
-	IMGP0029_AVI_5, \
-	IMGP0031_AVI_6, \
-	IMGP0039_AVI_7, \
-	IMGP0041_AVI_8 \
+	IMGP5410_AVI_0, \
+	IMGP5608_AVI_1.MixAudioFromClip(IMGP5610_AVI_2, 0, 51, 0), \
+	IMGP5610_AVI_2.Trim(51, 844), \
+	_plane_travel_avi_3, \
+	IMGP5389_AVI_4, \
+	IMGP5407_AVI_5, \
+	IMGP5408_AVI_6, \
+	IMGP5409_AVI_7, \
+	IMGP5390_AVI_8, \
+	IMGP5390_AVI_9.MixAudioFromClip(IMGP5400_AVI_10, 0, 27, 71), \
+	IMGP5400_AVI_10.Trim(27, 269), \
+	IMGP5405_AVI_11, \
+	IMGP5399_AVI_12, \
+	IMGP5403_AVI_13, \
+	IMGP5404_AVI_14, \
+	IMGP5412_AVI_15, \
+	textc601d4844cf94afd8b0bebf157ec1eba_jpg_16, \
+	IMGP5423_AVI_17.MixAudioFromClip(IMGP5425_AVI_18, 0, 74, 0), \
+	IMGP5425_AVI_18.Trim(74, 416), \
+	IMGP5424_AVI_19, \
+	IMGP5426_AVI_20 \
 )
 
 
+voiceover=BlankClip(last,1540) ++BlankClip(last, 2075).AudioDub(DirectShowSource("C:\Users\Mikhail\Pictures\2015_04_20_italy_south_trip\phone\20150507_202741 sardinia piano.mp3", fps=proj_frameRate, convertfps=true).ResampleAudio(44100)).Trim(464, 2075)
+MixAudio(last,voiceover, clip1_factor=1, clip2_factor=1)
 
 #All these things we can chain outside on the NeutralClip function...
 # - FadeIn2 adds 2 frames, FadeIn adds 1 frame, FadeIn0 adds no frames (so use that one I guess).

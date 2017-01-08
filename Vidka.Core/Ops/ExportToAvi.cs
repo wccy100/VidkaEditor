@@ -10,6 +10,7 @@ using Vidka.Core.ExternalOps;
 using Vidka.Core.Properties;
 using Vidka.Core.Model;
 using System.IO;
+using Miktemk;
 
 namespace Vidka.Core.Ops
 {
@@ -47,7 +48,7 @@ namespace Vidka.Core.Ops
                 var aviFilenames = new string[subProjs.Length];
                 for (int i = 0; i < subProjs.Length; i++)
                     aviFilenames[i] = GetRawVideoSegmentOutputPath(i);
-                OpUtils.OpenWinExplorerAndSelectNothing(Path.GetDirectoryName(aviFilenames[0]));
+                UtilsOp.OpenWinExplorerAndSelectNothing(Path.GetDirectoryName(aviFilenames[0]));
                 var anyExist = aviFilenames.FirstOrDefault(x => File.Exists(x));
                 if (anyExist != null)
                 {

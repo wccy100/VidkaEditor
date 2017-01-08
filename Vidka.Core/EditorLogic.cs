@@ -157,6 +157,7 @@ namespace Vidka.Core
                 new InsertSimpleTextClip(this),
                 new InsertCurrentFrameStill(this),
                 new LinearShuffleByFilename(this),
+                new RemoveLinkVideoAudio(this),
             };
 			setProjToAllEditOps(Proj);
 		}

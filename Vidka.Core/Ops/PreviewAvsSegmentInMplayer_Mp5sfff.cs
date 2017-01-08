@@ -9,6 +9,7 @@ using Vidka.Core.Properties;
 
 namespace Vidka.Core.Ops
 {
+    // .... sfff = solo fff AKA locked clips
     public class PreviewAvsSegmentInMplayer_Mp5sfff : PreviewAvsSegmentInMplayerAbstract
     {
         public PreviewAvsSegmentInMplayer_Mp5sfff(IVidkaOpContext context) : base(context) { }

@@ -47,8 +47,36 @@ namespace Vidka.Core.OpsMouse
 		{
             var vclip = uiObjects.CurrentVideoClip;
             var aclip = uiObjects.CurrentAudioClipHover;
-            if (vclip.AudioClipLinks.Any(lll => lll.AudioClip == aclip))
+
+            var absPosVid = proj.GetVideoClipAbsFramePositionLeft(vclip) - vclip.FrameStart - vclip.EasingLeft;
+            var absPosAud = aclip.FrameOffset - aclip.FrameStart;
+            var synchFrames = absPosAud - absPosVid;
+            var newLink = new VidkaAudioClipLink
             {
+                AudioClip = uiObjects.CurrentAudioClipHover,
+                SynchFrames = synchFrames,
+            };
+
+            var oldLinkToSameAudio = vclip.AudioClipLinks.FirstOrDefault(lll => lll.AudioClip == aclip);
+            if (oldLinkToSameAudio != null)
+            {
+                // .... swap VidkaAudioClipLink for the updated one
+                iEditor.AddUndableAction_andFireRedo(new UndoableAction()
+                {
+                    Redo = () =>
+                    {
+                        cxzxc("update video-audio link: " + synchFrames);
+                        vclip.AudioClipLinks.Remove(oldLinkToSameAudio);
+                        vclip.AudioClipLinks.Add(newLink);
+                    },
+                    Undo = () =>
+                    {
+                        cxzxc("restore prev link " + oldLinkToSameAudio.SynchFrames);
+                        vclip.AudioClipLinks.Remove(newLink);
+                        vclip.AudioClipLinks.Add(oldLinkToSameAudio);
+                    },
+                    PostAction = () => { }
+                });
                 closeThisOp();
                 return;
             }
@@ -57,13 +85,6 @@ namespace Vidka.Core.OpsMouse
                 closeThisOp();
                 return;
             }
-            var absPosVid = proj.GetVideoClipAbsFramePositionLeft(vclip) - vclip.FrameStart;
-            var absPosAud = aclip.FrameOffset - aclip.FrameStart;
-            var synchFrames = absPosAud - absPosVid;
-            var newLink = new VidkaAudioClipLink {
-                AudioClip = uiObjects.CurrentAudioClipHover,
-                SynchFrames = synchFrames,
-            };
             iEditor.AddUndableAction_andFireRedo(new UndoableAction()
             {
                 Redo = () =>
