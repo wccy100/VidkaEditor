@@ -16,9 +16,6 @@ namespace Vidka.Core.Ops
         public override string CommandName { get { return Name; } }
         public const string Name = "SplitCurClipVideo";
 
-        protected VidkaClipVideoAbstract ClipNewOnTheLeft;
-        protected VidkaClipVideoAbstract ClipOldOnTheRight;
-
         public override bool TriggerByKeyPress(KeyEventArgs e)
         {
             return (e.KeyCode == Keys.S && !e.Shift && !e.Control);
@@ -38,33 +35,39 @@ namespace Vidka.Core.Ops
             }
             var clip_oldStart = clip.FrameStart;
             var clip_oldEaseLeft = clip.EasingLeft;
-            ClipNewOnTheLeft = clip.MakeCopy_VideoClip();
-            ClipNewOnTheLeft.FrameEnd = frameOffsetStartOfVideo; // remember, frameOffset is returned relative to start of the media file
-            ClipNewOnTheLeft.EasingRight = 0;
-            ClipOldOnTheRight = clip;
+            var clipNewOnTheLeft = clip.MakeCopy_VideoClip();
+            clipNewOnTheLeft.FrameEnd = frameOffsetStartOfVideo; // remember, frameOffset is returned relative to start of the media file
+            clipNewOnTheLeft.EasingRight = 0;
             Context.AddUndableAction_andFireRedo(new UndoableAction
             {
                 Undo = () =>
                 {
                     cxzxc("UNDO split");
-                    Context.Proj.ClipsVideo.Remove(ClipNewOnTheLeft);
+                    Context.Proj.ClipsVideo.Remove(clipNewOnTheLeft);
                     clip.FrameStart = clip_oldStart;
                     clip.EasingLeft = clip_oldEaseLeft;
+                    AdditionalActionsOnUndo(clip, clipNewOnTheLeft);
                 },
                 Redo = () =>
                 {
                     cxzxc("split: location=" + frameOffsetStartOfVideo);
-                    Context.Proj.ClipsVideo.Insert(clipIndex, ClipNewOnTheLeft);
+                    Context.Proj.ClipsVideo.Insert(clipIndex, clipNewOnTheLeft);
                     clip.FrameStart = frameOffsetStartOfVideo;
                     clip.EasingLeft = 0;
+                    AdditionalActionsOnRedo(clip, clipNewOnTheLeft);
                 },
                 PostAction = () =>
                 {
                     Context.UiObjects.SetActiveVideo(clip, Context.Proj); // to reset CurrentClipFrameAbsPos
+                    AdditionalActionsOnPostAction(clip, clipNewOnTheLeft);
                 }
             });
             if (Context.PreviewLauncher.IsPlaying)
                 Context.PreviewLauncher.SplitPerformedIncrementClipIndex();
         }
+
+        protected virtual void AdditionalActionsOnUndo(VidkaClipVideoAbstract clip, VidkaClipVideoAbstract clipNewOnTheLeft) { }
+        protected virtual void AdditionalActionsOnRedo(VidkaClipVideoAbstract clip, VidkaClipVideoAbstract clipNewOnTheLeft) { }
+        protected virtual void AdditionalActionsOnPostAction(VidkaClipVideoAbstract clip, VidkaClipVideoAbstract clipNewOnTheLeft) { }
     }
 }

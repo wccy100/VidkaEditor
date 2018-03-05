@@ -20,10 +20,13 @@ namespace Vidka.Core.Ops
             return (e.KeyCode == Keys.L && !e.Shift && !e.Control);
         }
 
-        public override void Run()
+        protected override void AdditionalActionsOnUndo(VidkaClipVideoAbstract clip, VidkaClipVideoAbstract clipNewOnTheLeft)
         {
-            base.Run();
-            ClipNewOnTheLeft.IsLocked = true;
+            //clipNewOnTheLeft.IsLocked = false; // who cares, its is removed on undo anyway by SplitCurClipVideo.Run
+        }
+        protected override void AdditionalActionsOnRedo(VidkaClipVideoAbstract clip, VidkaClipVideoAbstract clipNewOnTheLeft)
+        {
+            clipNewOnTheLeft.IsLocked = true;
         }
     }
 }
