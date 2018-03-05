@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +12,9 @@ namespace Vidka.Core.Ops
     public class PreviewAvsSegmentInMplayer_Vd15s : PreviewAvsSegmentInMplayerAbstract
     {
         public PreviewAvsSegmentInMplayer_Vd15s(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "PreviewAvsSegmentInMplayer_Vd15s";
+
+        public const string Name = nameof(PreviewAvsSegmentInMplayer_Vd15s);
+        public override string CommandName => Name;
 
         public override bool TriggerByKeyPress(KeyEventArgs e)
         {

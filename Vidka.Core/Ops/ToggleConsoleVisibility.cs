@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,8 +11,9 @@ namespace Vidka.Core.Ops
     public class ToggleConsoleVisibility : _VidkaOp
     {
         public ToggleConsoleVisibility(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "ToggleConsoleVisibility";
+
+        public const string Name = nameof(ToggleConsoleVisibility);
+        public override string CommandName => Name;
 
 
         public override bool TriggerByKeyPress(KeyEventArgs e)

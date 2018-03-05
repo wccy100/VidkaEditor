@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,8 +14,9 @@ namespace Vidka.Core.Ops
     public class DeleteCurSelectedClip : _VidkaOp
     {
         public DeleteCurSelectedClip(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "DeleteCurSelectedClip";
+
+        public const string Name = nameof(DeleteCurSelectedClip);
+        public override string CommandName => Name;
 
 
         public override bool TriggerByKeyPress(KeyEventArgs e)

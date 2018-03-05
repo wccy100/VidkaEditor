@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,8 +12,9 @@ namespace Vidka.Core.Ops
     public class SplitCurClipVideo_FinalizeLeft : SplitCurClipVideo
     {
         public SplitCurClipVideo_FinalizeLeft(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public new const string Name = "SplitCurClipVideo_FinalizeLeft";
+
+        public const string Name = nameof(SplitCurClipVideo_FinalizeLeft);
+        public override string CommandName => Name;
 
         public override bool TriggerByKeyPress(KeyEventArgs e)
         {

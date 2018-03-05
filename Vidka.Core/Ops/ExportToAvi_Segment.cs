@@ -1,4 +1,4 @@
-﻿#define RUN_MENCODER
+#define RUN_MENCODER
 
 using System;
 using System.Collections.Generic;
@@ -17,8 +17,9 @@ namespace Vidka.Core.Ops
     public class ExportToAvi_Segment : _VidkaOp
     {
         public ExportToAvi_Segment(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "ExportToAvi_Segment";
+
+        public const string Name = nameof(ExportToAvi_Segment);
+        public override string CommandName => Name;
 
         //... commented out because we have created menu shortcuts
         //public override bool TriggerByKeyPress(KeyEventArgs e)

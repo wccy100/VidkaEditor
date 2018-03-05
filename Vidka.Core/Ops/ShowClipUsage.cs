@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,8 +11,9 @@ namespace Vidka.Core.Ops
     public class ShowClipUsage : _VidkaOp
     {
         public ShowClipUsage(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "ShowClipUsage";
+
+        public const string Name = nameof(ShowClipUsage);
+        public override string CommandName => Name;
 
         public override bool TriggerByKeyPress(KeyEventArgs e)
         {

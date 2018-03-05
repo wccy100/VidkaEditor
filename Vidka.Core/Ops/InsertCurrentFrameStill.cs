@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -14,8 +14,9 @@ namespace Vidka.Core.Ops
     public class InsertCurrentFrameStill : _VidkaOp
     {
         public InsertCurrentFrameStill(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "InsertCurrentFrameStill";
+
+        public const string Name = nameof(InsertCurrentFrameStill);
+        public override string CommandName => Name;
 
         public override void Run()
         {

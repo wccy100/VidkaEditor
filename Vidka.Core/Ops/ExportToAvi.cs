@@ -1,4 +1,4 @@
-﻿#define RUN_MENCODER
+#define RUN_MENCODER
 
 using System;
 using System.Collections.Generic;
@@ -17,8 +17,9 @@ namespace Vidka.Core.Ops
     public class ExportToAvi : _VidkaOp
     {
         public ExportToAvi(IVidkaOpContext context) : base(context) {}
-        public override string CommandName { get { return Name; } }
-        public const string Name = "ExportToAvi";
+
+        public const string Name = nameof(ExportToAvi);
+        public override string CommandName => Name;
        
         private string rawDumpFolder;
 

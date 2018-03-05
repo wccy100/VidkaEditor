@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -13,8 +13,9 @@ namespace Vidka.Core.Ops
     public class InsertSimpleTextClip : _VidkaOp
     {
         public InsertSimpleTextClip(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "InsertSimpleTextClip";
+
+        public const string Name = nameof(InsertSimpleTextClip);
+        public override string CommandName => Name;
 
         public override void Run()
         {

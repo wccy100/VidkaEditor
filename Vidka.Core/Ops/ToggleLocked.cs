@@ -1,4 +1,4 @@
-﻿using Miktemk.Editor;
+using Miktemk.Editor;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,8 +12,9 @@ namespace Vidka.Core.Ops
     public class ToggleLocked : _VidkaOp
     {
         public ToggleLocked(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "ToggleLocked";
+
+        public const string Name = nameof(ToggleLocked);
+        public override string CommandName => Name;
 
         public override bool TriggerByKeyPress(KeyEventArgs e)
         {

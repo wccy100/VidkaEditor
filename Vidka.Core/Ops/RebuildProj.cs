@@ -11,8 +11,9 @@ namespace Vidka.Core.Ops
     public class RebuildProj : _VidkaOp
     {
         public RebuildProj(IVidkaOpContext context) : base(context) {}
-        public override string CommandName { get { return Name; } }
-        public const string Name = "RebuildProject";
+
+        public const string Name = nameof(RebuildProj);
+        public override string CommandName => Name;
 
         public override void Run()
         {

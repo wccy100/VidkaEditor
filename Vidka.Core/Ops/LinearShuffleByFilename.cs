@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -15,8 +15,9 @@ namespace Vidka.Core.Ops
     public class LinearShuffleByFilename : _VidkaOp
     {
         public LinearShuffleByFilename(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "LinearShuffleByFilename";
+
+        public const string Name = nameof(LinearShuffleByFilename);
+        public override string CommandName => Name;
 
         public override void Run()
         {

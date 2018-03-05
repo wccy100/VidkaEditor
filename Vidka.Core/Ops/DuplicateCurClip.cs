@@ -1,4 +1,4 @@
-﻿using Miktemk.Editor;
+using Miktemk.Editor;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,8 +13,9 @@ namespace Vidka.Core.Ops
     public class DuplicateCurClip : _VidkaOp
     {
         public DuplicateCurClip(IVidkaOpContext context) : base(context) { }
-        public override string CommandName { get { return Name; } }
-        public const string Name = "DuplicateCurClip";
+
+        public const string Name = nameof(DuplicateCurClip);
+        public override string CommandName => Name;
 
 
         public override bool TriggerByKeyPress(KeyEventArgs e)
