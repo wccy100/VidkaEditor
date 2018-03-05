@@ -17,6 +17,7 @@ using Vidka.Core.Ops;
 using Vidka.Core.OpsMouse;
 using Vidka.Core.UiObj;
 using Miktemk;
+using Miktemk.Editor;
 
 namespace Vidka.Core
 {
@@ -72,9 +73,10 @@ namespace Vidka.Core
 		// what we are working with
 		private IVideoShitbox shitbox;
 		private IVideoPlayer videoPlayer;
-		
-		// helper and logic classes
-		private PreviewThreadLauncher previewLauncher;
+
+        // helper and logic classes
+        private UndoRedoManager editActionsManager;
+        private PreviewThreadLauncher previewLauncher;
 		private MouseOpAbstract CurEditOp;
 		private VidkaIO ioOps;
 		private DragAndDropManager dragAndDropMan;
@@ -86,8 +88,6 @@ namespace Vidka.Core
 
 		// my own state shit
 		private string curFilename;
-		private Stack<UndoableAction> undoStack = new Stack<UndoableAction>();
-		private Stack<UndoableAction> redoStack = new Stack<UndoableAction>();
 		private int mouseX;
 		private int? needToChangeCanvasWidth;
 		private int? needToChangeScrollX;
@@ -99,7 +99,8 @@ namespace Vidka.Core
 			this.videoPlayer = videoPlayer;
 			Proj = new VidkaProj();
 			Dimdim = new ProjectDimensions(Proj);
-			UiObjects = new VidkaUiStateObjects();
+            editActionsManager = new UndoRedoManager();
+            UiObjects = new VidkaUiStateObjects();
             previewLauncher = new PreviewThreadLauncher(videoPlayer, playerAudio, this);
 			ioOps = new VidkaIO();
 			Proj_forOriginalPlayback = new VidkaProj();
@@ -463,8 +464,7 @@ namespace Vidka.Core
 			curFilename = null;
 			SetFileChanged(false);
 			___UiTransactionBegin();
-			undoStack.Clear();
-			redoStack.Clear();
+            editActionsManager.Clear();
 			UiObjects.ClearAll();
 			videoPlayer.SetStillFrameNone();
             Fire_PleaseSetPlayerAbsPosition(PreviewPlayerAbsoluteLocation.TopRight);
@@ -1031,31 +1031,25 @@ namespace Vidka.Core
         #region ============================= editing =============================
 
         #region ---------------------- UNDO/REDO -----------------------------
-
+        
         public void Redo()
 		{
-			if (!redoStack.Any())
+            if (!editActionsManager.HasRedo)
 				return;
 			if (previewLauncher.IsPlaying)
 			{
 				cxzxc("Undo/redo disabled during playback to avoid whoopsie-doodles!");
 				return;
 			}
-
-			var action = redoStack.Pop();
-			undoStack.Push(action);
-
 			___UiTransactionBegin();
-			action.Redo();
-			if (action.PostAction != null)
-				action.PostAction();
-			SetFileChanged(true);
-			___Ui_stateChanged();
+            editActionsManager.Redo();
+			SetFileChanged(editActionsManager.IsChanged);
+            ___Ui_stateChanged();
 			___UiTransactionEnd();
 		}
 		public void Undo()
 		{
-			if (!undoStack.Any())
+            if (!editActionsManager.HasUndo)
 				return;
 			if (previewLauncher.IsPlaying)
 			{
@@ -1063,29 +1057,20 @@ namespace Vidka.Core
 				return;
 			}
 
-			var action = undoStack.Pop();
-			redoStack.Push(action);
-
 			___UiTransactionBegin();
-			action.Undo();
-			if (action.PostAction != null)
-				action.PostAction();
-			SetFileChanged(true);
-			___Ui_stateChanged();
+            editActionsManager.Undo();
+            SetFileChanged(editActionsManager.IsChanged);
+            ___Ui_stateChanged();
 			___UiTransactionEnd();
 		}
 		public void AddUndableAction_andFireRedo(UndoableAction action)
 		{
-			undoStack.Push(action);
-			if (redoStack.Any())
-				cxzxc("----------");
-			redoStack.Clear();
+            if (editActionsManager.HasRedo)
+                cxzxc("----------");
 
 			___UiTransactionBegin();
-			action.Redo();
-			if (action.PostAction != null)
-				action.PostAction();
-			SetFileChanged(true);
+            editActionsManager.AddUndableAction_andFireRedo(action);
+			SetFileChanged(editActionsManager.IsChanged);
 			___Ui_stateChanged();
 			___UiTransactionEnd();
 		}

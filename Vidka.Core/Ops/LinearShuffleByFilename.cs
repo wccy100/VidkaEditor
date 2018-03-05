@@ -8,6 +8,7 @@ using System.Windows.Forms;
 using Vidka.Core.Model;
 using Vidka.Core.Properties;
 using Miktemk;
+using Miktemk.Editor;
 
 namespace Vidka.Core.Ops
 {

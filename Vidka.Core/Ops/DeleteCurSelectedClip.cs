@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Vidka.Core.Properties;
 using Vidka.Core.Model;
+using Miktemk.Editor;
 
 namespace Vidka.Core.Ops
 {

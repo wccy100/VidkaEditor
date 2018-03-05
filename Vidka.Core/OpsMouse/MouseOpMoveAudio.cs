@@ -8,6 +8,7 @@ using Vidka.Core.Error;
 using Vidka.Core.Model;
 using Vidka.Core.ExternalOps;
 using Vidka.Core.UiObj;
+using Miktemk.Editor;
 
 namespace Vidka.Core.OpsMouse
 {

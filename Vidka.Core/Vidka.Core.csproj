@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Vidka.Core</RootNamespace>
     <AssemblyName>Vidka.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -116,7 +117,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="TaskQueueInOtherThread.cs" />
-    <Compile Include="UndoableAction.cs" />
     <Compile Include="Utils.cs" />
     <Compile Include="VideoMeta\VideoMetadata.generated.cs" />
     <Compile Include="VideoMeta\VideoMetadata.Extensions.cs" />

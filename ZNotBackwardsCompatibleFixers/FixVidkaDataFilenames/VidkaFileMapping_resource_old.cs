@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Vidka.Core.ExternalOps;
 using Vidka.Core.Ops;
 
 namespace FixVidkaDataFilenames

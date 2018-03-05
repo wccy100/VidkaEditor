@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Vidka.Core;
+using Vidka.Core.ExternalOps;
 using Vidka.Core.Ops;
 
 namespace FixVidkaDataFilenames
