@@ -108,6 +108,9 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="App_data\template-2015.avs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="App_data\template.avs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

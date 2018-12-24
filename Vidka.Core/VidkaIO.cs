@@ -50,14 +50,15 @@ namespace Vidka.Core
             foreach (var file in renderableProj.Files)
             {
                 if (file.Type == RenderableMediaFileType.DirectShowSource)
-                    sbFiles.Append(String.Format("{0} = DirectShowSource(\"{1}\", audio=True, fps=proj_frameRate, convertfps=true)",
-                        file.VarName, file.FileName));
+                {
+                    //sbFiles.Append($"{file.VarName} = DirectShowSource(\"{file.FileName}\", audio=True, fps=proj_frameRate, convertfps=true)");
+                    var audioParam = file.HasAudio ? ", atrack=-1" : "";
+                    sbFiles.Append($"{file.VarName} = FFmpegSource2(\"{file.FileName}\"{audioParam})");
+                }
                 else if (file.Type == RenderableMediaFileType.ImageSource)
-                    sbFiles.Append(String.Format("{0} = ImageSource(\"{1}\", start=0, end={2}, fps=proj_frameRate)",
-                        file.VarName, file.FileName, renderableProj.MaxLengthOfImageClip));
+                    sbFiles.Append($"{file.VarName} = ImageSource(\"{file.FileName}\", start=0, end={renderableProj.MaxLengthOfImageClip}, fps=proj_frameRate)");
                 else if (file.Type == RenderableMediaFileType.AudioSource)
-                    sbFiles.Append(String.Format("{0} = DirectShowSource(\"{1}\")",
-                        file.VarName, file.FileName));
+                    sbFiles.Append($"{file.VarName} = DirectShowSource(\"{file.FileName}\")");
                 sbFiles.Append("\n");
             }
             foreach (var clip in renderableClips)

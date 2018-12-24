@@ -41,6 +41,7 @@ namespace Vidka.Core.Model
         public string FileName { get; set; }
         public string VarName { get; set; }
         public RenderableMediaFileType Type { get; set; }
+        public bool HasAudio { get; set; }
     }
 
     public class VideoClipRenderable

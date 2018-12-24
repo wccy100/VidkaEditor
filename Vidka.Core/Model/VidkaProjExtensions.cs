@@ -286,6 +286,7 @@ namespace Vidka.Core.Model
                     FileName = x.FileName,
                     VarName = x.FileName.FilenameToVarName(),
                     Type = GetRenderableVideoFileType(x),
+                    HasAudio = x.HasAudio,
                 });
             // custom audios...
             var fileList2 = arrClips
@@ -296,6 +297,7 @@ namespace Vidka.Core.Model
                     FileName = x.CustomAudioFilename,
                     VarName = x.CustomAudioFilename.FilenameToVarName(),
                     Type = RenderableMediaFileType.AudioSource,
+                    HasAudio = x.HasAudio,
                 });
             var fileList = fileList1
                 .Union(fileList2)
@@ -408,6 +410,7 @@ namespace Vidka.Core.Model
                         FileName = proj.PixelTypeStandardClip.FileName,
                         VarName = proj.PixelTypeStandardClip.FileName.FilenameToVarName(),
                         Type = GetRenderableVideoFileType(proj.PixelTypeStandardClip),
+                        HasAudio = videoFileForThisOne.HasAudio,
                     });
                 statVideos = new[] { new VideoClipRenderable {
                     VideoFile = videoFileForThisOne
